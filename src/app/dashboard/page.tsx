@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getPlanUsage } from "@/lib/plan-usage";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NewBotButton } from "@/components/new-bot-button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -22,6 +24,9 @@ export default async function DashboardPage() {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const planUsage = await getPlanUsage(session.user.id);
+  const canCreateBot = planUsage ? planUsage.usedBots < planUsage.totalBots : true;
 
   const totals = bots.reduce(
     (acc, b) => ({
@@ -163,11 +168,7 @@ export default async function DashboardPage() {
         <div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-base font-semibold text-zinc-900 sm:text-lg">Your assistants</h2>
-            <Link href="/dashboard/bots/new" className="w-full sm:w-auto">
-              <Button variant="outline" size="sm" className="w-full border-zinc-300 sm:w-auto">
-                Add bot
-              </Button>
-            </Link>
+            <NewBotButton canCreate={canCreateBot} planUsage={planUsage} variant="outline" size="sm" />
           </div>
 
           {bots.length === 0 ? (
@@ -180,11 +181,7 @@ export default async function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/dashboard/bots/new">
-                  <Button className="bg-[#1a6aff] hover:bg-[#1557e0]">
-                    Create your first bot
-                  </Button>
-                </Link>
+                <NewBotButton canCreate={canCreateBot} planUsage={planUsage} />
               </CardContent>
             </Card>
           ) : (
@@ -254,3 +251,4 @@ export default async function DashboardPage() {
     </div>
   );
 }
+

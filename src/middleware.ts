@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 const publicPaths = ["/", "/login", "/signup", "/pricing", "/demo", "/widget.js", "/atlas-training-content"];
-const publicPrefixes = ["/api/auth", "/api/chat", "/api/embed", "/api/leads", "/embed", "/uploads"];
+const publicPrefixes = ["/api/auth", "/api/chat", "/api/embed", "/api/leads", "/api/tools", "/embed", "/uploads", "/tools"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

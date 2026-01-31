@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DemoWidget } from "@/components/demo-widget";
-import { SimpleNav } from "@/components/simple-nav";
+import { ResponsiveNav } from "@/components/responsive-nav";
 
 const DEMO_BOT_ID = process.env.NEXT_PUBLIC_DEMO_BOT_ID;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "";
@@ -16,12 +16,7 @@ const SUGGESTED_QUESTIONS = [
 export default function DemoPage() {
   return (
     <div className="min-h-screen bg-white">
-      <SimpleNav
-        links={[
-          { href: "/#features", label: "Features" },
-          { href: "/pricing", label: "Pricing" },
-        ]}
-      />
+      <ResponsiveNav />
 
       <main>
         {/* Hero */}

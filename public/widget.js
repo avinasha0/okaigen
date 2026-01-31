@@ -180,16 +180,18 @@
         history: [],
       }),
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then((r) => r.json().then(d => ({ status: r.status, data: d })))
+      .then(function(result) {
         loadingEl.remove();
-        if (data.error) {
-          var msg = data.error && data.error.length < 200 ? data.error : "Sorry, something went wrong. Please try again.";
+        if (result.status === 402 && result.data.quotaExceeded) {
+          addMessage("⚠️ This bot has reached its daily message limit. Please contact the site owner or try again tomorrow.", "assistant");
+        } else if (result.data.error) {
+          var msg = result.data.error && result.data.error.length < 200 ? result.data.error : "Sorry, something went wrong. Please try again.";
           addMessage(msg, "assistant");
         } else {
-          chatId = data.chatId;
-          addMessage(data.response, "assistant");
-          if (data.shouldCaptureLead) {
+          chatId = result.data.chatId;
+          addMessage(result.data.response, "assistant");
+          if (result.data.shouldCaptureLead) {
             showLeadForm();
           }
           if (clickedQuickPrompt && quickPromptsList.length > 0) {

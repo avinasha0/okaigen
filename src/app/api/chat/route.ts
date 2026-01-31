@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generateResponse } from "@/lib/rag";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPlanUsage } from "@/lib/plan-usage";
 
 export async function POST(req: Request) {
   const visitorId = req.headers.get("x-visitor-id") || req.headers.get("x-forwarded-for") || "anon";
   const botKey = req.headers.get("x-bot-key") || req.headers.get("x-atlas-key");
   const rlKey = `chat:${botKey || "unknown"}:${visitorId}`;
-  const { success } = rateLimit(rlKey, 30, 60000); // 30 req/min per visitor per bot
+  const { success } = rateLimit(rlKey, 30, 60000);
   if (!success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
         where: botKey.startsWith("atlas_")
           ? { publicKey: botKey }
           : { id: botKey },
+        include: { user: true },
       });
     }
 
@@ -34,6 +36,19 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Bot not found. Use the embed code from Dashboard → your bot → Embed code, or your bot's public key (atlas_...)." },
         { status: 400 }
+      );
+    }
+
+    const planUsage = await getPlanUsage(bot.userId);
+    if (planUsage && planUsage.usedMessages >= planUsage.totalMessages) {
+      return NextResponse.json(
+        { 
+          error: "Daily message limit reached. Please upgrade your plan to continue.", 
+          quotaExceeded: true,
+          usedMessages: planUsage.usedMessages,
+          totalMessages: planUsage.totalMessages,
+        },
+        { status: 402 }
       );
     }
 

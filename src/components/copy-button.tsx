@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <Button
       variant="outline"
       size="sm"
-      className="mt-2"
+      className={className ?? "mt-2"}
       onClick={async () => {
         await navigator.clipboard.writeText(text);
         setCopied(true);

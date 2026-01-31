@@ -4,11 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 
+export type PlanUsage = {
+  planName: string;
+  usedMessages: number;
+  totalMessages: number;
+  usedBots: number;
+  totalBots: number;
+};
+
 export function DashboardShell({
   userEmail,
+  planUsage,
   children,
 }: {
   userEmail: string | null | undefined;
+  planUsage?: PlanUsage | null;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -116,6 +126,46 @@ export function DashboardShell({
             Settings
           </Link>
         </nav>
+        {planUsage && (
+          <div className="border-t border-zinc-800 p-4">
+            <div className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Plan</div>
+            <div className="rounded-lg border border-zinc-700/80 bg-zinc-800/50 px-3 py-3">
+              <p className="text-sm font-medium text-white">{planUsage.planName}</p>
+              <div className="mt-3 space-y-2">
+                <div>
+                  <div className="flex justify-between text-xs text-zinc-400">
+                    <span>Messages today</span>
+                    <span>{planUsage.usedMessages.toLocaleString()} / {planUsage.totalMessages.toLocaleString()}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-700">
+                    <div
+                      className="h-full rounded-full bg-[#1a6aff] transition-all"
+                      style={{ width: `${Math.min(100, planUsage.totalMessages > 0 ? (planUsage.usedMessages / planUsage.totalMessages) * 100 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-zinc-400">
+                    <span>Bots</span>
+                    <span>{planUsage.usedBots} / {planUsage.totalBots}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-700">
+                    <div
+                      className="h-full rounded-full bg-emerald-500/80 transition-all"
+                      style={{ width: `${Math.min(100, planUsage.totalBots > 0 ? (planUsage.usedBots / planUsage.totalBots) * 100 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Link
+                href="/pricing"
+                className="mt-2 block text-center text-xs font-medium text-[#1a6aff] hover:underline"
+              >
+                Upgrade plan
+              </Link>
+            </div>
+          </div>
+        )}
         <div className="border-t border-zinc-800 p-4">
           <div className="mb-2 truncate px-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Account</div>
           <p className="truncate px-3 text-sm text-zinc-400">{userEmail ?? "User"}</p>

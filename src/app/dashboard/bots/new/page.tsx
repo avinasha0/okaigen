@@ -35,6 +35,11 @@ export default function NewBotPage() {
         }),
       });
       const data = await res.json();
+      if (res.status === 402 && data.quotaExceeded) {
+        setError(`${data.error} Upgrade at /pricing`);
+        setLoading(false);
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Failed to create bot");
       router.push(`/dashboard/bots/${data.id}/setup`);
       router.refresh();
@@ -64,6 +69,11 @@ export default function NewBotPage() {
             {error && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
                 {error}
+                {error.includes("Upgrade") && (
+                  <Link href="/pricing" className="ml-2 font-semibold underline hover:text-red-900">
+                    View plans →
+                  </Link>
+                )}
               </div>
             )}
             <div className="space-y-2">

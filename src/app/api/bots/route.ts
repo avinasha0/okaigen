@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { generateBotPublicKey } from "@/lib/utils";
+import { getPlanUsage } from "@/lib/plan-usage";
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
@@ -41,6 +42,19 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const planUsage = await getPlanUsage(session.user.id);
+  if (planUsage && planUsage.usedBots >= planUsage.totalBots) {
+    return NextResponse.json(
+      { 
+        error: `Bot limit reached (${planUsage.totalBots} bots). Please upgrade your plan to create more bots.`,
+        quotaExceeded: true,
+        usedBots: planUsage.usedBots,
+        totalBots: planUsage.totalBots,
+      },
+      { status: 402 }
+    );
   }
 
   try {
