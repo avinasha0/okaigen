@@ -66,11 +66,11 @@ model Bot {
   id              String   @id @default(cuid())
   name            String
   userId          String
-  greetingMessage String   @default("Hi! How can I help you today?") @db.Text
+  greetingMessage String   @default("Hi! How can I help you today?") @db.VarChar(500)
   tone            String   @default("friendly") // formal, friendly, casual
   confidenceThreshold Float @default(0.7)
   leadCaptureTrigger  String @default("uncertain") // uncertain, always, never
-  humanFallbackMessage String @default("I'm not sure about that. Would you like to leave your contact and we'll get back to you?") @db.Text
+  humanFallbackMessage String @default("I'm not sure about that. Would you like to leave your contact and we'll get back to you?") @db.VarChar(500)
   quickPrompts    String?  @db.Text // JSON array: ["Question 1", "Question 2"]
   publicKey       String?  @unique // For widget token validation
   createdAt       DateTime @default(now())
