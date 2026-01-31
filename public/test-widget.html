@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Test - Project Atlas</title>
+</head>
+<body>
+  <div style="max-width: 600px; margin: 48px auto; padding: 24px; font-family: system-ui, sans-serif;">
+    <h1>Test chat widget</h1>
+    <p>Open the chat bubble in the bottom-right corner to try your bot.</p>
+    <p style="font-size: 14px; color: #64748b;">
+      Use your bot&apos;s embed code from <strong>Dashboard → [Your Bot] → Embed code</strong>.
+      Or open this page with <code>?bot=atlas_xxxxx</code> (copy the public key from the embed code).
+    </p>
+    <p style="font-size: 13px; color: #94a3b8;">If you see &quot;Bot not found&quot;, add <code>?bot=YOUR_KEY</code> to the URL using the key from your dashboard.</p>
+  </div>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var bot = params.get('bot');
+      if (!bot) {
+        document.body.insertAdjacentHTML('beforeend', '<p style="margin: 24px auto; max-width: 600px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 14px;">Add <code>?bot=atlas_xxxxx</code> to the URL (get the key from Dashboard → your bot → Embed code).</p>');
+      }
+      var base = window.location.origin.includes('localhost') ? 'http://localhost:3000' : (window.location.origin);
+      var s = document.createElement('script');
+      s.src = base + '/widget.js';
+      if (bot) {
+        s.setAttribute('data-bot', bot);
+        s.setAttribute('data-base', base);
+        s.async = true;
+        document.body.appendChild(s);
+      }
+    })();
+  </script>
+</body>
+</html>

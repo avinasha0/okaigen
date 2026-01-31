@@ -1,0 +1,256 @@
+import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const bots = await prisma.bot.findMany({
+    where: { userId: session.user.id },
+    include: {
+      _count: { select: { chunks: true, chats: true, leads: true } },
+      sources: { take: 3 },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const totals = bots.reduce(
+    (acc, b) => ({
+      bots: acc.bots + 1,
+      chunks: acc.chunks + b._count.chunks,
+      chats: acc.chats + b._count.chats,
+      leads: acc.leads + b._count.leads,
+    }),
+    { bots: 0, chunks: 0, chats: 0, leads: 0 }
+  );
+
+  return (
+    <div className="min-h-screen">
+      {/* Top bar */}
+      <div className="border-b border-zinc-200 bg-white px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
+              Dashboard
+            </h1>
+            <p className="mt-0.5 text-sm text-zinc-500">
+              Manage your AI assistants and view usage
+            </p>
+          </div>
+          <Link href="/dashboard/bots/new" className="w-full sm:w-auto">
+            <Button className="w-full bg-[#1a6aff] hover:bg-[#1557e0] sm:w-auto">
+              New bot
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-6 md:p-8">
+        {/* KPI cards */}
+        <div className="mb-6 grid gap-3 sm:mb-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <Card className="border-zinc-200 bg-white shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-zinc-500">
+                Total bots
+              </CardTitle>
+              <svg
+                className="h-4 w-4 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold text-zinc-900">
+                {totals.bots}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-zinc-200 bg-white shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-zinc-500">
+                Knowledge chunks
+              </CardTitle>
+              <svg
+                className="h-4 w-4 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold text-zinc-900">
+                {totals.chunks.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-zinc-200 bg-white shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-zinc-500">
+                Total chats
+              </CardTitle>
+              <svg
+                className="h-4 w-4 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold text-zinc-900">
+                {totals.chats.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-zinc-200 bg-white shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-zinc-500">
+                Leads captured
+              </CardTitle>
+              <svg
+                className="h-4 w-4 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold text-zinc-900">
+                {totals.leads.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bots section */}
+        <div>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-base font-semibold text-zinc-900 sm:text-lg">Your assistants</h2>
+            <Link href="/dashboard/bots/new" className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full border-zinc-300 sm:w-auto">
+                Add bot
+              </Button>
+            </Link>
+          </div>
+
+          {bots.length === 0 ? (
+            <Card className="border-zinc-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-zinc-900">No bots yet</CardTitle>
+                <CardDescription className="text-zinc-500">
+                  Create your first bot to get started. Add your website URL or
+                  upload documents to train your AI assistant.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/bots/new">
+                  <Button className="bg-[#1a6aff] hover:bg-[#1557e0]">
+                    Create your first bot
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="overflow-hidden border-zinc-200 bg-white">
+              <div className="divide-y divide-zinc-100">
+                {bots.map((bot) => (
+                  <div
+                    key={bot.id}
+                    className="flex flex-col gap-4 p-4 transition-colors hover:bg-zinc-50/80 sm:p-6 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/dashboard/bots/${bot.id}`}
+                        className="font-medium text-zinc-900 hover:text-[#1a6aff] hover:underline"
+                      >
+                        {bot.name}
+                      </Link>
+                      <p className="mt-1 text-sm text-zinc-500">
+                        {bot._count.chunks} chunks · {bot._count.chats} chats ·{" "}
+                        {bot._count.leads} leads
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={`/dashboard/bots/${bot.id}/analytics`} className="flex-1 min-w-[100px] sm:flex-none">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                        >
+                          Analytics
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/bots/${bot.id}/chats`} className="flex-1 min-w-[100px] sm:flex-none">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                        >
+                          Chats
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/bots/${bot.id}/leads`} className="flex-1 min-w-[100px] sm:flex-none">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                        >
+                          Leads
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/bots/${bot.id}`} className="flex-1 min-w-[100px] sm:flex-none">
+                        <Button
+                          size="sm"
+                          className="w-full bg-[#1a6aff] hover:bg-[#1557e0] sm:w-auto"
+                        >
+                          Open
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
