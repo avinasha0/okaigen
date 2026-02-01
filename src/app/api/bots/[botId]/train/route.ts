@@ -72,7 +72,7 @@ export async function POST(
             const res = await fetch(`${urlOrigin}/atlas-training-content`, { signal: AbortSignal.timeout(10000) });
             const text = await res.text();
             if (res.ok && text.trim().length > 100) {
-              pages = [{ url: `${urlOrigin}/`, title: "Project Atlas", content: text }];
+              pages = [{ url: `${urlOrigin}/`, title: "SiteBotGPT", content: text }];
             } else {
               pages = await crawlWebsite(url);
             }
@@ -291,7 +291,7 @@ async function crawlWebsite(startUrl: string): Promise<{ url: string; title: str
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          "User-Agent": "ProjectAtlas/1.0 (Website Indexer; +https://yourdomain.com)",
+          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://yourdomain.com)",
         },
       });
       clearTimeout(timeout);

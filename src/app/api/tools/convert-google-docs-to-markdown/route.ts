@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
     const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=html`;
     const res = await fetch(exportUrl, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; ProjectAtlas/1.0)" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; SiteBotGPT/1.0)" },
       redirect: "follow",
       signal: AbortSignal.timeout(15000),
     });

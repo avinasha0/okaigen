@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 
 /** Returns full Atlas product content as plain text for AI training. Used when bot is trained on localhost. */
 export async function GET() {
-  const content = `Project Atlas - AI Chatbot Platform
+  const content = `SiteBotGPT - AI Chatbot Platform
 
-What is Atlas Assistant?
-Atlas Assistant is the AI-powered chatbot created by Project Atlas. It's like having ChatGPT specifically for your product. It answers visitor questions based on your website and document content. The chat bubble appears on your site and visitors can ask anything—Atlas responds using only your trained content.
+What is SiteBotGPT Assistant?
+SiteBotGPT Assistant is the AI-powered chatbot created by SiteBotGPT. It's like having ChatGPT specifically for your product. It answers visitor questions based on your website and document content. The chat bubble appears on your site and visitors can ask anything—SiteBotGPT responds using only your trained content.
 
 How does the chatbot work?
-1. Add your content: Enter your website URL, upload PDFs or docs. Atlas indexes everything and builds a searchable knowledge base.
+1. Add your content: Enter your website URL, upload PDFs or docs. SiteBotGPT indexes everything and builds a searchable knowledge base.
 2. Install on your site: Embed one script tag. The chat bubble appears in the corner. One bot, many pages.
 3. Learn and refine: View chat history and analytics. See what visitors ask. Add training data where there are gaps.
 

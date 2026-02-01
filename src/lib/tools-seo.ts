@@ -180,7 +180,7 @@ export const TOOLS_META: Record<string, { title: string; description: string; ke
   },
   "/tools/sourcesync": {
     title: "SourceSync - Content Sync for AI Training",
-    description: "Sync content sources for AI training. Keep chatbot knowledge up to date. Project Atlas.",
+    description: "Sync content sources for AI training. Keep chatbot knowledge up to date. SiteBotGPT.",
     keywords: ["content sync", "AI training", "chatbot sync"],
   },
 };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://okaigen.com";
-const SITE_NAME = "Project Atlas";
+const SITE_NAME = "SiteBotGPT";
 
 /** SEO best practices: title 50-60 chars, description 155-160 chars */
 export function createMetadata({

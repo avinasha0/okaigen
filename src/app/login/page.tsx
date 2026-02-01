@@ -68,7 +68,7 @@ function LoginForm() {
               />
             </svg>
           </div>
-          <span className="text-xl font-semibold text-white">Project Atlas</span>
+          <span className="text-xl font-semibold text-white">SiteBotGPT</span>
         </Link>
         <div>
           <h2 className="text-3xl font-bold leading-tight text-white">
@@ -79,7 +79,7 @@ function LoginForm() {
             </span>
           </h2>
           <p className="mt-6 max-w-md text-slate-400">
-            Join teams using Atlas to automate support, capture leads, and deliver instant answers
+            Join teams using SiteBotGPT to automate support, capture leads, and deliver instant answers
             from your own content.
           </p>
           <ul className="mt-10 space-y-4">
@@ -101,7 +101,7 @@ function LoginForm() {
             )}
           </ul>
         </div>
-        <p className="text-sm text-slate-500">© Project Atlas. Enterprise-grade AI chatbots.</p>
+        <p className="text-sm text-slate-500">© SiteBotGPT. Enterprise-grade AI chatbots.</p>
       </div>
 
       {/* Right: Form */}

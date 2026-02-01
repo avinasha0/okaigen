@@ -183,7 +183,7 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
         {/* CTA */}
         <section className="mt-20 rounded-2xl border border-slate-200 bg-gradient-to-br from-[#1a6aff]/5 via-white to-indigo-500/5 px-6 py-16 sm:px-12 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Ready to try Project Atlas?</h2>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Ready to try SiteBotGPT?</h2>
             <p className="mt-4 text-slate-600">Find out if a personalized AI support chatbot is a good fit for you in just a few hours.</p>
             <ul className="mt-8 grid gap-3 text-left sm:mx-auto sm:max-w-md sm:grid-cols-2">
               {["Start a free trial", "Personalized onboarding help", "Friendly pricing as you scale", "7-day free trial", "Cancel anytime"].map((item) => (
@@ -234,13 +234,13 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
             <div>
               <h4 className="font-semibold text-slate-900">Contact</h4>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li><a href="mailto:support@projectatlas.io" className="transition-colors hover:text-[#1a6aff]">support@projectatlas.io</a></li>
+                <li><a href="mailto:support@sitebotgpt.io" className="transition-colors hover:text-[#1a6aff]">support@sitebotgpt.io</a></li>
               </ul>
             </div>
           </div>
           <div className="mt-10 border-t border-slate-200 pt-6 text-center">
-            <span className="text-sm font-medium text-slate-900">Project Atlas</span>
-            <p className="mt-2 text-xs text-slate-500">© {new Date().getFullYear()} Project Atlas. All rights reserved.</p>
+            <span className="text-sm font-medium text-slate-900">SiteBotGPT</span>
+            <p className="mt-2 text-xs text-slate-500">© {new Date().getFullYear()} SiteBotGPT. All rights reserved.</p>
           </div>
         </div>
       </footer>

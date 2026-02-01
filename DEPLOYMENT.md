@@ -1,6 +1,6 @@
-# Project Atlas - VPS Deployment Guide
+# SiteBotGPT - VPS Deployment Guide
 
-This guide covers deploying Project Atlas on a single VPS with Nginx and PM2.
+This guide covers deploying SiteBotGPT on a single VPS with Nginx and PM2.
 
 ## Prerequisites
 

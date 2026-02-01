@@ -30,14 +30,14 @@ export default function SourceSyncPage() {
               <span className="text-[#1a6aff]">✓</span> Schedule-based updates
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-[#1a6aff]">✓</span> Integration with Project Atlas
+              <span className="text-[#1a6aff]">✓</span> Integration with SiteBotGPT
             </li>
           </ul>
         </div>
         <div className="text-center">
-          <p className="text-slate-600">SourceSync is built into Project Atlas. Create a bot and add your sources to get started.</p>
+          <p className="text-slate-600">SourceSync is built into SiteBotGPT. Create a bot and add your sources to get started.</p>
           <Link href="/signup" className="mt-6 inline-flex rounded-xl bg-[#1a6aff] px-8 py-3 font-semibold text-white shadow-lg hover:bg-[#0d5aeb]">
-            Get started with Project Atlas
+            Get started with SiteBotGPT
           </Link>
         </div>
       </div>

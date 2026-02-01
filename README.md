@@ -1,4 +1,4 @@
-# Project Atlas
+# SiteBotGPT
 
 AI Chatbot SaaS platform that turns websites and documents into intelligent customer support agents.
 

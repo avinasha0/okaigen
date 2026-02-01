@@ -9,7 +9,7 @@ const PLANS = [
     name: "Starter",
     monthlyPrice: 0,
     yearlyPrice: 0,
-    description: "Perfect for trying Atlas",
+    description: "Perfect for trying SiteBotGPT",
     features: [
       "1 chatbot",
       "Up to 100 messages per day",
@@ -76,7 +76,7 @@ const PLANS = [
       "Custom integrations",
     ],
     cta: "Contact us",
-    href: "mailto:support@projectatlas.io",
+    href: "mailto:support@sitebotgpt.io",
     popular: false,
     highlight: false,
   },
@@ -291,7 +291,7 @@ export default function PricingPage() {
             Ready to automate your support?
           </h2>
           <p className="mt-4 text-lg text-blue-100">
-            Join teams using Atlas to capture leads, answer questions, and delight customers.
+            Join teams using SiteBotGPT to capture leads, answer questions, and delight customers.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

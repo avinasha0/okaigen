@@ -77,7 +77,7 @@ export default function SignupPage() {
               />
             </svg>
           </div>
-          <span className="text-xl font-semibold text-white">Project Atlas</span>
+          <span className="text-xl font-semibold text-white">SiteBotGPT</span>
         </Link>
         <div>
           <h2 className="text-3xl font-bold leading-tight text-white">
@@ -108,7 +108,7 @@ export default function SignupPage() {
             ))}
           </ul>
         </div>
-        <p className="text-sm text-slate-500">© Project Atlas. Enterprise-grade AI chatbots.</p>
+        <p className="text-sm text-slate-500">© SiteBotGPT. Enterprise-grade AI chatbots.</p>
       </div>
 
       {/* Right: Form */}

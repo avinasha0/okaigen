@@ -42,7 +42,7 @@ const INSTRUCTIONS: Record<(typeof PLATFORMS)[number]["id"], string[]> = {
   ],
   gtm: [
     "Log in to Google Tag Manager and open your container.",
-    "Click New → Tag. Name it (e.g. 'Atlas Chat Widget').",
+    "Click New → Tag. Name it (e.g. 'SiteBotGPT Chat Widget').",
     "Choose Tag type: Custom HTML.",
     "Paste the embed code in the HTML field.",
     "Set Trigger to 'All Pages' (or the pages where you want the chat).",
@@ -60,7 +60,7 @@ function buildDownloadContent(platformId: string, embedCode: string): string {
   const label = PLATFORMS.find((p) => p.id === platformId)?.label || "Your site";
   const steps = INSTRUCTIONS[platformId as keyof typeof INSTRUCTIONS] || INSTRUCTIONS.manual;
   return [
-    `Project Atlas - How to add the chat widget to ${label}`,
+    `SiteBotGPT - How to add the chat widget to ${label}`,
     "",
     "EMBED CODE (copy and paste this):",
     "--------------------------------",
@@ -84,7 +84,7 @@ export function EmbedInstructions({ embedCode }: { embedCode: string }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `atlas-embed-instructions-${platform}.txt`;
+    a.download = `sitebotgpt-embed-instructions-${platform}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }

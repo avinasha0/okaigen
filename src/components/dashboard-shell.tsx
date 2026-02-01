@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
+import { BrandIcon } from "@/components/brand-icon";
 
 export type PlanUsage = {
   planName: string;
@@ -38,12 +39,10 @@ export function DashboardShell({
           </svg>
         </button>
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff]">
-            <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <span className="font-semibold text-zinc-900">Project Atlas</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
+            <BrandIcon size="sm" />
+          </span>
+          <span className="font-semibold text-zinc-900">SiteBotGPT</span>
         </Link>
       </header>
 
@@ -65,12 +64,10 @@ export function DashboardShell({
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4 md:h-16 md:px-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff]">
-              <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <span className="text-lg font-semibold tracking-tight text-white">Project Atlas</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
+              <BrandIcon size="sm" />
+            </span>
+            <span className="text-lg font-semibold tracking-tight text-white">SiteBotGPT</span>
           </div>
           <button
             type="button"

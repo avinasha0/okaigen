@@ -6,7 +6,7 @@ const DEMO_BOT_ID = process.env.NEXT_PUBLIC_DEMO_BOT_ID;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "";
 
 const SUGGESTED_QUESTIONS = [
-  "What is Atlas Assistant?",
+  "What is SiteBotGPT Assistant?",
   "How does the chatbot work?",
   "What can I train the bot on?",
   "How do I embed it on my site?",
@@ -36,12 +36,12 @@ export default function DemoPage() {
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Try{" "}
                 <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  Atlas
+                  SiteBotGPT
                 </span>{" "}
                 in action
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
-                Ask anything about Project Atlas—features, pricing, embedding, or how it works.
+                Ask anything about SiteBotGPT—features, pricing, embedding, or how it works.
                 The bot is trained on our site and responds in real time.
               </p>
             </div>
@@ -71,7 +71,7 @@ export default function DemoPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-white">Atlas Assistant</p>
+                    <p className="font-semibold text-white">SiteBotGPT Assistant</p>
                     <p className="text-sm text-blue-100">Typically replies instantly</p>
                   </div>
                   <div className="ml-auto flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
@@ -104,7 +104,7 @@ export default function DemoPage() {
                       <div className="max-w-[85%] rounded-2xl rounded-tl-none bg-[#1a6aff]/10 px-5 py-4 text-slate-800">
                         <p className="font-medium text-slate-900">Hi! How can I help you today?</p>
                         <p className="mt-1 text-sm text-slate-600">
-                          I&apos;m the Atlas demo bot. Ask me about AI chatbots, training, embedding,
+                          I&apos;m the SiteBotGPT demo bot. Ask me about AI chatbots, training, embedding,
                           or anything on this site.
                         </p>
                       </div>
@@ -157,7 +157,7 @@ export default function DemoPage() {
                   </div>
                   <h3 className="text-xl font-semibold text-slate-900">No demo bot configured</h3>
                   <p className="mt-2 text-slate-600">
-                    Create your first bot and set it as the demo to try Atlas here.
+                    Create your first bot and set it as the demo to try SiteBotGPT here.
                   </p>
                   <Link
                     href="/signup"

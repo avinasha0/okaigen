@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BrandIcon } from "@/components/brand-icon";
 
 interface SimpleNavProps {
   links: { href: string; label: string }[];
@@ -15,8 +16,11 @@ export function SimpleNav({ links, ctaLabel = "Start free", ctaHref = "/signup" 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="shrink-0 text-xl font-semibold text-slate-900">
-          Project Atlas
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-xl font-semibold text-slate-900">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
+            <BrandIcon size="sm" />
+          </span>
+          SiteBotGPT
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex lg:gap-8">

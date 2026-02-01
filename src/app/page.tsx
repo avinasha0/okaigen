@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
 import { ChatWidget } from "@/components/chat-widget";
+import { Footer } from "@/components/footer";
 
 export default function LandingPage() {
   const demoBotKey = process.env.NEXT_PUBLIC_DEMO_BOT_ID || "";
@@ -67,7 +68,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              {/* Right: Atlas Assistant */}
+              {/* Right: SiteBotGPT Assistant */}
               <div className="flex justify-center lg:justify-center">
                 <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5 sm:p-8">
                   <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
@@ -77,7 +78,7 @@ export default function LandingPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-slate-900">Atlas Assistant</p>
+                      <p className="text-lg font-semibold text-slate-900">SiteBotGPT Assistant</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
                         <span className="relative flex h-2 w-2">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -172,7 +173,7 @@ export default function LandingPage() {
             </h2>
             <div className="mt-12 grid gap-10 sm:mt-16 sm:gap-12 md:grid-cols-3">
               {[
-                { num: 1, title: "Add your content", desc: "Enter your website URL, upload PDFs or docs, or paste raw text. Atlas indexes everything and builds a searchable knowledge base." },
+                { num: 1, title: "Add your content", desc: "Enter your website URL, upload PDFs or docs, or paste raw text. SiteBotGPT indexes everything and builds a searchable knowledge base." },
                 { num: 2, title: "Install on your site", desc: "Embed the chatbot on your marketing site, in-app, help center—wherever you need it. One bot, many touchpoints." },
                 { num: 3, title: "Learn and refine", desc: "Use chat history and analytics to see what visitors ask. Add training data where there are gaps and improve with every interaction." },
               ].map((step) => (
@@ -364,7 +365,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent" />
           <div className="relative mx-auto max-w-3xl px-2 text-center sm:px-0">
             <h2 className="text-2xl font-bold text-white sm:text-3xl">
-              Ready to take Atlas for a spin?
+              Ready to take SiteBotGPT for a spin?
             </h2>
             <p className="mt-4 text-blue-100">
               Find out if a personalized AI support chatbot is right for you. Create your first bot in minutes.
@@ -466,7 +467,7 @@ export default function LandingPage() {
               Give your visitors a smarter way to get help
             </h2>
             <p className="mt-3 text-slate-600">
-              Join teams using Atlas to automate support and capture leads.
+              Join teams using SiteBotGPT to automate support and capture leads.
             </p>
             <Link
               href="/signup"
@@ -477,36 +478,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-slate-50/50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 sm:grid-cols-2 sm:gap-12">
-            <div>
-              <h4 className="font-semibold text-slate-900">Product</h4>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li><Link href="/#features" className="transition-colors hover:text-[#1a6aff]">Features</Link></li>
-                <li><Link href="/#how-it-works" className="transition-colors hover:text-[#1a6aff]">How it works</Link></li>
-                <li><Link href="/demo" className="transition-colors hover:text-[#1a6aff]">Demo</Link></li>
-                <li><Link href="/pricing" className="transition-colors hover:text-[#1a6aff]">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900">Company</h4>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li><Link href="/login" className="transition-colors hover:text-[#1a6aff]">Log in</Link></li>
-                <li><Link href="/signup" className="transition-colors hover:text-[#1a6aff]">Sign up</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-slate-200 pt-6 text-center sm:mt-12 sm:pt-8">
-            <span className="text-sm font-medium text-slate-900">Project Atlas</span>
-            <p className="mt-2 text-xs text-slate-500">
-              © {new Date().getFullYear()} Project Atlas. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
