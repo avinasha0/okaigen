@@ -27,7 +27,7 @@ export default function LandingPage() {
                   </svg>
                   AI-powered customer support
                 </div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-[2.75rem] lg:leading-tight xl:text-5xl">
+                <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-[2.75rem] lg:leading-tight xl:text-5xl">
                   Make{" "}
                   <span className="text-[#1a6aff]">AI</span> your expert customer{" "}
                   <span className="text-[#1a6aff]">support agent</span>
@@ -40,7 +40,7 @@ export default function LandingPage() {
                     "Personalized onboarding help",
                     "Friendly pricing as you scale",
                     "No credit card to start",
-                    "7-day free trial",
+                    "Forever free plan available",
                     "Cancel anytime",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2.5 text-slate-700">
@@ -58,7 +58,7 @@ export default function LandingPage() {
                     href="/signup"
                     className="inline-flex w-full justify-center rounded-lg bg-[#1a6aff] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-[#1a6aff]/25 transition-all hover:bg-[#0d5aeb] hover:shadow-[#1a6aff]/30 sm:w-auto"
                   >
-                    Start free trial
+                    Get started free
                   </Link>
                   <Link
                     href="/demo"

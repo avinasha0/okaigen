@@ -17,13 +17,19 @@ model User {
   name          String?
   image         String?
   password      String?   // For email auth
+  removeBrandingAddOn Boolean @default(false) // Purchased "Remove SiteBotGPT branding" add-on
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts   Account[]
-  bots       Bot[]
-  sessions   Session[]
-  userPlan   UserPlan?
+  accounts              Account[]
+  bots                  Bot[]
+  sessions              Session[]
+  userPlan              UserPlan?
+  apiKeys               ApiKey[]
+  webhooks              Webhook[]
+  accountMembersAsOwner AccountMember[]  @relation("AccountOwner")
+  accountMembersAsMember AccountMember[] @relation("AccountMember")
+  invitationsSent       TeamInvitation[]
 }
 
 model Account {
@@ -73,6 +79,7 @@ model Bot {
   humanFallbackMessage String @default("I'm not sure about that. Would you like to leave your contact and we'll get back to you?") @db.VarChar(500)
   quickPrompts    String?  @db.Text // JSON array: ["Question 1", "Question 2"]
   publicKey       String?  @unique // For widget token validation
+  removeBranding Boolean  @default(false) // White-label: hide "Powered by SiteBotGPT" in widget (add-on)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -88,17 +95,18 @@ model Bot {
 }
 
 model Source {
-  id          String   @id @default(cuid())
-  botId       String
-  type        String   // url, document
-  url         String?  @db.Text // For website pages
-  documentUrl String?  @db.Text // For uploaded files
-  title       String?
-  status      String   @default("pending") // pending, processing, completed, failed
-  pageCount   Int      @default(0)
-  error       String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(cuid())
+  botId           String
+  type            String    // url, document
+  url             String?   @db.Text // For website pages
+  documentUrl     String?   @db.Text // For uploaded files
+  title           String?
+  status          String    @default("pending") // pending, processing, completed, failed
+  pageCount       Int       @default(0)
+  error           String?   @db.Text
+  lastRefreshedAt DateTime? // When content was last re-crawled/re-indexed (for auto-refresh)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   bot    Bot    @relation(fields: [botId], references: [id], onDelete: Cascade)
   chunks Chunk[]
@@ -204,17 +212,49 @@ model UsageLog {
 
 // Billing-ready (no Stripe integration yet)
 model Plan {
-  id          String   @id @default(cuid())
-  name        String
-  dailyLimit  Int      @default(100) // Messages per day
-  botLimit    Int      @default(3)
-  storageLimit Int     @default(50)  // MB
-  price       Float    @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  dailyLimit     Int      @default(100) // Messages per day
+  botLimit       Int      @default(3)
+  storageLimit   Int      @default(50)  // MB
+  teamMemberLimit Int     @default(1)   // Owner + invited members
+  price          Float    @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   userPlans UserPlan[]
+}
+
+// Team: account owner can invite members to access their bots/dashboard
+model AccountMember {
+  id             String   @id @default(cuid())
+  accountOwnerId String  // User who owns the plan and bots
+  memberUserId   String  // Invited user who can view/edit owner's resources
+  role           String  @default("member") // admin | member
+  createdAt      DateTime @default(now())
+
+  accountOwner User @relation("AccountOwner", fields: [accountOwnerId], references: [id], onDelete: Cascade)
+  member       User @relation("AccountMember", fields: [memberUserId], references: [id], onDelete: Cascade)
+
+  @@unique([accountOwnerId, memberUserId])
+  @@index([accountOwnerId])
+  @@index([memberUserId])
+}
+
+model TeamInvitation {
+  id             String   @id @default(cuid())
+  accountOwnerId String
+  email          String
+  role           String   @default("member") // admin | member
+  token          String   @unique
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  accountOwner User @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade)
+
+  @@index([accountOwnerId])
+  @@index([token])
 }
 
 model UserPlan {
@@ -229,4 +269,49 @@ model UserPlan {
   plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// API keys for programmatic access (Scale, Enterprise). Key secret is hashed; prefix shown in UI.
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String    // Account owner who owns this key
+  name       String    @db.VarChar(255) // e.g. "Production", "Development"
+  keyPrefix  String    @db.VarChar(20)  // e.g. "sk_live_abc1" for display
+  keyHash    String    @db.VarChar(64)  // SHA-256 hex of full key
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
+// Webhooks: receive HTTP callbacks for events (Scale, Enterprise). Secret used to sign payloads.
+model Webhook {
+  id          String   @id @default(cuid())
+  userId      String   // Account owner
+  url         String   @db.Text // Endpoint URL (HTTPS)
+  secret      String   @db.VarChar(64) // Signing secret (plain, for HMAC)
+  events      String   @db.VarChar(255) // Comma-separated: lead.captured,chat.message
+  description String?  @db.VarChar(500)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Contact form submissions (public /contact page)
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(255)
+  email     String   @db.VarChar(255)
+  subject   String   @db.VarChar(500)
+  message   String   @db.Text
+  status    String   @default("new") // new, read, replied, archived
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([status])
 }

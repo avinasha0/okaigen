@@ -11,9 +11,10 @@ interface NewBotButtonProps {
   planUsage: PlanUsage | null;
   variant?: "default" | "outline";
   size?: "default" | "sm" | "lg";
+  className?: string;
 }
 
-export function NewBotButton({ canCreate, planUsage, variant = "default", size = "default" }: NewBotButtonProps) {
+export function NewBotButton({ canCreate, planUsage, variant = "default", size = "default", className }: NewBotButtonProps) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
@@ -36,7 +37,7 @@ export function NewBotButton({ canCreate, planUsage, variant = "default", size =
       <Button
         variant={variant}
         size={size}
-        className={buttonClass}
+        className={className ? `${buttonClass} ${className}` : buttonClass}
         onClick={handleClick}
       >
         {buttonText}

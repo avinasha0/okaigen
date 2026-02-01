@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getPlanUsage } from "@/lib/plan-usage";
+import { canViewAnalytics } from "@/lib/plans-config";
+import { getBotForUser } from "@/lib/team";
 import { startOfDay, subDays } from "date-fns";
 
 export async function GET(
@@ -12,12 +15,17 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const planUsage = await getPlanUsage(session.user.id);
+  if (!planUsage || !canViewAnalytics(planUsage.planName)) {
+    return NextResponse.json(
+      { error: "Analytics not available on your plan. Upgrade to view analytics." },
+      { status: 403 }
+    );
+  }
+
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }

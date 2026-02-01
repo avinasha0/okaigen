@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getBotForUser, getEffectiveOwnerId } from "@/lib/team";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -11,6 +12,7 @@ const updateSchema = z.object({
   leadCaptureTrigger: z.enum(["uncertain", "always", "never"]).optional(),
   humanFallbackMessage: z.string().optional(),
   quickPrompts: z.string().optional().nullable(),
+  removeBranding: z.boolean().optional(),
 });
 
 export async function GET(
@@ -24,19 +26,19 @@ export async function GET(
 
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
+  const bot = await getBotForUser(session.user.id, botId);
+  if (!bot) {
+    return NextResponse.json({ error: "Bot not found" }, { status: 404 });
+  }
+
+  const fullBot = await prisma.bot.findUnique({
+    where: { id: bot.id },
     include: {
       sources: true,
       _count: { select: { chunks: true, chats: true, leads: true } },
     },
   });
-
-  if (!bot) {
-    return NextResponse.json({ error: "Bot not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(bot);
+  return NextResponse.json(fullBot);
 }
 
 export async function PATCH(
@@ -50,10 +52,7 @@ export async function PATCH(
 
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
@@ -61,6 +60,20 @@ export async function PATCH(
   try {
     const body = await req.json();
     const data = updateSchema.parse(body);
+
+    if (data.removeBranding === true) {
+      const ownerId = await getEffectiveOwnerId(session.user.id);
+      const owner = await prisma.user.findUnique({
+        where: { id: ownerId },
+        select: { removeBrandingAddOn: true },
+      });
+      if (!owner?.removeBrandingAddOn) {
+        return NextResponse.json(
+          { error: "Remove SiteBotGPT branding add-on is required. Get this add-on from Pricing or Contact us." },
+          { status: 403 }
+        );
+      }
+    }
 
     const updated = await prisma.bot.update({
       where: { id: botId },
@@ -93,10 +106,7 @@ export async function DELETE(
 
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }

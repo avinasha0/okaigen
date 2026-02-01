@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Footer } from "@/components/footer";
+import { FooterWrapper } from "@/components/footer-wrapper";
 
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-heading",
   display: "swap",
 });
 
@@ -18,7 +26,7 @@ export const metadata: Metadata = {
     default: "SiteBotGPT | AI Chatbot for Website & Customer Support",
     template: "%s | SiteBotGPT",
   },
-  description: "Train an AI chatbot on your website, docs & PDFs. Answer visitor questions 24/7. Free trial, no code. Embed in minutes. Start free today. AI support for your business.",
+  description: "Train an AI chatbot on your website, docs & PDFs. Answer visitor questions 24/7. Forever free plan available. No code. Embed in minutes. AI support for your business.",
   keywords: ["AI chatbot", "website chatbot", "chatbot builder", "customer support chatbot", "AI support agent"],
   authors: [{ name: "SiteBotGPT", url: BASE_URL }],
   openGraph: {
@@ -35,11 +43,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${plusJakarta.variable} ${inter.className}`}>
       <body className="font-sans antialiased">
         <Providers>
           {children}
-          <Footer />
+          <FooterWrapper />
         </Providers>
       </body>
     </html>

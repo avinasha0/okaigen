@@ -16,7 +16,7 @@
     .atlas-bubble { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1a6aff 0%, #0d5aeb 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(26, 106, 255, 0.4); display: flex; align-items: center; justify-content: center; z-index: 999998; transition: transform 0.2s; }
     @media (min-width: 420px) { .atlas-bubble { bottom: 24px; right: 24px; } }
     .atlas-bubble:hover { transform: scale(1.05); }
-    .atlas-bubble svg { width: 24px; height: 24px; }
+    .atlas-bubble svg { width: 34px; height: 34px; }
     .atlas-panel { position: fixed; bottom: 80px; right: 16px; left: 16px; width: auto; max-width: 475px; height: 87.5vh; max-height: 650px; margin-left: auto; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: flex; flex-direction: column; z-index: 999999; overflow: hidden; }
     @media (max-width: 419px) {
       .atlas-panel { bottom: calc(76px + env(safe-area-inset-bottom, 0)); left: 8px; right: 8px; height: calc(100vh - 96px - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0)); max-height: none; }
@@ -44,10 +44,12 @@
     .atlas-quick-prompts { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; }
     .atlas-quick-prompt { flex: 0 0 auto; padding: 8px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #1a6aff; cursor: pointer; transition: all 0.15s; max-width: 100%; }
     .atlas-quick-prompt:hover { background: #e8f0fe; border-color: #1a6aff; }
+    .atlas-branding { padding: 8px 16px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; }
   `;
   document.head.appendChild(style);
 
-  const chatIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>';
+  // Brand icon: bot head + chat bubble (white on blue button)
+  const chatIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="12" height="12" rx="3" stroke="white" stroke-width="1.5" fill="none"/><path stroke="white" stroke-width="1.5" stroke-linecap="round" d="M7 2V0.5M13 2V0.5"/><circle cx="8" cy="7" r="1.25" fill="white"/><circle cx="12" cy="7" r="1.25" fill="white"/><path d="M8 10.5h4" stroke="white" stroke-width="1" stroke-linecap="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15 6h4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1.5l-1.5 2-1.5-2H15a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="white"/></svg>';
   const closeIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
   const bubble = document.createElement("button");
   bubble.className = "atlas-widget atlas-bubble";
@@ -64,6 +66,7 @@
       <input type="text" class="atlas-input" placeholder="Ask a question..." />
       <button class="atlas-send">Send</button>
     </div>
+    <div class="atlas-branding" style="display:none;">Powered by SiteBotGPT</div>
   `;
 
   const messagesEl = panel.querySelector(".atlas-messages");
@@ -143,6 +146,8 @@
         addMessage(data.greeting || "Hi! How can I help you today?", "assistant");
         quickPromptsList = data.quickPrompts && Array.isArray(data.quickPrompts) ? data.quickPrompts : defaultPrompts;
         addQuickPrompts(quickPromptsList);
+        var brandingEl = panel.querySelector(".atlas-branding");
+        if (brandingEl) brandingEl.style.display = data.hideBranding ? "none" : "block";
       })
       .catch(() => {
         const last = messagesEl.lastElementChild;
@@ -150,6 +155,8 @@
         addMessage("Hi! How can I help you today?", "assistant");
         quickPromptsList = defaultPrompts;
         addQuickPrompts(quickPromptsList);
+        var brandingEl = panel.querySelector(".atlas-branding");
+        if (brandingEl) brandingEl.style.display = "block";
       });
   }
 

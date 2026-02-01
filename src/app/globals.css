@@ -21,16 +21,80 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-heading), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Enterprise typography scale */
+  --text-h1: 2.75rem;
+  --text-h1--line-height: 1.2;
+  --text-h2: 1.875rem;
+  --text-h2--line-height: 1.2;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.2;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+
+  /* Letter-spacing: headings tight, buttons slight wide */
+  --tracking-heading: -0.02em;
+  --tracking-button: 0.02em;
+  --leading-body: 1.6;
+  --leading-heading: 1.2;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Semantic heading defaults: scale, weight, line-height, letter-spacing */
+h1, .text-h1 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: var(--text-h1--line-height);
+  letter-spacing: var(--tracking-heading);
+}
+h2, .text-h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  line-height: var(--text-h2--line-height);
+  letter-spacing: var(--tracking-heading);
+}
+h3, .text-h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: 600;
+  line-height: var(--text-h3--line-height);
+  letter-spacing: var(--tracking-heading);
+}
+
+/* Heading font utility for marketing/display text */
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 /* Smooth scroll for anchor links */
 html {
   scroll-behavior: smooth;
+}
+
+/* Celebration confetti (pricing page) */
+@keyframes confetti-fly {
+  0% {
+    transform: translateY(-20px) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(var(--confetti-tx, 0)) rotate(720deg);
+    opacity: 0;
+  }
 }

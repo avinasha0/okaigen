@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getPlanUsage } from "@/lib/plan-usage";
+import { getEffectiveOwnerId } from "@/lib/team";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,8 +17,9 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  const ownerId = await getEffectiveOwnerId(session.user.id);
   const bots = await prisma.bot.findMany({
-    where: { userId: session.user.id },
+    where: { userId: ownerId },
     include: {
       _count: { select: { chunks: true, chats: true, leads: true } },
       sources: { take: 3 },
@@ -27,6 +29,12 @@ export default async function DashboardPage() {
 
   const planUsage = await getPlanUsage(session.user.id);
   const canCreateBot = planUsage ? planUsage.usedBots < planUsage.totalBots : true;
+  const canViewLeads = planUsage
+    ? (await import("@/lib/plans-config")).canViewLeads(planUsage.planName)
+    : false;
+  const canViewAnalytics = planUsage
+    ? (await import("@/lib/plans-config")).canViewAnalytics(planUsage.planName)
+    : false;
 
   const totals = bots.reduce(
     (acc, b) => ({
@@ -51,11 +59,7 @@ export default async function DashboardPage() {
               Manage your AI assistants and view usage
             </p>
           </div>
-          <Link href="/dashboard/bots/new" className="w-full sm:w-auto">
-            <Button className="w-full bg-[#1a6aff] hover:bg-[#1557e0] sm:w-auto">
-              New bot
-            </Button>
-          </Link>
+          <NewBotButton canCreate={canCreateBot} planUsage={planUsage} className="w-full sm:w-auto" />
         </div>
       </div>
 
@@ -205,12 +209,18 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/dashboard/bots/${bot.id}/analytics`} className="flex-1 min-w-[100px] sm:flex-none">
+                      <Link href={!canViewAnalytics ? "/dashboard/analytics" : `/dashboard/bots/${bot.id}/analytics`} className="flex-1 min-w-[100px] sm:flex-none">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                          className={`w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewAnalytics ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
+                          title={!canViewAnalytics ? "Upgrade to view analytics" : undefined}
                         >
+                          {!canViewAnalytics && (
+                            <svg className="h-3.5 w-3.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                          )}
                           Analytics
                         </Button>
                       </Link>
@@ -223,12 +233,18 @@ export default async function DashboardPage() {
                           Chats
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/bots/${bot.id}/leads`} className="flex-1 min-w-[100px] sm:flex-none">
+                      <Link href={!canViewLeads ? "/dashboard/leads" : `/dashboard/bots/${bot.id}/leads`} className="flex-1 min-w-[100px] sm:flex-none">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                          className={`w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewLeads ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
+                          title={!canViewLeads ? "Upgrade to view leads" : undefined}
                         >
+                          {!canViewLeads && (
+                            <svg className="h-3.5 w-3.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                          )}
                           Leads
                         </Button>
                       </Link>

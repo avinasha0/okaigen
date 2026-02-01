@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getBotForUser } from "@/lib/team";
 import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
 
 export async function GET(
@@ -14,10 +15,7 @@ export async function GET(
 
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }

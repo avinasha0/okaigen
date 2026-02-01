@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import * as Progress from "@radix-ui/react-progress";
+import { usePlan } from "@/contexts/plan-context";
 
 export default function BotSetupPage() {
   const router = useRouter();
@@ -29,6 +30,14 @@ export default function BotSetupPage() {
   const [training, setTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canUseDocumentTraining, canManualRefresh, refreshSchedule } = usePlan();
+  const isStarterPlan = !canUseDocumentTraining;
+  const refreshScheduleLabel =
+    refreshSchedule === "manual"
+      ? "Manual"
+      : refreshSchedule === "weekly"
+        ? "Auto (weekly)"
+        : "Auto (daily)";
 
   useEffect(() => {
     fetch(`/api/bots/${botId}`)
@@ -175,8 +184,11 @@ export default function BotSetupPage() {
         <Card>
           <CardHeader>
             <CardTitle>Step 2: Add content (optional)</CardTitle>
-            <CardDescription>
-              Add website URLs or upload documents to expand your bot&apos;s knowledge
+            <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {isStarterPlan
+                ? "Add website URLs to train your bot (document upload available on higher plans)."
+                : "Add website URLs or upload documents to expand your bot's knowledge"}
+              <span className="text-xs text-slate-500">Refresh: {refreshScheduleLabel}</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -197,24 +209,35 @@ export default function BotSetupPage() {
                 {addingUrl ? "Adding..." : "Add URL"}
               </Button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".pdf,.docx,.doc,.txt,.md"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? "Uploading..." : "Upload documents"}
-            </Button>
-            <p className="text-xs text-slate-500">
-              Add specific pages (e.g. /services.html) if the crawler missed them
-            </p>
+            {!isStarterPlan && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.docx,.doc,.txt,.md"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? "Uploading..." : "Upload documents"}
+                </Button>
+              </>
+            )}
+            {isStarterPlan && (
+              <p className="text-xs text-slate-500">
+                Your plan includes website training only. <Link href="/dashboard/pricing" className="text-[#1a6aff] hover:underline">Upgrade</Link> to add PDF, DOCX, TXT, MD.
+              </p>
+            )}
+            {!isStarterPlan && (
+              <p className="text-xs text-slate-500">
+                Add specific pages (e.g. /services.html) if the crawler missed them
+              </p>
+            )}
             {bot.sources.length > 0 && (
               <ul className="mt-4 space-y-2">
                 {bot.sources.map((s) => (
@@ -225,7 +248,7 @@ export default function BotSetupPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate">{s.title || s.type}</span>
                       <div className="flex items-center gap-2 shrink-0">
-                        {(s.status === "completed" || s.status === "failed") && (
+                        {(s.status === "completed" || s.status === "failed") && canManualRefresh && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -241,6 +264,8 @@ export default function BotSetupPage() {
                                 if (r.ok) {
                                   const data = await fetch(`/api/bots/${botId}`).then((x) => x.json());
                                   setBot(data);
+                                } else if (r.status === 403) {
+                                  alert("Manual refresh is not available on your plan. Upgrade to retrain sources.");
                                 }
                               } catch {
                                 /* ignore */
@@ -313,7 +338,9 @@ export default function BotSetupPage() {
             </div>
             {!canTrain && bot.sources.length === 0 && (
               <p className="text-sm text-amber-600">
-                Add a website URL when creating the bot, or upload documents above.
+                {isStarterPlan
+                  ? "Add a website URL above to train your bot."
+                  : "Add a website URL when creating the bot, or upload documents above."}
               </p>
             )}
           </CardContent>

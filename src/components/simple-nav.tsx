@@ -16,9 +16,9 @@ export function SimpleNav({ links, ctaLabel = "Start free", ctaHref = "/signup" 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-xl font-semibold text-slate-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
-            <BrandIcon size="sm" />
+        <Link href="/" className="flex shrink-0 items-center gap-3 text-xl font-bold text-slate-900">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1a6aff] text-white">
+            <BrandIcon size="lg" />
           </span>
           SiteBotGPT
         </Link>
@@ -28,7 +28,7 @@ export function SimpleNav({ links, ctaLabel = "Start free", ctaHref = "/signup" 
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-slate-600 transition-colors hover:text-[#1a6aff]"
+              className="text-sm font-semibold text-slate-600 transition-colors hover:text-[#1a6aff]"
             >
               {link.label}
             </Link>

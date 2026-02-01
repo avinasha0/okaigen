@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     where: botId.startsWith("atlas_")
       ? { publicKey: botId }
       : { id: botId },
-    select: { greetingMessage: true, quickPrompts: true },
+    select: { greetingMessage: true, quickPrompts: true, removeBranding: true },
   });
 
   if (!bot) {
@@ -40,5 +40,6 @@ export async function GET(req: Request) {
   return NextResponse.json({
     greeting: bot.greetingMessage,
     quickPrompts: prompts,
+    hideBranding: bot.removeBranding === true,
   });
 }

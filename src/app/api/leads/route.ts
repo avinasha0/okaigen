@@ -44,18 +44,42 @@ export async function POST(req: Request) {
     },
   });
 
+  const { triggerWebhooks } = await import("@/lib/webhooks");
+  triggerWebhooks(bot.userId, "lead.captured", {
+    botId: bot.id,
+    lead: {
+      id: lead.id,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      message: lead.message,
+      pageUrl: lead.pageUrl,
+      status: lead.status,
+      createdAt: lead.createdAt,
+    },
+  }).catch(() => {});
+
   return NextResponse.json({ id: lead.id });
 }
 
-/** GET all leads for the current user's bots (auth required) */
+/** GET all leads for the current user's bots (auth required). Starter (Free) plan: returns empty (leads still captured, not visible). */
 export async function GET(_req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { getPlanUsage } = await import("@/lib/plan-usage");
+  const { canViewLeads } = await import("@/lib/plans-config");
+  const { getEffectiveOwnerId } = await import("@/lib/team");
+  const planUsage = await getPlanUsage(session.user.id);
+  if (!planUsage || !canViewLeads(planUsage.planName)) {
+    return NextResponse.json([]);
+  }
+
+  const ownerId = await getEffectiveOwnerId(session.user.id);
   const bots = await prisma.bot.findMany({
-    where: { userId: session.user.id },
+    where: { userId: ownerId },
     select: { id: true, name: true },
   });
   const botIds = bots.map((b) => b.id);

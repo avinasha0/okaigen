@@ -10,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { usePlan } from "@/contexts/plan-context";
 
 interface AnalyticsData {
   totalChats: number;
@@ -22,15 +24,46 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
   const params = useParams();
   const botId = params.botId as string;
+  const { canViewAnalytics } = usePlan();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [days, setDays] = useState(30);
 
   useEffect(() => {
+    if (!canViewAnalytics) return;
     fetch(`/api/bots/${botId}/analytics?days=${days}`)
       .then((r) => r.json())
       .then(setData)
       .catch(console.error);
-  }, [botId, days]);
+  }, [botId, days, canViewAnalytics]);
+
+  if (!canViewAnalytics) {
+    return (
+      <div className="px-4 py-4 sm:px-6 md:px-8">
+        <Link
+          href={`/dashboard/bots/${botId}`}
+          className="mb-6 inline-block text-sm text-gray-600 hover:text-gray-900"
+        >
+          ← Back to bot
+        </Link>
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Analytics</h1>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Analytics not available on Starter</CardTitle>
+            <CardDescription>
+              Analytics are still captured. Upgrade to view usage, top questions, and source stats in your dashboard.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/dashboard/pricing">Upgrade to view analytics</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!data) {
     return (

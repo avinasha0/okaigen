@@ -92,7 +92,7 @@ export default function SignupPage() {
             AI handle the questions.
           </p>
           <ul className="mt-10 space-y-4">
-            {["No credit card required", "Free trial included", "Cancel anytime"].map((item) => (
+            {["No credit card required", "Forever free plan available", "Cancel anytime"].map((item) => (
               <li key={item} className="flex items-center gap-3 text-slate-300">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1a6aff]/20 text-[#1a6aff]">
                   <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getBotForUser } from "@/lib/team";
+import { getPlanUsage } from "@/lib/plan-usage";
+import { canManualRefresh } from "@/lib/plans-config";
 
-/** Set a source to pending and delete its chunks so it can be re-trained. */
+/** Set a source to pending and delete its chunks so it can be re-trained. Growth+ only (Starter cannot manual refresh). */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ botId: string }> }
@@ -10,6 +13,15 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const planUsage = await getPlanUsage(session.user.id);
+  const planName = planUsage?.planName ?? "Starter";
+  if (!canManualRefresh(planName)) {
+    return NextResponse.json(
+      { error: "Manual refresh is not available on your plan. Upgrade to retrain sources." },
+      { status: 403 }
+    );
   }
 
   const { botId } = await params;
@@ -20,10 +32,7 @@ export async function POST(
     return NextResponse.json({ error: "sourceId required" }, { status: 400 });
   }
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }

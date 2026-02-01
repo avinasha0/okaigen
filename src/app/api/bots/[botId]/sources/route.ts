@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getBotForUser } from "@/lib/team";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
@@ -15,10 +16,7 @@ export async function POST(
 
   const { botId } = await params;
 
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
-  });
-
+  const bot = await getBotForUser(session.user.id, botId);
   if (!bot) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
@@ -59,6 +57,16 @@ export async function POST(
     return NextResponse.json(
       { error: "No files provided" },
       { status: 400 }
+    );
+  }
+
+  const { getPlanUsage } = await import("@/lib/plan-usage");
+  const { canUseDocumentTraining } = await import("@/lib/plans-config");
+  const planUsage = await getPlanUsage(session.user.id);
+  if (!planUsage || !canUseDocumentTraining(planUsage.planName)) {
+    return NextResponse.json(
+      { error: "Document training is not available on your plan. Upgrade to add documents." },
+      { status: 403 }
     );
   }
 

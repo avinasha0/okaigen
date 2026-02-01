@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,20 @@ export default function NewBotPage() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [atLimit, setAtLimit] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/plan-usage")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.usedBots != null && data.totalBots != null) {
+          setAtLimit(data.usedBots >= data.totalBots);
+        } else {
+          setAtLimit(false);
+        }
+      })
+      .catch(() => setAtLimit(false));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +61,40 @@ export default function NewBotPage() {
       setError(err instanceof Error ? err.message : "Failed to create bot");
       setLoading(false);
     }
+  }
+
+  if (atLimit === null) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-4 sm:px-6 md:px-8">
+        <div className="py-12 text-center text-sm text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (atLimit) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-4 sm:px-6 md:px-8">
+        <Link
+          href="/dashboard"
+          className="mb-6 inline-block text-sm text-gray-600 hover:text-gray-900"
+        >
+          ← Back to dashboard
+        </Link>
+        <Card>
+          <CardHeader>
+            <CardTitle>Bot limit reached</CardTitle>
+            <CardDescription>
+              You&apos;ve reached your plan limit. Upgrade to create more bots and unlock additional features.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/pricing">View plans</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

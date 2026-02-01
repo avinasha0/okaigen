@@ -2,85 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { CelebrationConfetti } from "@/components/celebration-confetti";
 import { ResponsiveNav } from "@/components/responsive-nav";
-
-const PLANS = [
-  {
-    name: "Starter",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    description: "Perfect for trying SiteBotGPT",
-    features: [
-      "1 chatbot",
-      "Up to 100 messages per day",
-      "Website + document training",
-      "Chat widget embed",
-      "Lead capture",
-      "Basic analytics",
-    ],
-    cta: "Start free",
-    href: "/signup",
-    popular: false,
-    highlight: false,
-  },
-  {
-    name: "Growth",
-    monthlyPrice: 49,
-    yearlyPrice: 39,
-    description: "For growing teams",
-    features: [
-      "Up to 3 chatbots",
-      "Up to 2,000 messages/month",
-      "Up to 2,000 pages",
-      "Manual refresh",
-      "Up to 3 team members",
-      "Export analytics",
-    ],
-    cta: "Start free trial",
-    href: "/signup",
-    popular: true,
-    highlight: true,
-  },
-  {
-    name: "Scale",
-    monthlyPrice: 149,
-    yearlyPrice: 119,
-    description: "For scaling businesses",
-    features: [
-      "Up to 10 chatbots",
-      "Up to 10,000 messages/month",
-      "Up to 20,000 pages",
-      "Auto refresh (weekly)",
-      "Up to 10 team members",
-      "API access",
-      "Priority support",
-    ],
-    cta: "Start free trial",
-    href: "/signup",
-    popular: false,
-    highlight: false,
-  },
-  {
-    name: "Enterprise",
-    monthlyPrice: null,
-    yearlyPrice: null,
-    description: "Custom for large organizations",
-    features: [
-      "Unlimited chatbots",
-      "Custom message volume",
-      "Unlimited pages",
-      "Auto refresh (daily)",
-      "Unlimited team members",
-      "API & webhooks",
-      "Dedicated support",
-      "Custom integrations",
-    ],
-    cta: "Contact us",
-    href: "mailto:support@sitebotgpt.io",
-    popular: false,
-    highlight: false,
-  },
-];
+import { PLANS } from "@/lib/plans";
 
 const FAQ = [
   {
@@ -106,20 +30,27 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <CelebrationConfetti />
       <ResponsiveNav />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_50%,#0f172a_100%)]" />
-        <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-[#1a6aff]/20 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20 lg:py-24">
+      {/* Hero - explicit dark bg so text is always visible */}
+      <section className="relative overflow-hidden bg-[#0f172a]">
+        <div className="absolute inset-0 z-0 bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_50%,#0f172a_100%)]" aria-hidden />
+        <div className="absolute -right-40 -top-40 z-0 h-96 w-96 rounded-full bg-[#1a6aff]/20 blur-3xl" aria-hidden />
+        <div className="absolute -bottom-40 -left-40 z-0 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" aria-hidden />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:py-20 lg:py-24">
           <div className="text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Pricing plans
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
-              Simple, transparent pricing. Start free and scale as you grow.
+            <p className="mx-auto mt-4 max-w-2xl text-xl font-medium text-white/95 sm:text-2xl">
+              Pays for itself in saved support time
+            </p>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+              Whether you&apos;re just getting started or are a large enterprise, we have a plan for you.
+            </p>
+            <p className="mt-8 text-sm font-medium uppercase tracking-wider text-slate-400">
+              Trusted by growing teams worldwide
             </p>
             {/* Billing toggle */}
             <div className="mt-10 flex items-center justify-center gap-4">
@@ -192,24 +123,41 @@ export default function PricingPage() {
                     )}
                   </div>
                   <ul className="mt-6 space-y-3">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-sm text-slate-600">
-                        <svg
-                          className="mt-0.5 h-5 w-5 shrink-0 text-[#1a6aff]"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
+                    {plan.features.map((f, i) => {
+                      const isExcluded = typeof f === "object" && f.excluded;
+                      const label = typeof f === "string" ? f : f.text;
+                      return (
+                        <li
+                          key={typeof f === "string" ? f : `${f.text}-${i}`}
+                          className={`flex items-start gap-3 text-sm ${isExcluded ? "text-slate-400" : "text-slate-600"}`}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        {f}
-                      </li>
-                    ))}
+                          {isExcluded ? (
+                            <svg
+                              className="mt-0.5 h-5 w-5 shrink-0 text-slate-300"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              aria-hidden
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="mt-0.5 h-5 w-5 shrink-0 text-[#1a6aff]"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              aria-hidden
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                          {label}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
                 <div className="mt-8">
@@ -235,19 +183,23 @@ export default function PricingPage() {
               Extend your plan with optional upgrades
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium text-slate-900">Remove Atlas branding</p>
+                  <p className="font-medium text-slate-900">Remove SiteBotGPT branding</p>
                   <p className="text-sm text-slate-500">White-label the chat widget</p>
                 </div>
-                <span className="text-lg font-bold text-slate-900">+$29/mo</span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                <div>
-                  <p className="font-medium text-slate-900">Extra 5k messages</p>
-                  <p className="text-sm text-slate-500">Additional message capacity</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-bold text-slate-900">+$29/mo</span>
+                  <Link
+                    href="/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
+                  >
+                    Get add-on
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </Link>
                 </div>
-                <span className="text-lg font-bold text-slate-900">+$29/mo</span>
               </div>
             </div>
           </div>

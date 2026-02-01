@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { usePlan } from "@/contexts/plan-context";
 
 const LEAD_STATUSES = ["new", "contacted", "qualified", "converted", "lost"] as const;
 
@@ -26,6 +27,7 @@ interface Lead {
 }
 
 export default function LeadsPage() {
+  const { canViewLeads, canExportLeads } = usePlan();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filterBot, setFilterBot] = useState<string>("");
 
@@ -85,6 +87,32 @@ export default function LeadsPage() {
     URL.revokeObjectURL(a.href);
   }
 
+  if (!canViewLeads) {
+    return (
+      <div className="min-w-0 px-4 py-4 sm:px-6 md:px-8">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Leads</h1>
+          <p className="mt-0.5 text-sm text-slate-500">
+            Contact details captured from chat widgets
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Lead capture not available on your plan</CardTitle>
+            <p className="text-sm text-slate-500">
+              Leads are still captured from your chat widget. Upgrade to view and manage them in your dashboard.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/dashboard/pricing">Upgrade to view leads</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-w-0 px-4 py-4 sm:px-6 md:px-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -109,7 +137,7 @@ export default function LeadsPage() {
               ))}
             </select>
           )}
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={filtered.length === 0}>
+          <Button variant="outline" size="sm" onClick={exportCsv} disabled={filtered.length === 0 || !canExportLeads} title={!canExportLeads ? "Upgrade to export leads" : undefined}>
             Export CSV
           </Button>
         </div>

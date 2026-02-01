@@ -6,36 +6,42 @@ const START_OF_TODAY = () => {
   return d;
 };
 
+import { getEffectiveOwnerId } from "./team";
+
 export type PlanUsage = {
   planName: string;
   usedMessages: number;
   totalMessages: number;
   usedBots: number;
   totalBots: number;
+  usedTeamMembers: number;
+  totalTeamMembers: number;
 };
 
-/** Get user's plan and current usage. Assigns default Free plan if user has none. */
+/** Get plan and usage for the effective account (owner). Members see owner's plan/usage. */
 export async function getPlanUsage(userId: string): Promise<PlanUsage | null> {
+  const ownerId = await getEffectiveOwnerId(userId);
+
   let userPlan = await prisma.userPlan.findUnique({
-    where: { userId },
+    where: { userId: ownerId },
     include: { plan: true },
   });
 
   if (!userPlan) {
-    const freePlan = await prisma.plan.findFirst({
+    const defaultPlan = await prisma.plan.findFirst({
       where: { isActive: true },
       orderBy: { price: "asc" },
     });
-    if (!freePlan) return null;
+    if (!defaultPlan) return null;
     userPlan = await prisma.userPlan.create({
-      data: { userId, planId: freePlan.id },
+      data: { userId: ownerId, planId: defaultPlan.id },
       include: { plan: true },
     });
   }
 
   const plan = userPlan.plan;
   const botIds = await prisma.bot.findMany({
-    where: { userId },
+    where: { userId: ownerId },
     select: { id: true },
   });
   const botIdList = botIds.map((b) => b.id);
@@ -53,11 +59,19 @@ export async function getPlanUsage(userId: string): Promise<PlanUsage | null> {
   const usedMessages = messagesResult._sum.count ?? 0;
   const usedBots = botIds.length;
 
+  const memberCount = await prisma.accountMember.count({
+    where: { accountOwnerId: ownerId },
+  });
+  const usedTeamMembers = 1 + memberCount;
+  const totalTeamMembers = plan.teamMemberLimit ?? 1;
+
   return {
     planName: plan.name,
     usedMessages,
     totalMessages: plan.dailyLimit,
     usedBots,
     totalBots: plan.botLimit,
+    usedTeamMembers,
+    totalTeamMembers,
   };
 }

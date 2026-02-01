@@ -7,26 +7,46 @@ import { extractTextFromHtml } from "@/lib/scraper";
 import { parseDocument } from "@/lib/document-parser";
 import { estimateTokenCount } from "@/lib/tokenizer";
 import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
+import { getBotForUser } from "@/lib/team";
+
+/** Allow cron to trigger training without session when x-cron-secret matches CRON_SECRET */
+function isCronRequest(req: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  const header = req.headers.get("x-cron-secret");
+  return header === secret;
+}
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ botId: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { botId } = await params;
+  const cronAuth = isCronRequest(req);
+  let resolvedBotId: string;
+
+  if (cronAuth) {
+    resolvedBotId = botId;
+  } else {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const botRef = await getBotForUser(session.user.id, botId);
+    if (!botRef) {
+      return NextResponse.json({ error: "Bot not found" }, { status: 404 });
+    }
+    resolvedBotId = botRef.id;
   }
 
-  const { botId } = await params;
-
-  const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session.user.id },
+  const botWithSources = await prisma.bot.findUnique({
+    where: { id: resolvedBotId },
     include: { sources: true },
   });
-
-  if (!bot) {
+  if (!botWithSources) {
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
+  const bot = botWithSources;
 
   let pendingSources = bot.sources.filter((s) => s.status === "pending");
 
@@ -161,6 +181,7 @@ export async function POST(
           status: "completed",
           pageCount: totalPages,
           error: null,
+          lastRefreshedAt: new Date(),
         },
       });
 

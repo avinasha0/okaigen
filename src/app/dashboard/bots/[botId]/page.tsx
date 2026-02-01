@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { BrandingToggle } from "@/components/branding-toggle";
 import { DeleteBotButton } from "@/components/delete-bot-button";
 import { EmbedInstructions } from "@/components/embed-instructions";
 import { prisma } from "@/lib/db";
+import { getEffectiveOwnerId } from "@/lib/team";
 import { generateBotPublicKey } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +23,9 @@ export default async function BotDetailPage({
 }) {
   const session = await auth();
   const { botId } = await params;
-
+  const ownerId = session?.user?.id ? await getEffectiveOwnerId(session.user.id) : "";
   const bot = await prisma.bot.findFirst({
-    where: { id: botId, userId: session?.user?.id ?? "" },
+    where: { id: botId, userId: ownerId },
     include: {
       sources: true,
       _count: { select: { chunks: true, chats: true, leads: true } },
@@ -41,6 +43,14 @@ export default async function BotDetailPage({
       data: { publicKey },
     });
   }
+
+  const owner = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: ownerId },
+        select: { removeBrandingAddOn: true },
+      })
+    : null;
+  const hasRemoveBrandingAddOn = owner?.removeBrandingAddOn ?? false;
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const embedCode = `<script src="${baseUrl}/widget.js" data-bot="${publicKey}" data-base="${baseUrl}"></script>`;
@@ -89,8 +99,9 @@ export default async function BotDetailPage({
               Add this script to your website to display the chat widget. Select your platform for step-by-step instructions.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <EmbedInstructions embedCode={embedCode} />
+            <BrandingToggle botId={bot.id} initialRemoveBranding={bot.removeBranding ?? false} hasAddOn={hasRemoveBrandingAddOn} />
           </CardContent>
         </Card>
 

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { generateBotPublicKey } from "@/lib/utils";
 import { getPlanUsage } from "@/lib/plan-usage";
+import { getEffectiveOwnerId } from "@/lib/team";
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
@@ -25,8 +26,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const ownerId = await getEffectiveOwnerId(session.user.id);
   const bots = await prisma.bot.findMany({
-    where: { userId: session.user.id },
+    where: { userId: ownerId },
     include: {
       _count: {
         select: { chunks: true, sources: true },
@@ -44,6 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const ownerId = await getEffectiveOwnerId(session.user.id);
   const planUsage = await getPlanUsage(session.user.id);
   if (planUsage && planUsage.usedBots >= planUsage.totalBots) {
     return NextResponse.json(
@@ -64,7 +67,7 @@ export async function POST(req: Request) {
     const bot = await prisma.bot.create({
       data: {
         name,
-        userId: session.user.id,
+        userId: ownerId,
         publicKey: generateBotPublicKey(),
       },
     });

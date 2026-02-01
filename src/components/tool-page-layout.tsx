@@ -186,7 +186,7 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
             <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Ready to try SiteBotGPT?</h2>
             <p className="mt-4 text-slate-600">Find out if a personalized AI support chatbot is a good fit for you in just a few hours.</p>
             <ul className="mt-8 grid gap-3 text-left sm:mx-auto sm:max-w-md sm:grid-cols-2">
-              {["Start a free trial", "Personalized onboarding help", "Friendly pricing as you scale", "7-day free trial", "Cancel anytime"].map((item) => (
+              {["Forever free plan available", "Personalized onboarding help", "Friendly pricing as you scale", "No credit card required", "Cancel anytime"].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-slate-700">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1a6aff]/10 text-[#1a6aff]">
                     <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
@@ -196,7 +196,7 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
               ))}
             </ul>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/signup" className="w-full rounded-xl bg-[#1a6aff] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-[#1a6aff]/25 transition-all hover:bg-[#0d5aeb] sm:w-auto">Start a free trial</Link>
+              <Link href="/signup" className="w-full rounded-xl bg-[#1a6aff] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-[#1a6aff]/25 transition-all hover:bg-[#0d5aeb] sm:w-auto">Get started free</Link>
               <Link href="/demo" className="w-full rounded-xl border-2 border-[#1a6aff] bg-white px-8 py-4 text-base font-semibold text-[#1a6aff] transition-colors hover:bg-[#1a6aff]/5 sm:w-auto">Try demo</Link>
             </div>
           </div>
@@ -228,7 +228,7 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
               <h4 className="font-semibold text-slate-900">Company</h4>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
                 <li><Link href="/login" className="transition-colors hover:text-[#1a6aff]">Sign in</Link></li>
-                <li><Link href="/signup" className="transition-colors hover:text-[#1a6aff]">Start free trial</Link></li>
+                <li><Link href="/signup" className="transition-colors hover:text-[#1a6aff]">Get started free</Link></li>
               </ul>
             </div>
             <div>

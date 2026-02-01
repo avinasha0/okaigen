@@ -3,38 +3,68 @@ import { prisma } from "@/lib/db";
 import { generateResponse } from "@/lib/rag";
 import { rateLimit } from "@/lib/rate-limit";
 import { getPlanUsage } from "@/lib/plan-usage";
+import { getOwnerIdFromApiKey, getApiKeyFromRequest } from "@/lib/api-key-auth";
 
 export async function POST(req: Request) {
+  const body = (await req.json()) as {
+    botId?: string;
+    message: string;
+    chatId?: string;
+    history?: { role: "user" | "assistant"; content: string }[];
+  };
+  const { botId: bodyBotId, message, chatId, history } = body;
+
+  const apiKeyRaw = getApiKeyFromRequest(req);
   const visitorId = req.headers.get("x-visitor-id") || req.headers.get("x-forwarded-for") || "anon";
-  const botKey = req.headers.get("x-bot-key") || req.headers.get("x-atlas-key");
-  const rlKey = `chat:${botKey || "unknown"}:${visitorId}`;
+  const widgetBotKey = req.headers.get("x-bot-key") || req.headers.get("x-atlas-key");
+  const rlKey = apiKeyRaw
+    ? `chat:api:${apiKeyRaw.slice(0, 12)}:${visitorId}`
+    : `chat:${widgetBotKey || "unknown"}:${visitorId}`;
   const { success } = rateLimit(rlKey, 30, 60000);
   if (!success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
+
   try {
-    const { botId, message, chatId, history } = (await req.json()) as {
-      botId?: string;
-      message: string;
-      chatId?: string;
-      history?: { role: "user" | "assistant"; content: string }[];
-    };
+    let bot: { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null = null;
 
-    const botKey = req.headers.get("x-bot-key") || req.headers.get("x-atlas-key") || botId;
-
-    let bot;
-    if (botKey) {
+    if (apiKeyRaw) {
+      const ownerId = await getOwnerIdFromApiKey(req);
+      if (!ownerId) {
+        return NextResponse.json(
+          { error: "Invalid API key or your plan does not include API access. Upgrade to Scale or Enterprise." },
+          { status: 401 }
+        );
+      }
+      const requestedBotId = bodyBotId || widgetBotKey;
+      if (!requestedBotId) {
+        return NextResponse.json(
+          { error: "botId is required when using API key. Send botId in the request body." },
+          { status: 400 }
+        );
+      }
       bot = await prisma.bot.findFirst({
-        where: botKey.startsWith("atlas_")
-          ? { publicKey: botKey }
-          : { id: botKey },
+        where: {
+          userId: ownerId,
+          ...(requestedBotId.startsWith("atlas_") ? { publicKey: requestedBotId } : { id: requestedBotId }),
+        },
         include: { user: true },
-      });
+      }) as typeof bot | null;
+    } else {
+      const botKey = widgetBotKey || bodyBotId;
+      if (botKey) {
+        bot = await prisma.bot.findFirst({
+          where: botKey.startsWith("atlas_")
+            ? { publicKey: botKey }
+            : { id: botKey },
+          include: { user: true },
+        }) as typeof bot | null;
+      }
     }
 
     if (!bot) {
       return NextResponse.json(
-        { error: "Bot not found. Use the embed code from Dashboard → your bot → Embed code, or your bot's public key (atlas_...)." },
+        { error: "Bot not found. Use the embed code from Dashboard → your bot → Embed code, or your bot's public key (atlas_...). With API key, send a botId that belongs to your account." },
         { status: 400 }
       );
     }
@@ -113,6 +143,16 @@ export async function POST(req: Request) {
     await prisma.usageLog.create({
       data: { botId: bot.id, type: "message", count: 1 },
     });
+
+    const { triggerWebhooks } = await import("@/lib/webhooks");
+    triggerWebhooks(bot.userId, "chat.message", {
+      botId: bot.id,
+      chatId: chat.id,
+      userMessage: sanitized,
+      assistantResponse: response,
+      sources: sources.length ? sources : undefined,
+      confidence,
+    }).catch(() => {});
 
     const shouldCaptureLead =
       bot.leadCaptureTrigger === "always" ||
