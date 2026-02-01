@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://okaigen.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
 
 export default function DocumentationPage() {
   return (
@@ -76,7 +76,7 @@ export default function DocumentationPage() {
 {`<script src="${BASE_URL}/widget.js" data-bot="atlas_xxxx" data-base="${BASE_URL}"></script>`}
             </pre>
             <p className="mt-2 text-slate-600">
-              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-bot</code> is your bot’s public key (atlas_...). <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-base</code> is your SiteBotGPT app URL.
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-bot</code> is your bot’s public key (atlas_...). <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-base</code> is your SiteBotGPT app URL (e.g. <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">https://sitebotgpt.com</code>).
             </p>
 
             <h3 className="mt-6 text-lg font-semibold text-slate-800">Adding the widget to your site</h3>
@@ -101,13 +101,13 @@ export default function DocumentationPage() {
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-6 text-slate-600">
               <li><code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-bot</code> (required) — Your bot’s public key (atlas_...).</li>
-              <li><code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-base</code> (optional) — Your SiteBotGPT app URL. Defaults to the script’s origin if omitted.</li>
+              <li><code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-base</code> (optional) — Your SiteBotGPT app URL (e.g. https://sitebotgpt.com). Defaults to the script’s origin if omitted.</li>
             </ul>
             <p className="mt-3 text-slate-600">
               <strong>Position and colors:</strong> The chat bubble is fixed in the bottom-right corner. Colors and layout use the default theme (blue accent). Custom position or colors are not configurable via script attributes in the current version.
             </p>
             <p className="mt-2 text-slate-600">
-              <strong>Branding:</strong> The widget can show &quot;Powered by SiteBotGPT&quot; at the bottom of the chat panel. On <strong>Scale and Enterprise</strong> plans (or with the Remove Branding add-on), you can turn this off in the dashboard: open your bot → <strong>Embed code</strong> card → toggle &quot;Remove SiteBotGPT branding&quot;. The setting is saved per bot.
+              <strong>Branding:</strong> The widget can show &quot;Powered by SiteBotGPT&quot; at the bottom of the chat panel. On <strong>Scale and Enterprise</strong> plans (or with the Remove Branding add-on), you can turn this off in the dashboard: open your bot → <strong>Embed code</strong> card → toggle &quot;Remove SiteBotGPT branding&quot;. The setting is saved per bot. Production app: <a href="https://sitebotgpt.com" className="text-[#1a6aff] hover:underline">https://sitebotgpt.com</a>.
             </p>
 
             <h3 className="mt-6 text-lg font-semibold text-slate-800">Widget behavior</h3>

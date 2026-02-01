@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://okaigen.com";
+const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
 
 const STATIC = [
   "",

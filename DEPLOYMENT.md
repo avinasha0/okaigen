@@ -1,5 +1,7 @@
 # SiteBotGPT - VPS Deployment Guide
 
+**Production website:** [https://sitebotgpt.com](https://sitebotgpt.com)
+
 This guide covers deploying SiteBotGPT on a single VPS with Nginx and PM2.
 
 ## Prerequisites
@@ -65,10 +67,10 @@ Set:
 
 ```
 DATABASE_URL="mysql://atlas:your_strong_password@localhost:3306/project_atlas"
-NEXTAUTH_URL="https://yourdomain.com"
+NEXTAUTH_URL="https://sitebotgpt.com"
 AUTH_SECRET="<generate with: openssl rand -base64 32>"
 OPENAI_API_KEY="sk-..."
-NEXT_PUBLIC_APP_URL="https://yourdomain.com"
+NEXT_PUBLIC_APP_URL="https://sitebotgpt.com"
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 ```
@@ -121,7 +123,7 @@ sudo nano /etc/nginx/sites-available/atlas
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com www.yourdomain.com;
+    server_name sitebotgpt.com www.sitebotgpt.com;
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -152,7 +154,7 @@ sudo systemctl reload nginx
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+sudo certbot --nginx -d sitebotgpt.com -d www.sitebotgpt.com
 ```
 
 ## 9. Upload Directory

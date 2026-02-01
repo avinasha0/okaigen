@@ -50,7 +50,8 @@ Fill in:
 - `DATABASE_URL`: MySQL connection string (e.g. `mysql://user:pass@localhost:3306/atlas`)
 - `OPENAI_API_KEY`: Your OpenAI API key
 - `AUTH_SECRET`: Generate with `openssl rand -base64 32`
-- `NEXTAUTH_URL`: Your app URL (e.g. `http://localhost:3000`)
+- `NEXTAUTH_URL`: Your app URL (e.g. `http://localhost:3000` for local; **production: `https://sitebotgpt.com`**)
+- `NEXT_PUBLIC_APP_URL`: Same as NEXTAUTH_URL for production (e.g. `https://sitebotgpt.com`)
 - For Google OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 ### 3. Database setup
@@ -105,10 +106,12 @@ public/
 
 ## Embedding the Widget
 
+**Production website:** [https://sitebotgpt.com](https://sitebotgpt.com)
+
 Add to your website:
 
 ```html
-<script src="https://yourdomain.com/widget.js" data-bot="YOUR_BOT_PUBLIC_KEY" data-base="https://yourdomain.com"></script>
+<script src="https://sitebotgpt.com/widget.js" data-bot="YOUR_BOT_PUBLIC_KEY" data-base="https://sitebotgpt.com"></script>
 ```
 
 The public key is shown in the bot dashboard under "Embed code".

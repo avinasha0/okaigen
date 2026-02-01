@@ -1,5 +1,7 @@
 # Billing Setup (Stripe, Razorpay, PayPal)
 
+**Production website:** [https://sitebotgpt.com](https://sitebotgpt.com). All webhook URLs below use this base.
+
 This app supports three payment gateways. After payment, the user's plan (Growth/Scale) is assigned in the DB and limits/features from `plans-config` apply automatically.
 
 - **Razorpay** — for **Indian users** (INR, UPI, cards, netbanking).
@@ -17,7 +19,7 @@ This app supports three payment gateways. After payment, the user's plan (Growth
    - Product: "Scale" → Price monthly (e.g. $149/mo) and yearly (e.g. $119/mo). Copy Price IDs.
 
 3. **Webhook** (Settings → Developers → Webhooks):
-   - Endpoint URL: `https://your-domain.com/api/stripe/webhook`
+   - Endpoint URL: `https://sitebotgpt.com/api/stripe/webhook`
    - Events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
    - Copy **Signing secret** → `STRIPE_WEBHOOK_SECRET`
 
@@ -64,7 +66,7 @@ Use [Stripe CLI](https://stripe.com/docs/stripe-cli): `stripe listen --forward-t
    - Same for Scale monthly/yearly → `RAZORPAY_PLAN_SCALE_MONTHLY`, `RAZORPAY_PLAN_SCALE_YEARLY`.
 
 3. **Webhook** (Settings → Webhooks):
-   - URL: `https://your-domain.com/api/razorpay/webhook`
+   - URL: `https://sitebotgpt.com/api/razorpay/webhook`
    - Events: `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `subscription.completed`, `subscription.expired`
    - Set a **Secret** → `RAZORPAY_WEBHOOK_SECRET`
 
@@ -81,7 +83,7 @@ Flow: User clicks Upgrade → chooses "Razorpay (India)" → POST `/api/razorpay
 2. Create **Product** and **Plans** (Subscriptions → create product, then create plan with billing cycle monthly/yearly). Copy Plan IDs → `PAYPAL_PLAN_GROWTH_MONTHLY`, etc.
 
 3. **Webhook** (App → Webhooks):
-   - URL: `https://your-domain.com/api/paypal/webhook`
+   - URL: `https://sitebotgpt.com/api/paypal/webhook`
    - Events: `BILLING.SUBSCRIPTION.ACTIVATED`, `BILLING.SUBSCRIPTION.CANCELLED`, `BILLING.SUBSCRIPTION.EXPIRED`, `BILLING.SUBSCRIPTION.SUSPENDED`
    - Copy **Webhook ID** → `PAYPAL_WEBHOOK_ID`
 

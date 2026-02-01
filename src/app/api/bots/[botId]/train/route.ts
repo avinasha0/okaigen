@@ -312,7 +312,7 @@ async function crawlWebsite(startUrl: string): Promise<{ url: string; title: str
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://yourdomain.com)",
+          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://sitebotgpt.com)",
         },
       });
       clearTimeout(timeout);

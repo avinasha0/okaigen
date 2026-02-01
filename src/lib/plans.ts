@@ -86,7 +86,7 @@ export const PLANS = [
       "Custom integrations",
     ] as PlanFeature[],
     cta: "Contact us",
-    href: "mailto:support@sitebotgpt.io",
+    href: "mailto:support@sitebotgpt.com",
     popular: false,
     highlight: false,
   },

@@ -234,7 +234,7 @@ export function ToolPageLayout({ title, description, breadcrumbTitle, currentPat
             <div>
               <h4 className="font-semibold text-slate-900">Contact</h4>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                <li><a href="mailto:support@sitebotgpt.io" className="transition-colors hover:text-[#1a6aff]">support@sitebotgpt.io</a></li>
+                <li><a href="mailto:support@sitebotgpt.com" className="transition-colors hover:text-[#1a6aff]">support@sitebotgpt.com</a></li>
               </ul>
             </div>
           </div>
