@@ -119,12 +119,12 @@ export function EmbedInstructions({ embedCode }: { embedCode: string }) {
         </ol>
       </div>
       <div>
-        <p className="mb-2 text-sm font-medium text-zinc-800">1. Copy this code:</p>
+        <p className="mb-2 text-sm font-medium text-zinc-800">Embed code</p>
         <pre className="overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs break-all sm:p-4">
           <code>{embedCode}</code>
         </pre>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <CopyButton text={embedCode} />
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <CopyButton text={embedCode} label="Copy embed code" labelCopied="Copied!" className="border-transparent bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0d5aeb] hover:text-white" />
           <button
             type="button"
             onClick={handleDownload}

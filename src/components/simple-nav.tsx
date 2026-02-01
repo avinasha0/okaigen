@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
-import { BrandIcon } from "@/components/brand-icon";
 
 interface SimpleNavProps {
   links: { href: string; label: string }[];
@@ -16,11 +16,10 @@ export function SimpleNav({ links, ctaLabel = "Start free", ctaHref = "/signup" 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex shrink-0 items-center gap-3 text-xl font-bold text-slate-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1a6aff] text-white">
-            <BrandIcon size="lg" />
+        <Link href="/" className="flex shrink-0 items-center justify-start" aria-label="SiteBotGPT home">
+          <span className="relative flex h-16 min-h-[64px] w-[360px] min-w-[260px] shrink-0 overflow-hidden bg-transparent">
+            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="360px" priority unoptimized />
           </span>
-          SiteBotGPT
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex lg:gap-8">

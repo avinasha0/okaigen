@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const publicPaths = ["/", "/login", "/signup", "/pricing", "/demo", "/contact", "/integration", "/terms", "/privacy", "/refund", "/widget.js", "/atlas-training-content"];
-const publicPrefixes = ["/api/auth", "/api/chat", "/api/contact", "/api/embed", "/api/leads", "/api/tools", "/embed", "/uploads", "/tools", "/docs"];
+const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/pricing", "/demo", "/contact", "/integration", "/terms", "/privacy", "/refund", "/widget.js", "/atlas-training-content"];
+const publicPrefixes = ["/api/auth", "/api/chat", "/api/contact", "/api/embed", "/api/leads", "/api/stripe/webhook", "/api/razorpay/webhook", "/api/paypal/webhook", "/api/tools", "/embed", "/uploads", "/tools", "/docs"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

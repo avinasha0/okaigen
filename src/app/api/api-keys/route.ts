@@ -24,7 +24,7 @@ export async function GET() {
 
 const createSchema = z.object({ name: z.string().min(1).max(255) });
 
-/** Create a new API key. Requires Scale or Enterprise plan. Returns the raw key once. */
+/** Create a new API key. Requires Scale or Enterprise plan. Returns the raw secret only in this response; it is never stored or returned again. */
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -53,6 +53,6 @@ export async function POST(req: Request) {
   });
   return NextResponse.json({
     key: { id: key.id, name: key.name, keyPrefix: key.keyPrefix, createdAt: key.createdAt },
-    secret: rawKey, // Only returned once
+    secret: rawKey, // Returned only once; never stored in DB or returned again (GET returns prefix only).
   });
 }

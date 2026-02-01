@@ -7,6 +7,13 @@ const STATIC = [
   "/demo",
   "/pricing",
   "/signup",
+  "/contact",
+  "/docs",
+  "/docs/api",
+  "/privacy",
+  "/terms",
+  "/refund",
+  "/integration",
   "/tools",
   "/tools/convert-pdf-to-markdown",
   "/tools/convert-docx-to-markdown",
@@ -45,11 +52,20 @@ const STATIC = [
   "/tools/sourcesync",
 ];
 
+function getPriority(path: string): number {
+  if (path === "") return 1;
+  if (path === "/pricing" || path === "/docs" || path === "/tools") return 0.9;
+  if (path === "/contact" || path === "/demo" || path === "/signup" || path === "/integration") return 0.85;
+  if (path.startsWith("/docs")) return 0.85;
+  if (path === "/privacy" || path === "/terms" || path === "/refund") return 0.7;
+  return 0.8;
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return STATIC.map((path) => ({
     url: `${BASE}${path}`,
     lastModified: new Date(),
     changeFrequency: (path.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
-    priority: path === "" ? 1 : path === "/tools" ? 0.9 : 0.8,
+    priority: getPriority(path),
   }));
 }

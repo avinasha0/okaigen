@@ -20,6 +20,7 @@ export default function ContactPage() {
   }, [searchParams]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,6 +39,7 @@ export default function ContactPage() {
         setSubmitting(false);
         return;
       }
+      setSubmittedEmail(email);
       setSubmitted(true);
       setName("");
       setEmail("");
@@ -53,7 +55,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
       <ResponsiveNav />
-      <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+      <main id="main-content" className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8" tabIndex={-1}>
         <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm sm:p-10">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -73,7 +75,7 @@ export default function ContactPage() {
               </div>
               <h2 className="mt-4 text-lg font-semibold text-emerald-900">Message sent</h2>
               <p className="mt-2 text-sm text-emerald-700">
-                Thanks for reaching out. We&apos;ll reply to <strong>{email}</strong> shortly.
+                Thanks for reaching out. We&apos;ll reply to <strong>{submittedEmail}</strong> shortly.
               </p>
               <Button
                 variant="outline"

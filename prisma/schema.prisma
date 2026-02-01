@@ -18,6 +18,8 @@ model User {
   image         String?
   password      String?   // For email auth
   removeBrandingAddOn Boolean @default(false) // Purchased "Remove SiteBotGPT branding" add-on
+  termsAcceptedAt DateTime?   // Signup: "I agree to Terms & Privacy"
+  stripeCustomerId String? @unique // Stripe Customer for billing portal & subscriptions
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -210,7 +212,7 @@ model UsageLog {
   @@index([botId, createdAt])
 }
 
-// Billing-ready (no Stripe integration yet)
+// Billing: Plan limits + gateway-specific plan/price IDs
 model Plan {
   id             String   @id @default(cuid())
   name           String
@@ -219,6 +221,12 @@ model Plan {
   storageLimit   Int      @default(50)  // MB
   teamMemberLimit Int     @default(1)   // Owner + invited members
   price          Float    @default(0)
+  stripePriceIdMonthly String?  // Stripe (international)
+  stripePriceIdYearly  String?
+  razorpayPlanIdMonthly String?  // Razorpay (India)
+  razorpayPlanIdYearly  String?
+  paypalPlanIdMonthly   String?  // PayPal (international)
+  paypalPlanIdYearly    String?
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -261,6 +269,11 @@ model UserPlan {
   id        String   @id @default(cuid())
   userId    String   @unique
   planId    String
+  stripeSubscriptionId String?  // Stripe
+  razorpaySubscriptionId String?  // Razorpay (India)
+  paypalSubscriptionId  String?  // PayPal (international)
+  stripePriceId        String?
+  currentPeriodEnd     DateTime?
   startsAt  DateTime @default(now())
   endsAt    DateTime?
   createdAt DateTime @default(now())

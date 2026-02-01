@@ -95,12 +95,26 @@ export default function DocumentationPage() {
               In the dashboard, you can <strong>download step-by-step instructions</strong> for your platform (WordPress, Wix, etc.) from the same &quot;Add to your site&quot; section.
             </p>
 
+            <h3 className="mt-6 text-lg font-semibold text-slate-800">Widget options (script attributes)</h3>
+            <p className="mt-2 text-slate-600">
+              The embed script supports the following attributes:
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-6 text-slate-600">
+              <li><code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-bot</code> (required) — Your bot’s public key (atlas_...).</li>
+              <li><code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">data-base</code> (optional) — Your SiteBotGPT app URL. Defaults to the script’s origin if omitted.</li>
+            </ul>
+            <p className="mt-3 text-slate-600">
+              <strong>Position and colors:</strong> The chat bubble is fixed in the bottom-right corner. Colors and layout use the default theme (blue accent). Custom position or colors are not configurable via script attributes in the current version.
+            </p>
+            <p className="mt-2 text-slate-600">
+              <strong>Branding:</strong> The widget can show &quot;Powered by SiteBotGPT&quot; at the bottom of the chat panel. On <strong>Scale and Enterprise</strong> plans (or with the Remove Branding add-on), you can turn this off in the dashboard: open your bot → <strong>Embed code</strong> card → toggle &quot;Remove SiteBotGPT branding&quot;. The setting is saved per bot.
+            </p>
+
             <h3 className="mt-6 text-lg font-semibold text-slate-800">Widget behavior</h3>
             <ul className="mt-2 list-disc space-y-1 pl-6 text-slate-600">
               <li>Visitors see a chat bubble; clicking it opens the chat panel.</li>
               <li>The bot shows a <strong>greeting</strong> and optional <strong>quick prompts</strong> (e.g. &quot;What are your hours?&quot;) that you configure in Setup.</li>
               <li>When the AI is unsure, it can ask for the visitor’s <strong>name and email</strong> (lead capture). Captured leads appear in Dashboard → Leads.</li>
-              <li>On higher plans you can <strong>remove &quot;Powered by SiteBotGPT&quot;</strong> branding from the widget.
             </ul>
           </section>
 

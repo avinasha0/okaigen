@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
-import { BrandIcon } from "@/components/brand-icon";
 
 const navLinks = [
   { href: "/#features", label: "Features" },
@@ -18,11 +18,10 @@ export function ResponsiveNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="font-heading flex shrink-0 items-center gap-3 text-xl font-bold text-slate-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1a6aff] text-white">
-            <BrandIcon size="lg" />
+        <Link href="/" className="flex shrink-0 items-center justify-start" aria-label="SiteBotGPT home">
+          <span className="relative flex h-16 min-h-[64px] w-[360px] min-w-[260px] shrink-0 overflow-hidden bg-transparent">
+            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="360px" priority unoptimized />
           </span>
-          SiteBotGPT
         </Link>
 
         {/* Desktop nav */}
@@ -54,8 +53,9 @@ export function ResponsiveNav() {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-700 md:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2 md:hidden"
           aria-label="Toggle menu"
+          aria-expanded={open}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {open ? (
@@ -76,7 +76,7 @@ export function ResponsiveNav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#1a6aff]"
+                className="rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#1a6aff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2"
               >
                 {link.label}
               </Link>
@@ -84,14 +84,14 @@ export function ResponsiveNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg border-2 border-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-[#1a6aff]"
+              className="rounded-lg border-2 border-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-[#1a6aff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2"
             >
               Sign in
             </Link>
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
-              className="rounded-lg bg-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-white"
+              className="rounded-lg bg-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               Get started free
             </Link>

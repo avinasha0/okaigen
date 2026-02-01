@@ -19,6 +19,7 @@ export default async function DashboardLayout({
   if (!session?.user) redirect("/login");
 
   const planUsage = session.user.id ? await getPlanUsage(session.user.id) : null;
+  const showEmailVerifyBanner = session.user.email && !session.user.emailVerified;
 
   const showWarning = planUsage && (
     planUsage.usedMessages >= planUsage.totalMessages ||
@@ -32,6 +33,21 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell userEmail={session.user.email} planUsage={planUsage}>
+      {showEmailVerifyBanner && (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 sm:px-6 md:px-8">
+          <div className="flex items-start gap-3">
+            <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-amber-800">Verify your email</h3>
+              <p className="mt-1 text-sm text-amber-700">
+                We sent a verification link to <strong>{session.user.email}</strong>. Check your inbox and click the link to verify your email.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {showWarning && (
         <div className="border-b border-red-200 bg-red-50 px-4 py-3 sm:px-6 md:px-8">
           <div className="flex items-start gap-3">

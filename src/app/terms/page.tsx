@@ -9,7 +9,7 @@ export default function TermsPage() {
         <h1 className="font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           Terms &amp; Conditions
         </h1>
-        <p className="mt-2 text-sm text-slate-500">Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        <p className="mt-2 text-sm text-slate-500">Last updated: February 1, 2025</p>
 
         <div className="mt-10 space-y-8 text-slate-700">
           <section>

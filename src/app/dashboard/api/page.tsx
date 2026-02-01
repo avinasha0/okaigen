@@ -125,11 +125,18 @@ export default function ApiKeysPage() {
       </p>
 
       {createdSecret && (
-        <Card className="mb-6 border-amber-200 bg-amber-50">
+        <Card className="mb-6 border-amber-300 bg-amber-50 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-amber-900">API key created</CardTitle>
-            <CardDescription>
-              Copy this key now. You won&apos;t be able to see it again.
+            <CardTitle className="flex items-center gap-2 text-amber-900">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-200 text-amber-800" aria-hidden>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </span>
+              API key created
+            </CardTitle>
+            <CardDescription className="text-base font-semibold text-amber-800">
+              Copy now; you won&apos;t see it again. The full secret is only shown once and is never returned by the API.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -138,6 +145,7 @@ export default function ApiKeysPage() {
                 readOnly
                 value={createdSecret}
                 className="font-mono text-sm"
+                aria-label="API key secret (copy now)"
               />
               <Button
                 variant="outline"

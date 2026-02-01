@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getPlanUsage } from "@/lib/plan-usage";
+import { prisma } from "@/lib/db";
 import {
   Card,
   CardContent,
@@ -7,9 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SettingsProfileForm } from "@/components/settings-profile-form";
+import { SettingsPasswordForm } from "@/components/settings-password-form";
+import { BillingPortalButton } from "@/components/billing-portal-button";
 
 export default async function SettingsPage() {
   const session = await auth();
+  const planUsage = session?.user?.id ? await getPlanUsage(session.user.id) : null;
+  const userRecord = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { password: true },
+      })
+    : null;
+  const hasPassword = !!userRecord?.password;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6 md:px-8">
@@ -23,11 +36,22 @@ export default async function SettingsPage() {
           <div>
             <label className="text-sm font-medium text-gray-500">Email</label>
             <p className="text-gray-900">{session?.user?.email}</p>
+            <p className="mt-1 text-xs text-slate-500">
+              To change your email, please contact support.
+            </p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-500">Name</label>
-            <p className="text-gray-900">{session?.user?.name || "—"}</p>
-          </div>
+          <SettingsProfileForm initialName={session?.user?.name} />
+        </CardContent>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Change password</CardTitle>
+          <CardDescription>
+            Update your password if you signed up with email
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SettingsPasswordForm hasPassword={hasPassword} />
         </CardContent>
       </Card>
       <Card className="mt-6">
@@ -55,13 +79,65 @@ export default async function SettingsPage() {
       </Card>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Usage & limits</CardTitle>
-          <CardDescription>Your current plan and usage</CardDescription>
+          <CardTitle>Billing</CardTitle>
+          <CardDescription>Manage your subscription and payment method</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600">
-            Free tier: 100 messages/day, 3 bots. Billing integration coming soon.
+          <p className="mb-4 text-sm text-slate-600">
+            Update payment method, view invoices, or cancel your subscription from the billing portal.
           </p>
+          <BillingPortalButton />
+        </CardContent>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Usage & limits</CardTitle>
+          <CardDescription>Your current plan and live usage</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {planUsage ? (
+            <>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Plan</span>
+                  <span className="font-medium text-slate-900">{planUsage.planName}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Messages today</span>
+                  <span className="font-medium text-slate-900">
+                    {planUsage.usedMessages.toLocaleString()} / {planUsage.totalMessages.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Bots</span>
+                  <span className="font-medium text-slate-900">
+                    {planUsage.usedBots} / {planUsage.totalBots}
+                  </span>
+                </div>
+                {planUsage.totalTeamMembers > 1 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">Team members</span>
+                    <span className="font-medium text-slate-900">
+                      {planUsage.usedTeamMembers ?? 0} / {planUsage.totalTeamMembers}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Link
+                href="/dashboard/pricing"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1a6aff] hover:text-[#0d5aeb] hover:underline"
+              >
+                Upgrade or change plan
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </>
+          ) : (
+            <p className="text-sm text-gray-600">
+              Loading usage…
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

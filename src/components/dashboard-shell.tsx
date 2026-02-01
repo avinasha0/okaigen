@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { SignOutButton } from "@/components/sign-out-button";
-import { BrandIcon } from "@/components/brand-icon";
 import { PlanProvider, usePlan } from "@/contexts/plan-context";
 
 export type PlanUsage = {
@@ -42,11 +42,10 @@ function DashboardShellInner({
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
-            <BrandIcon size="md" />
+        <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
+          <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
+            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
           </span>
-          <span className="font-semibold text-zinc-900">SiteBotGPT</span>
         </Link>
       </header>
 
@@ -67,12 +66,11 @@ function DashboardShellInner({
         }`}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4 md:h-16 md:px-6">
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a6aff] text-white">
-              <BrandIcon size="md" />
+          <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
+            <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
+              <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
             </span>
-            <span className="text-lg font-semibold tracking-tight text-white">SiteBotGPT</span>
-          </div>
+          </Link>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
@@ -115,9 +113,9 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Leads</span>
             {!hasLeads && (
-              <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} title="Upgrade to view">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade to view leads">
+                Upgrade
+              </span>
             )}
           </Link>
           <Link
@@ -130,9 +128,9 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Analytics</span>
             {!hasAnalytics && (
-              <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} title="Upgrade to view">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade to view analytics">
+                Upgrade
+              </span>
             )}
           </Link>
           <Link
@@ -155,9 +153,9 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">API</span>
             {!hasApiAccess && (
-              <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} title="Upgrade for API access">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade for API access">
+                Upgrade
+              </span>
             )}
           </Link>
           <Link
@@ -170,10 +168,20 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Webhooks</span>
             {!hasWebhooks && (
-              <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} title="Upgrade for webhooks">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade for webhooks">
+                Upgrade
+              </span>
             )}
+          </Link>
+          <Link
+            href="/dashboard/pricing"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+          >
+            <svg className="h-5 w-5 shrink-0 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Pricing
           </Link>
           <Link
             href="/dashboard/settings"

@@ -9,9 +9,10 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <ResponsiveNav />
-      {demoBotKey && <ChatWidget botKey={demoBotKey} />}
+      {/* Only render widget when demo bot is configured; avoids empty key and no-op script */}
+      {demoBotKey ? <ChatWidget botKey={demoBotKey} /> : null}
 
-      <main>
+      <main id="main-content">
         {/* Hero - Two column layout inspired by SiteGPT */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom_right,#f8fafc_0%,#f1f5f9_50%,white_100%)]" />
@@ -122,16 +123,56 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Trust */}
-        <section className="border-y border-slate-200 bg-slate-50/80 px-4 py-8 sm:py-12">
-          <p className="mb-8 text-center text-sm font-medium text-slate-500">
-            Trusted by teams who care about support
+        {/* Trust / Used by */}
+        <section className="border-y border-slate-200 bg-slate-50/80 px-4 py-10 sm:py-14" aria-label="Used by">
+          <p className="mb-2 text-center text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Used by teams who care about support
           </p>
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-12">
-            {["SaaS", "Agencies", "EdTech", "E‑commerce", "Consulting"].map((t) => (
-              <span key={t} className="text-lg font-semibold text-slate-400 transition-colors hover:text-[#1a6aff]">
-                {t}
-              </span>
+          <h2 className="mb-10 text-center text-xl font-bold text-slate-900 sm:text-2xl">
+            Trusted across industries
+          </h2>
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {[
+              { name: "SaaS", desc: "Product & support teams", icon: "chart" },
+              { name: "Agencies", desc: "Client support & delivery", icon: "users" },
+              { name: "EdTech", desc: "Student & instructor help", icon: "academic" },
+              { name: "E‑commerce", desc: "Shoppers & order help", icon: "cart" },
+              { name: "Consulting", desc: "Advisory & follow-up", icon: "briefcase" },
+            ].map(({ name, desc, icon }) => (
+              <div
+                key={name}
+                className="flex flex-col items-center rounded-xl border border-slate-200 bg-white px-5 py-5 text-center shadow-sm transition-shadow hover:shadow-md"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1a6aff]/10 text-[#1a6aff]" aria-hidden>
+                  {icon === "chart" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  )}
+                  {icon === "users" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  )}
+                  {icon === "academic" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    </svg>
+                  )}
+                  {icon === "cart" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  )}
+                  {icon === "briefcase" && (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </span>
+                <p className="mt-2 font-semibold text-slate-900">{name}</p>
+                <p className="mt-0.5 text-sm text-slate-500">{desc}</p>
+              </div>
             ))}
           </div>
         </section>
@@ -342,20 +383,51 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials */}
-        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-              Don&apos;t just take our word for it
+        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-label="Testimonials">
+          <div className="mx-auto max-w-5xl">
+            <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+              What our users say
             </h2>
-            <blockquote className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:mt-12 sm:p-10">
-              <p className="text-lg italic text-slate-700">
-                &ldquo;We got the bot dialled in—trained on our docs, tone matched to our brand. Support tickets dropped and visitors get answers instantly. Exactly what we needed.&rdquo;
-              </p>
-              <footer className="mt-6">
-                <cite className="not-italic font-semibold text-slate-900">Product team lead</cite>
-                <p className="text-sm text-slate-500">SaaS company</p>
-              </footer>
-            </blockquote>
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-500">
+              Example testimonials—replace with real customer quotes when available.
+            </p>
+            <div className="mt-10 grid gap-6 sm:mt-12 md:grid-cols-3">
+              {[
+                {
+                  quote: "We got the bot dialled in—trained on our docs, tone matched to our brand. Support tickets dropped and visitors get answers instantly. Exactly what we needed.",
+                  name: "Alex Chen",
+                  role: "Head of Support",
+                  company: "B2B SaaS",
+                },
+                {
+                  quote: "Our clients expect fast answers. SiteBotGPT handles the first line so we can focus on strategy and high-touch work. Setup took an afternoon.",
+                  name: "Sam Rivera",
+                  role: "Founder",
+                  company: "Digital Agency",
+                },
+                {
+                  quote: "Students get 24/7 help on our docs and FAQs. The bot knows our product—no more generic answers. Our support team loves it.",
+                  name: "Jordan Lee",
+                  role: "Customer Success",
+                  company: "EdTech",
+                },
+              ].map((t) => (
+                <blockquote
+                  key={t.name}
+                  className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+                >
+                  <p className="flex-1 text-slate-700 italic leading-relaxed">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <footer className="mt-6 border-t border-slate-100 pt-4">
+                    <cite className="not-italic font-semibold text-slate-900">{t.name}</cite>
+                    <p className="text-sm text-slate-500">
+                      {t.role}, {t.company}
+                    </p>
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
           </div>
         </section>
 

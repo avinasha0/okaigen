@@ -29,34 +29,50 @@ async function main() {
     console.log("Migrated plan Pro → Growth");
   }
 
+  const stripePriceIds: Record<string, { monthly?: string; yearly?: string }> = {
+    Growth: { monthly: process.env.STRIPE_PRICE_GROWTH_MONTHLY, yearly: process.env.STRIPE_PRICE_GROWTH_YEARLY },
+    Scale: { monthly: process.env.STRIPE_PRICE_SCALE_MONTHLY, yearly: process.env.STRIPE_PRICE_SCALE_YEARLY },
+  };
+  const razorpayPlanIds: Record<string, { monthly?: string; yearly?: string }> = {
+    Growth: { monthly: process.env.RAZORPAY_PLAN_GROWTH_MONTHLY, yearly: process.env.RAZORPAY_PLAN_GROWTH_YEARLY },
+    Scale: { monthly: process.env.RAZORPAY_PLAN_SCALE_MONTHLY, yearly: process.env.RAZORPAY_PLAN_SCALE_YEARLY },
+  };
+  const paypalPlanIds: Record<string, { monthly?: string; yearly?: string }> = {
+    Growth: { monthly: process.env.PAYPAL_PLAN_GROWTH_MONTHLY, yearly: process.env.PAYPAL_PLAN_GROWTH_YEARLY },
+    Scale: { monthly: process.env.PAYPAL_PLAN_SCALE_MONTHLY, yearly: process.env.PAYPAL_PLAN_SCALE_YEARLY },
+  };
+
   for (const name of PLAN_NAMES) {
     const limits = getPlanLimitsForDb(name);
     const price = PRICES[name];
+    const stripeIds = stripePriceIds[name as keyof typeof stripePriceIds];
+    const razorpayIds = razorpayPlanIds[name as keyof typeof razorpayPlanIds];
+    const paypalIds = paypalPlanIds[name as keyof typeof paypalPlanIds];
+
     const existing = await prisma.plan.findFirst({ where: { name } });
+    const planData = {
+      dailyLimit: limits.dailyLimit,
+      botLimit: limits.botLimit,
+      storageLimit: limits.storageLimit,
+      teamMemberLimit: limits.teamMemberLimit,
+      price,
+      stripePriceIdMonthly: stripeIds?.monthly || null,
+      stripePriceIdYearly: stripeIds?.yearly || null,
+      razorpayPlanIdMonthly: razorpayIds?.monthly || null,
+      razorpayPlanIdYearly: razorpayIds?.yearly || null,
+      paypalPlanIdMonthly: paypalIds?.monthly || null,
+      paypalPlanIdYearly: paypalIds?.yearly || null,
+      isActive: true,
+    };
     if (existing) {
       await prisma.plan.update({
         where: { id: existing.id },
-        data: {
-          dailyLimit: limits.dailyLimit,
-          botLimit: limits.botLimit,
-          storageLimit: limits.storageLimit,
-          teamMemberLimit: limits.teamMemberLimit,
-          price,
-          isActive: true,
-        },
+        data: planData,
       });
       console.log(`Plan ${name} updated`);
     } else {
       await prisma.plan.create({
-        data: {
-          name,
-          dailyLimit: limits.dailyLimit,
-          botLimit: limits.botLimit,
-          storageLimit: limits.storageLimit,
-          teamMemberLimit: limits.teamMemberLimit,
-          price,
-          isActive: true,
-        },
+        data: { name, ...planData },
       });
       console.log(`Plan ${name} created`);
     }

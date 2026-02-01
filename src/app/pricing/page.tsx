@@ -23,6 +23,38 @@ const FAQ = [
     q: "Can I change plans later?",
     a: "Yes. You can upgrade or downgrade at any time. Billing is prorated so you only pay for what you use.",
   },
+  {
+    q: "What payment methods do you accept?",
+    a: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. Invoicing is available for Enterprise plans.",
+  },
+  {
+    q: "Do you offer refunds?",
+    a: "Yes. We offer a 30-day money-back guarantee on paid plans. If you're not satisfied, contact us for a full refund. See our Refund Policy for details.",
+  },
+  {
+    q: "How many bots or websites can I use?",
+    a: "Starter includes 1 bot; Growth and Scale include multiple bots. Each plan lists the exact bot limit. Enterprise can have unlimited bots and dedicated support.",
+  },
+  {
+    q: "Is there API access?",
+    a: "API access is included on Growth, Scale, and Enterprise plans. Use it to send messages from your app, sync data, or build custom integrations.",
+  },
+  {
+    q: "Where is my data stored?",
+    a: "Your content and chat data are stored in secure, encrypted infrastructure. We do not train general AI models on your data. See our Privacy Policy for full details.",
+  },
+  {
+    q: "Can I remove \"Powered by\" branding?",
+    a: "Scale and Enterprise plans include white-label (no branding). On other plans, you can add the Remove Branding add-on for an extra fee.",
+  },
+  {
+    q: "What kind of support do I get?",
+    a: "All plans include email support and documentation. Growth and above get priority support; Enterprise includes dedicated success management and SLA.",
+  },
+  {
+    q: "Do you have an uptime SLA?",
+    a: "We aim for 99.9% uptime. Scale and Enterprise plans include a formal SLA. Check our status page for current availability.",
+  },
 ];
 
 export default function PricingPage() {
@@ -206,6 +238,139 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Why choose us */}
+      <section className="border-t border-slate-200 bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            Why teams choose us
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-slate-600">
+            Simple setup, transparent pricing, and support that scales with you.
+          </p>
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a6aff]/10 text-[#1a6aff]">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 font-semibold text-slate-900">Setup in minutes</h3>
+              <p className="mt-2 text-sm text-slate-600">Add your URL or docs, get a trained bot. No engineering required.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a6aff]/10 text-[#1a6aff]">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 font-semibold text-slate-900">Your data stays yours</h3>
+              <p className="mt-2 text-sm text-slate-600">We don’t train external models on your content. Encrypted and secure.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a6aff]/10 text-[#1a6aff]">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8v-3M3 21h18M3 10h18M3 7l9-4 9 4M4 18h9v-7H4v7z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 font-semibold text-slate-900">Pay as you grow</h3>
+              <p className="mt-2 text-sm text-slate-600">Start free, upgrade when you need more messages and features.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a6aff]/10 text-[#1a6aff]">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 font-semibold text-slate-900">Real support</h3>
+              <p className="mt-2 text-sm text-slate-600">Documentation, email support, and priority help on higher plans.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Compare at a glance */}
+      <section className="border-t border-slate-200 bg-slate-50/50 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            Compare at a glance
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-slate-600">
+            See how plans stack up on key features.
+          </p>
+          <div className="mt-12 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full min-w-[600px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="px-4 py-3 font-semibold text-slate-900">Feature</th>
+                  <th className="px-4 py-3 font-semibold text-slate-900">Starter</th>
+                  <th className="px-4 py-3 font-semibold text-slate-900">Growth</th>
+                  <th className="px-4 py-3 font-semibold text-slate-900">Scale</th>
+                  <th className="px-4 py-3 font-semibold text-slate-900">Enterprise</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                <tr><td className="px-4 py-3 text-slate-600">Messages</td><td className="px-4 py-3">10/day</td><td className="px-4 py-3">2,000/mo</td><td className="px-4 py-3">10,000/mo</td><td className="px-4 py-3">Custom</td></tr>
+                <tr><td className="px-4 py-3 text-slate-600">Bots</td><td className="px-4 py-3">1</td><td className="px-4 py-3">3</td><td className="px-4 py-3">10</td><td className="px-4 py-3">Unlimited</td></tr>
+                <tr><td className="px-4 py-3 text-slate-600">API & webhooks</td><td className="px-4 py-3">—</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">✓</td></tr>
+                <tr><td className="px-4 py-3 text-slate-600">Remove branding</td><td className="px-4 py-3">—</td><td className="px-4 py-3">Add-on</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">✓</td></tr>
+                <tr><td className="px-4 py-3 text-slate-600">Priority support</td><td className="px-4 py-3">—</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">Dedicated</td></tr>
+                <tr><td className="px-4 py-3 text-slate-600">SLA</td><td className="px-4 py-3">—</td><td className="px-4 py-3">—</td><td className="px-4 py-3">✓</td><td className="px-4 py-3">✓</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise / Custom */}
+      <section className="border-t border-slate-200 bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            Need something custom?
+          </h2>
+          <p className="mt-4 text-lg text-slate-600">
+            Enterprise plans include custom message limits, SSO, dedicated support, and tailored SLAs. Tell us your requirements and we’ll put together a proposal.
+          </p>
+          <div className="mt-8">
+            <Link
+              href="/contact?subject=Enterprise%20pricing"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-slate-800"
+            >
+              Contact sales
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust */}
+      <section className="border-t border-slate-200 bg-slate-50/50 py-12 sm:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-center text-xl font-bold text-slate-900 sm:text-2xl">
+            Built for reliability
+          </h2>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-slate-600">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>Encrypted data</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>99.9% uptime target</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>No lock-in contracts</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              <span>30-day money-back guarantee</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="border-t border-slate-200 bg-slate-50/50 py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -232,32 +397,6 @@ export default function PricingPage() {
                 <p className="mt-3 text-slate-600">{item.a}</p>
               </details>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-[#1a6aff] py-16">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-2xl font-bold text-white sm:text-3xl">
-            Ready to automate your support?
-          </h2>
-          <p className="mt-4 text-lg text-blue-100">
-            Join teams using SiteBotGPT to capture leads, answer questions, and delight customers.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/signup"
-              className="inline-flex w-full justify-center rounded-xl bg-white px-8 py-4 text-base font-semibold text-[#1a6aff] shadow-lg transition-all hover:bg-slate-100 sm:w-auto"
-            >
-              Start free
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex w-full justify-center rounded-xl border-2 border-white/50 bg-transparent px-8 py-4 text-base font-semibold text-white transition-all hover:bg-white/10 sm:w-auto"
-            >
-              Try demo
-            </Link>
           </div>
         </div>
       </section>

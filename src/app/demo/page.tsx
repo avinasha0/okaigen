@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DemoWidget } from "@/components/demo-widget";
+import { DemoSuggestedQuestions } from "@/components/demo-suggested-questions";
 import { ResponsiveNav } from "@/components/responsive-nav";
 
 const DEMO_BOT_ID = process.env.NEXT_PUBLIC_DEMO_BOT_ID;
@@ -80,21 +81,12 @@ export default function DemoPage() {
                   </div>
                 </div>
 
-                {/* Suggested questions */}
+                {/* Suggested questions — click sends into widget bubble */}
                 <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-5">
                   <p className="mb-3 text-sm font-medium text-slate-600">
-                    Click to ask, or type your own question:
+                    Click to ask, or type your own in the chat bubble:
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {SUGGESTED_QUESTIONS.map((q) => (
-                      <span
-                        key={q}
-                        className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all hover:border-[#1a6aff]/40 hover:bg-[#1a6aff]/5 hover:text-[#1a6aff] hover:shadow-md"
-                      >
-                        {q}
-                      </span>
-                    ))}
-                  </div>
+                  <DemoSuggestedQuestions botId={DEMO_BOT_ID} questions={SUGGESTED_QUESTIONS} />
                 </div>
 
                 {/* Chat placeholder + widget hint */}
@@ -139,7 +131,7 @@ export default function DemoPage() {
               </div>
             ) : (
               <div className="overflow-hidden rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/80 p-16 text-center">
-                <div className="mx-auto max-w-md">
+                <div className="mx-auto max-w-lg">
                   <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-200/80">
                     <svg
                       className="h-10 w-10 text-slate-400"
@@ -155,9 +147,14 @@ export default function DemoPage() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900">No demo bot configured</h3>
+                  <h3 className="text-xl font-semibold text-slate-900">Demo not available</h3>
                   <p className="mt-2 text-slate-600">
-                    Create your first bot and set it as the demo to try SiteBotGPT here.
+                    This page needs a demo bot to be configured. In production, set{" "}
+                    <code className="rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-sm">NEXT_PUBLIC_DEMO_BOT_ID</code>{" "}
+                    (and optionally <code className="rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-sm">NEXT_PUBLIC_APP_URL</code>) in your environment, then create and train a bot and use its ID so visitors can try the chatbot here.
+                  </p>
+                  <p className="mt-4 text-sm text-slate-500">
+                    Don&apos;t have an account yet? Create one, add a bot, train it on your content, and use its ID as the demo bot.
                   </p>
                   <Link
                     href="/signup"

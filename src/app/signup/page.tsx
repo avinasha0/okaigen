@@ -14,18 +14,38 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!emailRegex.test(trimmedEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (!acceptTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name: name || undefined }),
+        body: JSON.stringify({ email: trimmedEmail, password, name: name || undefined, acceptTerms: true }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -34,7 +54,7 @@ export default function SignupPage() {
         return;
       }
       const signInRes = await signIn("credentials", {
-        email,
+        email: trimmedEmail,
         password,
         redirect: false,
       });
@@ -42,6 +62,7 @@ export default function SignupPage() {
         router.push("/login");
         return;
       }
+      // Redirect to dashboard; verification email was sent; user can verify from dashboard banner
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -112,7 +133,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right: Form */}
-      <div className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:w-1/2 lg:px-12 xl:px-16">
+      <div id="main-content" className="flex w-full flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:w-1/2 lg:px-12 xl:px-16" tabIndex={-1}>
         <div className="mx-auto w-full max-w-md">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Create your account
@@ -167,6 +188,26 @@ export default function SignupPage() {
                   placeholder="At least 8 characters"
                   className="h-12 rounded-xl border-slate-200 bg-white focus:border-[#1a6aff] focus:ring-[#1a6aff]/20"
                 />
+              </div>
+              <div className="flex items-start gap-3">
+                <input
+                  id="acceptTerms"
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-[#1a6aff] focus:ring-[#1a6aff]/20"
+                  required
+                />
+                <Label htmlFor="acceptTerms" className="text-sm text-slate-600">
+                  I agree to the{" "}
+                  <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-medium text-[#1a6aff] hover:underline">
+                    Terms of Service
+                  </Link>
+                  {" "}and{" "}
+                  <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-[#1a6aff] hover:underline">
+                    Privacy Policy
+                  </Link>
+                </Label>
               </div>
               <Button
                 type="submit"

@@ -3,6 +3,8 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { FooterWrapper } from "@/components/footer-wrapper";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
+import { SkipToMainContent } from "@/components/skip-to-main-content";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,8 +48,10 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable} ${inter.className}`}>
       <body className="font-sans antialiased">
         <Providers>
+          <SkipToMainContent />
           {children}
           <FooterWrapper />
+          <CookieConsentBanner />
         </Providers>
       </body>
     </html>

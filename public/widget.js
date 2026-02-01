@@ -223,6 +223,21 @@
     if (isOpen && messagesEl.children.length === 0) addGreeting();
   });
 
+  // Allow external triggers (e.g. demo page chips) to open and send a message
+  window.addEventListener("sitebotgpt-send", function (e) {
+    if (!e.detail || e.detail.botId !== botId || !e.detail.text || !e.detail.text.trim()) return;
+    if (!isOpen) {
+      isOpen = true;
+      panel.style.display = "flex";
+      bubble.innerHTML = closeIcon;
+      bubble.setAttribute("aria-label", "Close chat");
+      if (messagesEl.children.length === 0) addGreeting();
+    }
+    setTimeout(function () {
+      sendMessage(e.detail.text.trim());
+    }, 150);
+  });
+
   sendBtn.addEventListener("click", () => sendMessage(inputEl.value));
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage(inputEl.value);
