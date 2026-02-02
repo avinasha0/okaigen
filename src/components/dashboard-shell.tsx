@@ -40,12 +40,12 @@ function DashboardShellInner({
 
   return (
     <div className="flex min-h-screen bg-zinc-50">
-      {/* Mobile header */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-200 bg-white px-4 md:hidden">
+      {/* Mobile header - dark bg so white logo is visible */}
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-800 bg-zinc-900 px-4 md:hidden">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-600 hover:bg-zinc-100"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-white"
           aria-label="Open menu"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -54,7 +54,7 @@ function DashboardShellInner({
         </button>
         <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
           <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
-            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
+            <Image src="/sitebotgpt_logowhite.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
           </span>
         </Link>
       </header>
@@ -78,7 +78,7 @@ function DashboardShellInner({
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4 md:h-16 md:px-6">
           <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
             <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
-              <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
+              <Image src="/sitebotgpt_logowhite.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
             </span>
           </Link>
           <button

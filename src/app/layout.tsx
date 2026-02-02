@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   description: "Train an AI chatbot on your website, docs & PDFs. Answer visitor questions 24/7. Forever free plan available. No code. Embed in minutes. AI support for your business.",
   keywords: ["AI chatbot", "website chatbot", "chatbot builder", "customer support chatbot", "AI support agent"],
   authors: [{ name: "SiteBotGPT", url: BASE_URL }],
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
