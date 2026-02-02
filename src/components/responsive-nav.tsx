@@ -37,13 +37,13 @@ export function ResponsiveNav() {
           ))}
           <Link
             href="/login"
-            className="rounded-lg border-2 border-[#1a6aff] bg-white px-4 py-2 text-sm font-semibold text-[#1a6aff] transition-colors hover:bg-[#1a6aff]/5"
+            className="inline-flex items-center justify-center rounded-lg border-2 border-[#1a6aff] bg-white px-5 py-2.5 text-sm font-semibold text-[#1a6aff] transition-colors hover:bg-[#1a6aff]/5"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#1a6aff]/25 transition-all hover:bg-[#0d5aeb]"
+            className="inline-flex items-center justify-center rounded-lg bg-[#1a6aff] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#1a6aff]/25 transition-all hover:bg-[#0d5aeb]"
           >
             Get started free
           </Link>
@@ -84,14 +84,14 @@ export function ResponsiveNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg border-2 border-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-[#1a6aff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center rounded-lg border-2 border-[#1a6aff] px-5 py-3 text-center text-sm font-semibold text-[#1a6aff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2"
             >
               Sign in
             </Link>
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
-              className="rounded-lg bg-[#1a6aff] px-4 py-3 text-center text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="inline-flex items-center justify-center rounded-lg bg-[#1a6aff] px-5 py-3 text-center text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               Get started free
             </Link>

@@ -12,18 +12,25 @@
 
   const style = document.createElement("style");
   style.textContent = `
+    @keyframes atlas-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
     .atlas-widget { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .atlas-bubble { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #1a6aff 0%, #0d5aeb 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(26, 106, 255, 0.4); display: flex; align-items: center; justify-content: center; z-index: 999998; transition: transform 0.2s; }
-    @media (min-width: 420px) { .atlas-bubble { bottom: 24px; right: 24px; } }
-    .atlas-bubble:hover { transform: scale(1.05); }
-    .atlas-bubble svg { width: 34px; height: 34px; }
-    .atlas-panel { position: fixed; bottom: 80px; right: 16px; left: 16px; width: auto; max-width: 475px; height: 87.5vh; max-height: 650px; margin-left: auto; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: flex; flex-direction: column; z-index: 999999; overflow: hidden; }
+    .atlas-bubble { position: fixed; bottom: 20px; right: 20px; width: 112px; height: 112px; border-radius: 0; background: transparent; color: #0f172a; border: none; cursor: pointer; box-shadow: none; display: flex; align-items: center; justify-content: center; z-index: 999998; transition: transform 0.2s; padding: 0; animation: atlas-float 2.5s ease-in-out infinite; }
+    .atlas-bubble:hover { animation: none; transform: scale(1.05); }
+    .atlas-bubble svg { width: 28px; height: 28px; stroke: #0f172a; }
+    .atlas-bubble .atlas-bubble-icon { width: 112px; height: 112px; object-fit: contain; display: block; }
+    .atlas-panel { position: fixed; top: 80px; bottom: 140px; right: 16px; left: 16px; width: auto; max-width: 475px; height: auto; max-height: none; margin-left: auto; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: flex; flex-direction: column; z-index: 999999; overflow: hidden; }
     @media (max-width: 419px) {
-      .atlas-panel { bottom: calc(76px + env(safe-area-inset-bottom, 0)); left: 8px; right: 8px; height: calc(100vh - 96px - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0)); max-height: none; }
+      .atlas-panel { top: 80px; bottom: calc(140px + env(safe-area-inset-bottom, 0)); left: 8px; right: 8px; height: auto; max-height: none; }
       .atlas-bubble { bottom: calc(20px + env(safe-area-inset-bottom, 0)); right: 16px; }
     }
     @media (min-width: 420px) { .atlas-panel { left: auto; right: 24px; width: 475px; } }
-    .atlas-header { padding: 16px; background: linear-gradient(135deg, #1a6aff 0%, #0d5aeb 100%); color: white; font-weight: 600; font-size: 16px; }
+    .atlas-header { padding: 16px; background: linear-gradient(135deg, #1a6aff 0%, #0d5aeb 100%); color: white; font-weight: 600; font-size: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .atlas-header-top { display: flex; align-items: center; gap: 10px; }
+    .atlas-header-icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+    .atlas-header-favicon { width: 24px; height: 24px; object-fit: contain; }
     .atlas-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
     .atlas-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
     .atlas-msg.user { align-self: flex-end; background: linear-gradient(135deg, #1a6aff 0%, #0d5aeb 100%); color: white; }
@@ -48,19 +55,21 @@
   `;
   document.head.appendChild(style);
 
-  // Brand icon: bot head + chat bubble (white on blue button)
-  const chatIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="12" height="12" rx="3" stroke="white" stroke-width="1.5" fill="none"/><path stroke="white" stroke-width="1.5" stroke-linecap="round" d="M7 2V0.5M13 2V0.5"/><circle cx="8" cy="7" r="1.25" fill="white"/><circle cx="12" cy="7" r="1.25" fill="white"/><path d="M8 10.5h4" stroke="white" stroke-width="1" stroke-linecap="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M15 6h4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1.5l-1.5 2-1.5-2H15a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="white"/></svg>';
+  // Bubble button: favicon when closed, X when open
+  const chatIconHtml = '<img src="' + baseUrl + '/widget-icon.jpg" alt="" class="atlas-bubble-icon" />';
   const closeIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
   const bubble = document.createElement("button");
   bubble.className = "atlas-widget atlas-bubble";
-  bubble.innerHTML = chatIcon;
+  bubble.innerHTML = chatIconHtml;
   bubble.setAttribute("aria-label", "Open chat");
 
   const panel = document.createElement("div");
   panel.className = "atlas-widget atlas-panel";
   panel.style.display = "none";
   panel.innerHTML = `
-    <div class="atlas-header">SiteBotGPT Helper</div>
+    <div class="atlas-header">
+      <div class="atlas-header-top">SiteBotGPT Helper</div>
+    </div>
     <div class="atlas-messages"></div>
     <div class="atlas-input-wrap">
       <input type="text" class="atlas-input" placeholder="Ask a question..." />
@@ -218,7 +227,7 @@
   bubble.addEventListener("click", () => {
     isOpen = !isOpen;
     panel.style.display = isOpen ? "flex" : "none";
-    bubble.innerHTML = isOpen ? closeIcon : chatIcon;
+    bubble.innerHTML = isOpen ? closeIcon : chatIconHtml;
     bubble.setAttribute("aria-label", isOpen ? "Close chat" : "Open chat");
     if (isOpen && messagesEl.children.length === 0) addGreeting();
   });

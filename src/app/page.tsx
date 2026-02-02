@@ -69,7 +69,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              {/* Right: SiteBotGPT Assistant */}
+              {/* Right: SiteBotGPT Helper */}
               <div className="flex justify-center lg:justify-center">
                 <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5 sm:p-8">
                   <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
@@ -79,7 +79,7 @@ export default function LandingPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-slate-900">SiteBotGPT Assistant</p>
+                      <p className="text-lg font-semibold text-slate-900">SiteBotGPT Helper</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
                         <span className="relative flex h-2 w-2">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
