@@ -17,12 +17,18 @@ function isCronRequest(req: Request): boolean {
   return header === secret;
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204 });
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ botId: string }> }
 ) {
+  console.log("[train] POST request received");
   try {
     const { botId } = await params;
+    console.log("[train] Bot ID:", botId);
     const cronAuth = isCronRequest(req);
     let resolvedBotId: string;
 

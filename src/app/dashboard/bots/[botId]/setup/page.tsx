@@ -133,19 +133,23 @@ export default function BotSetupPage() {
       // Check if response is OK and has content
       if (!res.ok) {
         const contentType = res.headers.get("content-type");
-        let errorMessage = "Training failed";
-        if (contentType?.includes("application/json")) {
-          try {
+        let errorMessage = `Training failed (HTTP ${res.status} ${res.statusText})`;
+        
+        try {
+          if (contentType?.includes("application/json")) {
             const errorData = await res.json();
             errorMessage = errorData.detail || errorData.error || errorMessage;
-          } catch {
-            // If JSON parse fails, use status text
-            errorMessage = res.statusText || `HTTP ${res.status}`;
+          } else {
+            const text = await res.text();
+            if (text) {
+              errorMessage = `${errorMessage}: ${text.substring(0, 200)}`;
+            }
           }
-        } else {
-          const text = await res.text();
-          errorMessage = text || res.statusText || `HTTP ${res.status}`;
+        } catch (parseErr) {
+          // If parsing fails, keep the status-based error message
+          console.error("Failed to parse error response:", parseErr);
         }
+        
         throw new Error(errorMessage);
       }
       
@@ -173,8 +177,15 @@ export default function BotSetupPage() {
       );
       setTimeout(() => router.push(`/dashboard/bots/${botId}`), 1500);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Training failed";
-      alert(msg);
+      let msg = "Training failed";
+      if (err instanceof Error) {
+        msg = err.message;
+        console.error("Training error:", err);
+      } else {
+        console.error("Training error (unknown):", err);
+      }
+      // Show detailed error to user
+      alert(`Training Error\n\n${msg}\n\nCheck browser console for details.`);
       fetch(`/api/bots/${botId}`)
         .then((r) => r.json())
         .then(setBot)
