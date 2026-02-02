@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,11 +61,11 @@ export default function SignupPage() {
         redirect: false,
       });
       if (signInRes?.error) {
-        router.push("/login");
+        router.push(callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login");
         return;
       }
-      // Redirect to dashboard; verification email was sent; user can verify from dashboard banner
-      router.push("/dashboard");
+      // Redirect to callback (e.g. dashboard pricing); verification email was sent
+      router.push(callbackUrl);
       router.refresh();
     } catch {
       setError("Something went wrong");
@@ -73,7 +75,7 @@ export default function SignupPage() {
 
   async function handleGoogle() {
     setError("");
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn("google", { callbackUrl });
   }
 
   return (
@@ -258,7 +260,7 @@ export default function SignupPage() {
           <p className="mt-8 text-center text-sm text-slate-600">
             Already have an account?{" "}
             <Link
-              href="/login"
+              href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
               className="font-semibold text-[#1a6aff] hover:text-[#0d5aeb] hover:underline"
             >
               Sign in
@@ -268,5 +270,19 @@ export default function SignupPage() {
       </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#1a6aff] border-t-transparent" />
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

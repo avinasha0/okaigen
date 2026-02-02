@@ -224,7 +224,7 @@ function LoginForm() {
           <p className="mt-8 text-center text-sm text-slate-600">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href={callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}
               className="font-semibold text-[#1a6aff] hover:text-[#0d5aeb] hover:underline"
             >
               Create one

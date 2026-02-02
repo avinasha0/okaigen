@@ -332,7 +332,7 @@ export default function PricingPage() {
           </p>
           <div className="mt-8">
             <Link
-              href="/contact?subject=Enterprise%20pricing"
+              href="/contact?subject=About%20Enterprise%20Plan"
               className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-slate-800"
             >
               Contact sales
