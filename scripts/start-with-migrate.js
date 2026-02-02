@@ -12,6 +12,21 @@ const isPlaceholder =
   dbUrl.includes("localhost:3306/placeholder");
 
 const { execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+
+// Create _next symlink so static files at /_next/* are reachable (some hosts block dot-folders)
+const root = path.join(__dirname, "..");
+const nextDir = path.join(root, ".next");
+const nextLink = path.join(root, "_next");
+if (fs.existsSync(nextDir) && !fs.existsSync(nextLink)) {
+  try {
+    fs.symlinkSync(nextDir, nextLink);
+    console.log("[start-with-migrate] Created _next -> .next symlink");
+  } catch (e) {
+    console.warn("[start-with-migrate] Could not create _next symlink:", e.message);
+  }
+}
 
 if (isPlaceholder) {
   console.warn(
