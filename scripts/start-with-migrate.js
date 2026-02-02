@@ -1,5 +1,5 @@
 /**
- * Runs prisma migrate deploy before starting the app.
+ * Runs prisma migrate deploy and seed before starting the app.
  * Migrations run at startup (not build) because Hostinger's build env may not have MySQL access.
  * Start command on Hostinger MUST be "npm start" (not "next start") so this script runs.
  */
@@ -40,6 +40,17 @@ if (isPlaceholder) {
     console.log("[start-with-migrate] Running database migrations...");
     execSync("npx prisma migrate deploy", { stdio: "inherit" });
     console.log("[start-with-migrate] Migrations completed.");
+
+    // Seed plans after migrations (idempotent - safe to run multiple times)
+    console.log("[start-with-migrate] Seeding plans...");
+    try {
+      execSync("npm run db:seed", { stdio: "inherit" });
+      console.log("[start-with-migrate] Plans seeded successfully.");
+    } catch (seedErr) {
+      // Don't fail startup if seed fails (plans might already exist)
+      console.warn("[start-with-migrate] Seed warning:", seedErr.message);
+      console.warn("[start-with-migrate] Continuing startup...");
+    }
   } catch (err) {
     console.error("[start-with-migrate] prisma migrate deploy failed:", err.message);
     process.exit(1);

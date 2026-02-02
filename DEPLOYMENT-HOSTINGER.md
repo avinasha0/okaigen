@@ -48,7 +48,7 @@ In **Node.js Apps** → your app → **Environment Variables**, add at minimum:
 8. **Domain:** Attach your domain (e.g. `sitebotgpt.com`).
 9. Click **Deploy**.
 
-Tables are created automatically when the app starts (`prisma migrate deploy` runs before `next start`). No manual schema steps.
+Tables and plans are created automatically when the app starts (`prisma migrate deploy` runs, then plans are seeded via `npm run db:seed` before `next start`). No manual schema or seeding steps required.
 
 ---
 
@@ -79,9 +79,14 @@ See `.env.example` for full list.
 |------|---------|
 | Install | `npm install` (runs `postinstall` → prisma generate) |
 | Build | `npm run build` |
-| Start | **`npm start`** (required—runs migrations then Next.js; do not use `next start`) |
+| Start | **`npm start`** (required—runs migrations, seeds plans, then starts Next.js; do not use `next start`) |
 
-Use the default Hostinger build settings. If the database has no tables, the Start command is almost always wrong (e.g. `next start` instead of `npm start`) or `DATABASE_URL` is not set in Environment Variables.
+Use the default Hostinger build settings. On startup, `npm start` automatically:
+1. Runs `prisma migrate deploy` (creates tables)
+2. Runs `npm run db:seed` (creates Starter, Growth, Scale, Enterprise plans)
+3. Starts Next.js with `next start`
+
+If the database has no tables or plans, the Start command is almost always wrong (e.g. `next start` instead of `npm start`) or `DATABASE_URL` is not set in Environment Variables.
 
 ---
 
