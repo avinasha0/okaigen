@@ -31,7 +31,7 @@ In **Node.js Apps** → your app → **Environment Variables**, add at minimum:
 | `AUTH_SECRET` | Generate: `openssl rand -base64 32` |
 | `NEXT_PUBLIC_APP_URL` | `https://yourdomain.com` |
 
-**Important:** Add these **before** deploying so migrations run during the build.
+**Important:** Add these before the app runs. Migrations run at startup (not during build).
 
 ---
 
@@ -43,13 +43,12 @@ In **Node.js Apps** → your app → **Environment Variables**, add at minimum:
 4. **Node.js version:** 20 or 22.
 5. **Build command:** `npm run build` (default)
    - `postinstall` runs `prisma generate`
-   - `prebuild` runs `prisma migrate deploy` → creates tables automatically
 6. **Start command:** `npm start`
 7. **Root directory:** Leave default.
 8. **Domain:** Attach your domain (e.g. `sitebotgpt.com`).
 9. Click **Deploy**.
 
-Tables are created automatically during the build. No manual schema steps.
+Tables are created automatically when the app starts (`prisma migrate deploy` runs before `next start`). No manual schema steps.
 
 ---
 
@@ -79,7 +78,7 @@ See `.env.example` for full list.
 | Step | Command |
 |------|---------|
 | Install | `npm install` (runs `postinstall` → prisma generate) |
-| Build | `npm run build` (runs `prebuild` → prisma migrate deploy, then next build) |
+| Build | `npm run build` |
 | Start | `npm start` |
 
 Use the default Hostinger build settings.
@@ -91,8 +90,8 @@ Use the default Hostinger build settings.
 | Issue | What to check |
 |-------|---------------|
 | Build fails on "Cannot find module '@prisma/client'" | `postinstall` should run prisma generate. Check `.npmrc` has `legacy-peer-deps=true` if needed. |
-| 500 or "DB error" on `/api/db-test` | `DATABASE_URL` correct; env vars set **before** first deploy so migrations ran. |
-| No tables in database | `DATABASE_URL` must be in env **before** deploy. Redeploy after adding it. |
+| 500 or "DB error" on `/api/db-test` | `DATABASE_URL` correct; migrations run at startup—restart app after fixing env. |
+| No tables in database | `DATABASE_URL` must be in env. Migrations run at app startup; restart the app after adding/fixing `DATABASE_URL`. |
 | NextAuth redirect errors | `NEXTAUTH_URL` = exact app URL. |
 | Styles not applied | Tailwind in `dependencies`; hard refresh (Ctrl+Shift+R). |
 
