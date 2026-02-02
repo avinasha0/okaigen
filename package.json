@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/prebuild.js",
     "build": "next build",
     "postinstall": "node scripts/postinstall.js",
     "start": "next start",
