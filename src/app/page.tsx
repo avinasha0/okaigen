@@ -7,7 +7,7 @@ export default function LandingPage() {
   const demoBotKey = process.env.NEXT_PUBLIC_DEMO_BOT_ID || "";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen overflow-x-hidden bg-white">
       <ResponsiveNav />
       {/* Only render widget when demo bot is configured; avoids empty key and no-op script */}
       {demoBotKey ? <ChatWidget botKey={demoBotKey} /> : null}
