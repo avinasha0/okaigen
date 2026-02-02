@@ -275,7 +275,7 @@ export default function DocumentationPage() {
               <li><strong>Chat API</strong> — Send messages and get bot replies (API key or bot key).</li>
               <li><strong>Embed info</strong> — Get greeting and quick prompts for the widget (no API key).</li>
               <li><strong>Webhooks</strong> — Events (lead.captured, chat.message), payloads, and signature verification.</li>
-              <li><strong>Errors and rate limits</strong> — Status codes and throttling.
+              <li><strong>Errors and rate limits</strong> — Status codes and throttling.</li>
             </ul>
             <div className="mt-6">
               <Link

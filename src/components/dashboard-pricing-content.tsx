@@ -165,7 +165,7 @@ export function DashboardPricingContent({
                   variant={plan.highlight ? "primary" : "secondary"}
                   className={plan.highlight ? "shadow-lg shadow-[#1a6aff]/25" : ""}
                 >
-                  {currentPlanName === plan.name ? "Current plan" : plan.monthlyPrice === 0 ? "Get started free" : "Upgrade"}
+                  {currentPlanName === plan.name ? "Current plan" : "Upgrade"}
                 </CheckoutButton>
               )}
             </div>

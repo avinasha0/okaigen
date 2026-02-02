@@ -120,9 +120,8 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
     return;
   }
 
-  const currentPeriodEnd = sub.current_period_end
-    ? new Date(sub.current_period_end * 1000)
-    : null;
+  const periodEnd = (sub as { current_period_end?: number }).current_period_end;
+  const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000) : null;
 
   await prisma.userPlan.upsert({
     where: { userId },

@@ -54,7 +54,6 @@ export function CelebrationConfetti() {
             background: p.color,
             borderRadius: p.shape === "circle" ? "50%" : "2px",
             animation: `confetti-fly ${p.duration}s ease-out ${p.delay}s forwards`,
-            // @ts-expect-error CSS custom property for keyframe
             "--confetti-tx": `${p.tx}px`,
           } as React.CSSProperties}
         />

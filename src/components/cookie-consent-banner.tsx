@@ -22,7 +22,7 @@ export function CookieConsentBanner() {
     setMounted(true);
   }, []);
 
-  function save(value: Consent) {
+  function save(value: "all" | "essential") {
     try {
       localStorage.setItem(STORAGE_KEY, value);
       setConsent(value);

@@ -49,7 +49,7 @@ export async function POST(req: Request) {
           ...(requestedBotId.startsWith("atlas_") ? { publicKey: requestedBotId } : { id: requestedBotId }),
         },
         include: { user: true },
-      }) as typeof bot | null;
+      }) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
     } else {
       const botKey = widgetBotKey || bodyBotId;
       if (botKey) {
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
             ? { publicKey: botKey }
             : { id: botKey },
           include: { user: true },
-        }) as typeof bot | null;
+        }) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
       }
     }
 
