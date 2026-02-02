@@ -33,20 +33,41 @@ export async function retrieveContext(
 ): Promise<RAGContext> {
   const queryEmbedding = await generateEmbedding(query);
 
+  // Optimization: Only select needed fields and chunks with embeddings
+  // This reduces memory usage and network transfer
   const chunks = await prisma.chunk.findMany({
-    where: { botId },
-    include: { embedding: true },
+    where: { 
+      botId,
+      embedding: { isNot: null }, // Only chunks with embeddings
+    },
+    select: {
+      id: true,
+      content: true,
+      metadata: true,
+      embedding: {
+        select: {
+          vector: true,
+        },
+      },
+    },
   });
 
   console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", totalChunks=${chunks.length}`);
 
+  // Optimization: Pre-filter and convert vectors in one pass
   const chunksWithVectors = chunks
-    .filter((c) => c.embedding)
     .map((c) => {
-      const vector = toNumberVector(c.embedding!.vector);
-      return { id: c.id, content: c.content, metadata: c.metadata as Record<string, unknown>, vector };
+      if (!c.embedding) return null;
+      const vector = toNumberVector(c.embedding.vector);
+      if (vector.length !== queryEmbedding.length) return null;
+      return { 
+        id: c.id, 
+        content: c.content, 
+        metadata: (c.metadata as Record<string, unknown>) || {}, 
+        vector 
+      };
     })
-    .filter((c) => c.vector.length === queryEmbedding.length);
+    .filter((c): c is NonNullable<typeof c> => c !== null);
 
   console.log(`[rag] chunksWithVectors: ${chunksWithVectors.length} chunks with valid embeddings`);
 
@@ -95,7 +116,8 @@ function buildSystemPrompt(
   botGreeting: string,
   botTone: string,
   contextSummary: string,
-  humanFallback: string
+  humanFallback: string,
+  useRawContext: boolean = false
 ): string {
   const toneInstruction =
     botTone === "formal"
@@ -107,17 +129,17 @@ function buildSystemPrompt(
   // Improved prompt: Only use fallback if summary is truly empty or irrelevant
   const hasContext = contextSummary && contextSummary.trim().length > 0 && !contextSummary.includes("No relevant context");
 
-  return `You are a customer support AI assistant. ${hasContext ? "Use the provided summary to answer the question." : "You don't have relevant information to answer this question."}
+  return `You are a customer support AI assistant. ${hasContext ? `Use the provided ${useRawContext ? 'content' : 'summary'} to answer the question.` : "You don't have relevant information to answer this question."}
 
 ${toneInstruction}
 
-${hasContext ? `Summary of relevant content:
+${hasContext ? `${useRawContext ? 'Relevant content' : 'Summary of relevant content'}:
 ${contextSummary}
 
 INSTRUCTIONS:
-- Answer the question using the summary above
-- If the summary contains relevant information (even partially), provide a helpful answer based on it
-- Only use the fallback message if the summary is completely irrelevant or empty
+- Answer the question using the ${useRawContext ? 'content' : 'summary'} above
+- ${useRawContext ? 'Extract the key information and provide a concise answer.' : 'If the summary contains relevant information (even partially), provide a helpful answer based on it.'}
+- Only use the fallback message if the ${useRawContext ? 'content' : 'summary'} is completely irrelevant or empty
 - Be helpful and informative` : `You don't have information about this topic in your knowledge base.`}
 
 ${hasContext ? "" : `Respond with: "${humanFallback}"`}
@@ -139,16 +161,46 @@ export async function generateResponse(
   sources: string[];
   confidence: number;
 }> {
-  const bot = await prisma.bot.findUnique({
-    where: { id: botId },
-  });
+  // Optimization: Cache responses for common questions (quick prompts)
+  const isQuickPrompt = userMessage.length < 60 && (userMessage.includes("?") || userMessage.split(" ").length < 10);
+  if (isQuickPrompt && messageHistory.length === 0) {
+    // Only cache if no conversation history (fresh question)
+    const cacheKey = `${botId}:${normalizeCacheKey(userMessage)}`;
+    const cached = responseCache.get(cacheKey);
+    if (cached) {
+      console.log(`[rag] Cache hit for quick prompt: "${userMessage}"`);
+      return cached;
+    }
+  }
+
+  // Optimization: Cache bot lookups (they don't change often)
+  let bot = botCache.get(botId);
+  if (!bot) {
+    bot = await prisma.bot.findUnique({
+      where: { id: botId },
+      select: {
+        id: true,
+        greetingMessage: true,
+        tone: true,
+        humanFallbackMessage: true,
+        confidenceThreshold: true,
+      },
+    });
+    if (bot) {
+      botCache.set(botId, bot);
+    }
+  }
 
   if (!bot) {
     throw new Error("Bot not found");
   }
 
+  // Optimization: Detect quick prompts (short, simple questions) for faster processing
+  const isQuickPrompt = userMessage.length < 60 && (userMessage.includes("?") || userMessage.split(" ").length < 10);
+  const maxChunks = isQuickPrompt ? 3 : 10; // Fewer chunks for quick prompts = faster retrieval
+  
   // Dynamic threshold: hard floor of 0.3 for minimum similarity
-  const { chunks, confidence } = await retrieveContext(botId, userMessage, 10, 0.3);
+  const { chunks, confidence } = await retrieveContext(botId, userMessage, maxChunks, 0.3);
 
   console.log(`[rag] generateResponse: botId=${botId}, chunks=${chunks.length}, confidence=${confidence.toFixed(3)}`);
 
@@ -202,14 +254,22 @@ export async function generateResponse(
       : "";
   console.log(`[rag] contextText length: ${contextText.length} chars`);
   
-  const contextSummary = await summarizeContext(contextText, userMessage);
-  console.log(`[rag] contextSummary: ${contextSummary.substring(0, 200)}...`);
+  // Optimization: Skip summarization for quick prompts to reduce latency (saves 1 OpenAI API call)
+  // Only summarize if context is large (>2000 chars) and not a quick prompt
+  const shouldSummarize = !isQuickPrompt && (contextText.length > 2000 || chunks.length > 3);
+  
+  const contextSummary = shouldSummarize
+    ? await summarizeContext(contextText, userMessage)
+    : contextText.slice(0, 2000); // Use raw context for quick prompts (faster, saves API call)
+  
+  console.log(`[rag] ${shouldSummarize ? 'Summarized' : 'Using raw'} context (quickPrompt=${isQuickPrompt}): ${contextSummary.substring(0, 200)}...`);
 
   const systemPrompt = buildSystemPrompt(
     bot.greetingMessage,
     bot.tone,
     contextSummary,
-    bot.humanFallbackMessage
+    bot.humanFallbackMessage,
+    !shouldSummarize || isQuickPrompt // Pass flag if using raw context
   );
   console.log(`[rag] confidenceThreshold=${bot.confidenceThreshold}, using fallback only if summary truly doesn't help`);
 
@@ -219,22 +279,32 @@ export async function generateResponse(
     { role: "user", content: userMessage },
   ];
 
+  // Optimization: Use faster settings for quick prompts
   const completion = await openai.chat.completions.create({
     model: CHAT_MODEL,
     messages,
     temperature: 0.3,
-    max_tokens: 300,
+    max_tokens: isQuickPrompt ? 150 : 300, // Shorter responses for quick prompts
+    stream: false, // Ensure no streaming overhead
   });
 
   const response = completion.choices[0]?.message?.content || bot.humanFallbackMessage;
   const sources = [...new Set(chunks.map((c) => c.metadata?.sourceUrl as string).filter(Boolean))];
 
-  console.log(`[rag] Generated response length: ${response.length}, sources: ${sources.length}, confidence: ${confidence.toFixed(3)}`);
-  console.log(`[rag] Response preview: ${response.substring(0, 150)}...`);
-
-  return {
+  const result = {
     response,
     sources,
     confidence,
   };
+
+  // Optimization: Cache response for quick prompts
+  if (isQuickPrompt && messageHistory.length === 0) {
+    const cacheKey = `${botId}:${normalizeCacheKey(userMessage)}`;
+    responseCache.set(cacheKey, result, 300000); // 5 minutes cache
+  }
+
+  console.log(`[rag] Generated response length: ${response.length}, sources: ${sources.length}, confidence: ${confidence.toFixed(3)}`);
+  console.log(`[rag] Response preview: ${response.substring(0, 150)}...`);
+
+  return result;
 }

@@ -1,11 +1,22 @@
 import { openai, EMBEDDING_MODEL } from "./openai";
+import { embeddingCache, normalizeCacheKey } from "./cache";
 
 export async function generateEmbedding(text: string): Promise<number[]> {
+  // Optimization: Cache embeddings (same query = same embedding)
+  const cacheKey = normalizeCacheKey(text);
+  const cached = embeddingCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const response = await openai.embeddings.create({
     model: EMBEDDING_MODEL,
     input: text.slice(0, 8000), // API limit
   });
-  return response.data[0].embedding;
+  
+  const embedding = response.data[0].embedding;
+  embeddingCache.set(cacheKey, embedding);
+  return embedding;
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {

@@ -104,22 +104,34 @@ export async function POST(req: Request) {
       });
     }
 
-    await prisma.chatMessage.create({
-      data: {
-        chatId: chat.id,
-        role: "user",
-        content: sanitized,
-      },
-    });
+    // Optimization: Parallelize message history fetch and user message creation
+    // These operations are independent and can run concurrently
+    const [prevMessagesResult] = await Promise.all([
+      chatId 
+        ? prisma.chatMessage.findMany({
+            where: { chatId: chat.id },
+            orderBy: { createdAt: "asc" },
+            take: 20,
+            select: {
+              id: true,
+              role: true,
+              content: true,
+            },
+          })
+        : Promise.resolve([]),
+      prisma.chatMessage.create({
+        data: {
+          chatId: chat.id,
+          role: "user",
+          content: sanitized,
+        },
+      }),
+    ]);
 
     const msgHistory = history || [];
-    const prevMessages = await prisma.chatMessage.findMany({
-      where: { chatId: chat.id },
-      orderBy: { createdAt: "asc" },
-      take: 20,
-    });
-    const recentHistory = prevMessages
-      .filter((m) => m.role !== "user" || m.id !== prevMessages[prevMessages.length - 1]?.id)
+
+    const recentHistory = prevMessagesResult
+      .filter((m) => m.role !== "user" || m.id !== prevMessagesResult[prevMessagesResult.length - 1]?.id)
       .slice(-10)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
@@ -131,18 +143,20 @@ export async function POST(req: Request) {
       combinedHistory
     );
 
-    await prisma.chatMessage.create({
-      data: {
-        chatId: chat.id,
-        role: "assistant",
-        content: response,
-        sources: sources.length ? sources : undefined,
-      },
-    });
-
-    await prisma.usageLog.create({
-      data: { botId: bot.id, type: "message", count: 1 },
-    });
+    // Optimization: Parallelize database writes (they're independent)
+    await Promise.all([
+      prisma.chatMessage.create({
+        data: {
+          chatId: chat.id,
+          role: "assistant",
+          content: response,
+          sources: sources.length ? sources : undefined,
+        },
+      }),
+      prisma.usageLog.create({
+        data: { botId: bot.id, type: "message", count: 1 },
+      }),
+    ]);
 
     const { triggerWebhooks } = await import("@/lib/webhooks");
     triggerWebhooks(bot.userId, "chat.message", {
