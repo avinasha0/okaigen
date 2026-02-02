@@ -1,7 +1,22 @@
 (function () {
   const script = document.currentScript;
   const botId = script?.getAttribute("data-bot"); // Can be bot id or publicKey (atlas_xxx)
-  const baseUrl = script?.getAttribute("data-base") || (script?.src ? new URL(script.src).origin : window.location.origin);
+  let baseUrl = script?.getAttribute("data-base") || (script?.src ? new URL(script.src).origin : window.location.origin);
+  // Use same-origin (relative) when page is on same site as API to avoid CORS (e.g. www vs non-www)
+  function normalizedHost(url) {
+    try {
+      var u = typeof url === "string" ? new URL(url.indexOf("//") === -1 ? "https://" + url : url) : url;
+      var h = u.hostname || "";
+      return h.replace(/^www\./, "");
+    } catch (e) {
+      return "";
+    }
+  }
+  var pageHost = normalizedHost(window.location.origin);
+  var apiHost = baseUrl ? normalizedHost(baseUrl) : pageHost;
+  if (pageHost && apiHost && pageHost === apiHost) {
+    baseUrl = "";
+  }
 
   if (!botId) return;
 
@@ -56,7 +71,7 @@
   document.head.appendChild(style);
 
   // Bubble button: favicon when closed, X when open
-  const chatIconHtml = '<img src="' + baseUrl + '/widget-icon.jpg" alt="" class="atlas-bubble-icon" />';
+  const chatIconHtml = '<img src="' + (baseUrl || window.location.origin).replace(/\/$/, "") + '/widget-icon.jpg" alt="" class="atlas-bubble-icon" />';
   const closeIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
   const bubble = document.createElement("button");
   bubble.className = "atlas-widget atlas-bubble";
