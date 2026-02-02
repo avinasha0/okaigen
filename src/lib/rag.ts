@@ -195,8 +195,7 @@ export async function generateResponse(
     throw new Error("Bot not found");
   }
 
-  // Optimization: Detect quick prompts (short, simple questions) for faster processing
-  const isQuickPrompt = userMessage.length < 60 && (userMessage.includes("?") || userMessage.split(" ").length < 10);
+  // isQuickPrompt already defined above for caching
   const maxChunks = isQuickPrompt ? 3 : 10; // Fewer chunks for quick prompts = faster retrieval
   
   // Dynamic threshold: hard floor of 0.3 for minimum similarity
