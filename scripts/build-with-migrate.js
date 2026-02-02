@@ -33,11 +33,23 @@ if (isPlaceholder) {
   const host = hostMatch ? hostMatch[1].replace(/:.*$/, "") : "unknown";
   console.log("[2/4] Running migrations (host: " + host + ")...");
   try {
+    // Use migrate deploy - it's idempotent and safe for production
+    // If _prisma_migrations table exists, it checks what's already applied
+    // If database is fresh, it applies all migrations
     execSync("npx prisma migrate deploy", { stdio: "inherit" });
     console.log("[2/4] ✓ Migrations completed");
   } catch (err) {
-    console.error("[2/4] ✗ Migrations failed:", err.message);
-    console.error("[2/4] Check DATABASE_URL and database connectivity");
+    console.error("[2/4] ✗ Migrations failed");
+    console.error("[2/4] Full error:", err.message);
+    console.error("[2/4] =========================================");
+    console.error("[2/4] TROUBLESHOOTING:");
+    console.error("[2/4] 1. Check DATABASE_URL is set in Vercel:");
+    console.error("[2/4]    Project → Settings → Environment Variables");
+    console.error("[2/4]    Must be set for Production (and Preview if used)");
+    console.error("[2/4] 2. Verify DATABASE_URL format:");
+    console.error("[2/4]    mysql://USER:PASSWORD@HOST:3306/DATABASE");
+    console.error("[2/4] 3. Check database allows connections from Vercel IPs");
+    console.error("[2/4] =========================================");
     process.exit(1);
   }
 
@@ -49,7 +61,11 @@ if (isPlaceholder) {
   } catch (err) {
     console.warn("[3/4] ⚠ Seed failed:", err.message);
     console.warn("[3/4] Continuing build (plans might already exist)");
+    // Don't exit - seed failure is non-critical
   }
+} else {
+  console.warn("[2/4] ⚠ Migrations skipped (no DATABASE_URL)");
+  console.warn("[3/4] ⚠ Seed skipped (no DATABASE_URL)");
 }
 
 // Step 4: Build Next.js
