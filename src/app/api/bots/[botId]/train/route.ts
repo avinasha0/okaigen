@@ -21,58 +21,59 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ botId: string }> }
 ) {
-  const { botId } = await params;
-  const cronAuth = isCronRequest(req);
-  let resolvedBotId: string;
+  try {
+    const { botId } = await params;
+    const cronAuth = isCronRequest(req);
+    let resolvedBotId: string;
 
-  if (cronAuth) {
-    resolvedBotId = botId;
-  } else {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (cronAuth) {
+      resolvedBotId = botId;
+    } else {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const { requireEmailVerificationForApi } = await import("@/lib/email-verification");
+      const emailCheck = requireEmailVerificationForApi(session);
+      if (emailCheck) return emailCheck;
+      const botRef = await getBotForUser(session.user.id, botId);
+      if (!botRef) {
+        return NextResponse.json({ error: "Bot not found" }, { status: 404 });
+      }
+      resolvedBotId = botRef.id;
     }
-    const { requireEmailVerificationForApi } = await import("@/lib/email-verification");
-    const emailCheck = requireEmailVerificationForApi(session);
-    if (emailCheck) return emailCheck;
-    const botRef = await getBotForUser(session.user.id, botId);
-    if (!botRef) {
+
+    const botWithSources = await prisma.bot.findUnique({
+      where: { id: resolvedBotId },
+      include: { sources: true },
+    });
+    if (!botWithSources) {
       return NextResponse.json({ error: "Bot not found" }, { status: 404 });
     }
-    resolvedBotId = botRef.id;
-  }
+    const bot = botWithSources;
 
-  const botWithSources = await prisma.bot.findUnique({
-    where: { id: resolvedBotId },
-    include: { sources: true },
-  });
-  if (!botWithSources) {
-    return NextResponse.json({ error: "Bot not found" }, { status: 404 });
-  }
-  const bot = botWithSources;
+    let pendingSources = bot.sources.filter((s) => s.status === "pending");
 
-  let pendingSources = bot.sources.filter((s) => s.status === "pending");
-
-  if (pendingSources.length === 0) {
-    const failedSources = bot.sources.filter((s) => s.status === "failed");
-    if (failedSources.length > 0) {
-      await prisma.source.updateMany({
-        where: { id: { in: failedSources.map((s) => s.id) } },
-        data: { status: "pending", error: null },
-      });
-      pendingSources = failedSources;
-    } else {
-      return NextResponse.json(
-        { error: "No pending sources to train" },
-        { status: 400 }
-      );
+    if (pendingSources.length === 0) {
+      const failedSources = bot.sources.filter((s) => s.status === "failed");
+      if (failedSources.length > 0) {
+        await prisma.source.updateMany({
+          where: { id: { in: failedSources.map((s) => s.id) } },
+          data: { status: "pending", error: null },
+        });
+        pendingSources = failedSources;
+      } else {
+        return NextResponse.json(
+          { error: "No pending sources to train" },
+          { status: 400 }
+        );
+      }
     }
-  }
 
-  let totalChunks = 0;
-  let totalPages = 0;
+    let totalChunks = 0;
+    let totalPages = 0;
 
-  for (const source of pendingSources) {
+    for (const source of pendingSources) {
     try {
       await prisma.source.update({
         where: { id: source.id },
@@ -212,32 +213,42 @@ export async function POST(
         { status: 500 }
       );
     }
-  }
+    }
 
-  // Auto-generate quick prompts from content if bot has none
-  if (totalChunks > 0) {
-    const currentBot = await prisma.bot.findUnique({
-      where: { id: botId },
-      select: { quickPrompts: true },
-    });
-    if (!currentBot?.quickPrompts) {
-      try {
-        const prompts = await suggestQuickPromptsFromContent(botId);
-        await prisma.bot.update({
-          where: { id: botId },
-          data: { quickPrompts: JSON.stringify(prompts) },
-        });
-      } catch {
-        // ignore; defaults will be used
+    // Auto-generate quick prompts from content if bot has none
+    if (totalChunks > 0) {
+      const currentBot = await prisma.bot.findUnique({
+        where: { id: botId },
+        select: { quickPrompts: true },
+      });
+      if (!currentBot?.quickPrompts) {
+        try {
+          const prompts = await suggestQuickPromptsFromContent(botId);
+          await prisma.bot.update({
+            where: { id: botId },
+            data: { quickPrompts: JSON.stringify(prompts) },
+          });
+        } catch {
+          // ignore; defaults will be used
+        }
       }
     }
-  }
 
-  return NextResponse.json({
-    success: true,
-    chunksCreated: totalChunks,
-    pagesIndexed: totalPages,
-  });
+    return NextResponse.json({
+      success: true,
+      chunksCreated: totalChunks,
+      pagesIndexed: totalPages,
+    });
+  } catch (error) {
+    console.error("Training route error:", error);
+    return NextResponse.json(
+      {
+        error: "Training failed",
+        detail: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 async function isAllowedByRobotsTxt(url: string): Promise<boolean> {

@@ -129,9 +129,34 @@ export default function BotSetupPage() {
         method: "POST",
       });
       setTrainingProgress(90);
+      
+      // Check if response is OK and has content
+      if (!res.ok) {
+        const contentType = res.headers.get("content-type");
+        let errorMessage = "Training failed";
+        if (contentType?.includes("application/json")) {
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.detail || errorData.error || errorMessage;
+          } catch {
+            // If JSON parse fails, use status text
+            errorMessage = res.statusText || `HTTP ${res.status}`;
+          }
+        } else {
+          const text = await res.text();
+          errorMessage = text || res.statusText || `HTTP ${res.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Parse JSON response
+      const contentType = res.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Invalid response format: ${text.substring(0, 100)}`);
+      }
+      
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.detail || data.error || "Training failed");
       setTrainingProgress(100);
       setBot((prev) =>
         prev
