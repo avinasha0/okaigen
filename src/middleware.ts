@@ -18,6 +18,7 @@ function hasSession(req: NextRequest): boolean {
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
+  // Handle OPTIONS for CORS routes
   if (path.startsWith("/api/chat") || path.startsWith("/api/embed") || path.startsWith("/api/leads")) {
     if (req.method === "OPTIONS") {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -25,6 +26,11 @@ export function middleware(req: NextRequest) {
     const res = NextResponse.next();
     Object.entries(corsHeaders).forEach(([k, v]) => res.headers.set(k, v));
     return res;
+  }
+
+  // Ensure OPTIONS requests for API routes pass through
+  if (path.startsWith("/api/") && req.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204 });
   }
 
   const isPublic =

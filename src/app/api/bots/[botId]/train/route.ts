@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { chunkText } from "@/lib/chunking";
 import { generateEmbeddings } from "@/lib/embeddings";
 import { extractTextFromHtml } from "@/lib/scraper";
-import { parseDocument } from "@/lib/document-parser";
+// parseDocument imported dynamically only when processing documents (avoids pdf-parse browser API issues)
 import { estimateTokenCount } from "@/lib/tokenizer";
 import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
 import { getBotForUser } from "@/lib/team";
 
 /** Force dynamic so this route is never statically optimized (avoids 405 on POST on Vercel). */
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 300; // 5 minutes for long training jobs
 
 /** Allow cron to trigger training without session when x-cron-secret matches CRON_SECRET */
 function isCronRequest(req: Request): boolean {
@@ -182,6 +184,9 @@ export async function POST(
           }
         }
       } else if (source.type === "document" && source.documentUrl) {
+        // Dynamically import parseDocument only when processing documents
+        // This avoids loading pdf-parse (which uses browser APIs) for URL training
+        const { parseDocument } = await import("@/lib/document-parser");
         const response = await fetch(source.documentUrl);
         const buffer = Buffer.from(await response.arrayBuffer());
         const parsed = await parseDocument(
@@ -241,6 +246,10 @@ export async function POST(
       console.error("[train] Training error for source:", source.id, "type:", source.type, "url:", source.url || source.documentUrl);
       console.error("[train] Error message:", errorMsg);
       if (errorStack) console.error("[train] Error stack:", errorStack);
+      // Check for pdf-parse specific errors
+      if (errorMsg.includes("DOMMatrix") || errorMsg.includes("pdf-parse")) {
+        console.error("[train] PDF parsing error detected. This may be a serverless environment compatibility issue.");
+      }
       try {
         await prisma.source.update({
           where: { id: source.id },
