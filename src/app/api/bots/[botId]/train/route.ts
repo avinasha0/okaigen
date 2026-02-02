@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { chunkText } from "@/lib/chunking";
 import { generateEmbeddings } from "@/lib/embeddings";
 import { extractTextFromHtml } from "@/lib/scraper";
@@ -8,6 +6,9 @@ import { parseDocument } from "@/lib/document-parser";
 import { estimateTokenCount } from "@/lib/tokenizer";
 import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
 import { getBotForUser } from "@/lib/team";
+
+/** Force dynamic so this route is never statically optimized (avoids 405 on POST on Vercel). */
+export const dynamic = "force-dynamic";
 
 /** Allow cron to trigger training without session when x-cron-secret matches CRON_SECRET */
 function isCronRequest(req: Request): boolean {
@@ -21,32 +22,62 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });
 }
 
+/** GET not supported; return 405 so clients and logs can see the route is mounted. */
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ botId: string }> }
+) {
+  const { botId } = await params;
+  console.log("[train] GET received (method not allowed) botId=", botId);
+  return NextResponse.json(
+    { error: "Method not allowed", message: "Use POST to train the bot." },
+    { status: 405 }
+  );
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ botId: string }> }
 ) {
-  console.log("[train] POST request received");
+  const method = req.method;
+  console.log("[train] request method=", method, "url=", req.url);
+  if (method !== "POST") {
+    return NextResponse.json(
+      { error: "Method not allowed", message: "Use POST to train the bot." },
+      { status: 405 }
+    );
+  }
   try {
+    const { auth } = await import("@/lib/auth");
+    const { prisma } = await import("@/lib/db");
     const { botId } = await params;
-    console.log("[train] Bot ID:", botId);
+    console.log("[train] POST botId=", botId);
     const cronAuth = isCronRequest(req);
     let resolvedBotId: string;
 
     if (cronAuth) {
+      console.log("[train] Using cron auth, botId=", botId);
       resolvedBotId = botId;
     } else {
       const session = await auth();
       if (!session?.user?.id) {
+        console.error("[train] Unauthorized: no session or user.id, botId=", botId);
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+      console.log("[train] Authenticated user:", session.user.id, "botId=", botId);
       const { requireEmailVerificationForApi } = await import("@/lib/email-verification");
       const emailCheck = requireEmailVerificationForApi(session);
-      if (emailCheck) return emailCheck;
+      if (emailCheck) {
+        console.error("[train] Email verification required for user:", session.user.id);
+        return emailCheck;
+      }
       const botRef = await getBotForUser(session.user.id, botId);
       if (!botRef) {
+        console.error("[train] Bot not found or access denied. userId=", session.user.id, "botId=", botId);
         return NextResponse.json({ error: "Bot not found" }, { status: 404 });
       }
       resolvedBotId = botRef.id;
+      console.log("[train] Resolved botId:", resolvedBotId, "for user:", session.user.id);
     }
 
     const botWithSources = await prisma.bot.findUnique({
@@ -54,9 +85,11 @@ export async function POST(
       include: { sources: true },
     });
     if (!botWithSources) {
+      console.error("[train] Bot not found in DB. resolvedBotId=", resolvedBotId);
       return NextResponse.json({ error: "Bot not found" }, { status: 404 });
     }
     const bot = botWithSources;
+    console.log("[train] Bot found. sources count:", bot.sources.length, "pending:", bot.sources.filter(s => s.status === "pending").length);
 
     let pendingSources = bot.sources.filter((s) => s.status === "pending");
 
@@ -203,18 +236,26 @@ export async function POST(
         },
       });
     } catch (error) {
-      console.error("Training error for source:", source.id, error);
-      await prisma.source.update({
-        where: { id: source.id },
-        data: {
-          status: "failed",
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error("[train] Training error for source:", source.id, "type:", source.type, "url:", source.url || source.documentUrl);
+      console.error("[train] Error message:", errorMsg);
+      if (errorStack) console.error("[train] Error stack:", errorStack);
+      try {
+        await prisma.source.update({
+          where: { id: source.id },
+          data: {
+            status: "failed",
+            error: errorMsg,
+          },
+        });
+      } catch (dbError) {
+        console.error("[train] Failed to update source status in DB:", dbError);
+      }
       return NextResponse.json(
         {
           error: "Training failed",
-          detail: error instanceof Error ? error.message : "Unknown error",
+          detail: errorMsg,
         },
         { status: 500 }
       );
@@ -246,11 +287,16 @@ export async function POST(
       pagesIndexed: totalPages,
     });
   } catch (error) {
-    console.error("Training route error:", error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[train] Top-level route error. This should not happen if module loaded correctly.");
+    console.error("[train] Error message:", errorMsg);
+    if (errorStack) console.error("[train] Error stack:", errorStack);
+    console.error("[train] Error type:", error?.constructor?.name || typeof error);
     return NextResponse.json(
       {
         error: "Training failed",
-        detail: error instanceof Error ? error.message : "Unknown error",
+        detail: errorMsg,
       },
       { status: 500 }
     );

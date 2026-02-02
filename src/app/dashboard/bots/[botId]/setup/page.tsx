@@ -127,6 +127,7 @@ export default function BotSetupPage() {
     try {
       const res = await fetch(`/api/bots/${botId}/train`, {
         method: "POST",
+        credentials: "include",
       });
       setTrainingProgress(90);
       
