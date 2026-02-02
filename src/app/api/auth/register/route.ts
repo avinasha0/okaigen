@@ -33,16 +33,34 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Get Starter plan
+    const starterPlan = await prisma.plan.findFirst({
+      where: { name: "Starter", isActive: true },
+    });
+
+    if (!starterPlan) {
+      return NextResponse.json(
+        { error: "Starter plan not found. Please contact support." },
+        { status: 500 }
+      );
+    }
+
     const user = await prisma.user.create({
       data: {
         email,
         name: name || null,
         password: hashedPassword,
         termsAcceptedAt: new Date(),
+        userPlan: {
+          create: {
+            planId: starterPlan.id,
+            startsAt: new Date(),
+          },
+        },
       },
     });
 
-    // Email verification: send link (optional; user can still sign in)
+    // Email verification: send link (required for email/password users)
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${user.id}`;

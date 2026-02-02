@@ -5,6 +5,7 @@ import { z } from "zod";
 import { generateBotPublicKey } from "@/lib/utils";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { getEffectiveOwnerId } from "@/lib/team";
+import { requireEmailVerificationForApi } from "@/lib/email-verification";
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
@@ -26,6 +27,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const emailCheck = requireEmailVerificationForApi(session);
+  if (emailCheck) return emailCheck;
+
   const ownerId = await getEffectiveOwnerId(session.user.id);
   const bots = await prisma.bot.findMany({
     where: { userId: ownerId },
@@ -45,6 +49,9 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const emailCheck = requireEmailVerificationForApi(session);
+  if (emailCheck) return emailCheck;
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
   const planUsage = await getPlanUsage(session.user.id);

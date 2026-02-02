@@ -32,6 +32,9 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const { requireEmailVerificationForApi } = await import("@/lib/email-verification");
+    const emailCheck = requireEmailVerificationForApi(session);
+    if (emailCheck) return emailCheck;
     const botRef = await getBotForUser(session.user.id, botId);
     if (!botRef) {
       return NextResponse.json({ error: "Bot not found" }, { status: 404 });
