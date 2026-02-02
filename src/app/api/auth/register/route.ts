@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
-import { getPlanLimitsForDb } from "@/lib/plans-config";
 
 const schema = z.object({
   email: z.string().email(),
@@ -34,25 +33,20 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Get or create Starter plan
-    let starterPlan = await prisma.plan.findFirst({
+    // Get Starter plan (should exist from migration seed)
+    const starterPlan = await prisma.plan.findFirst({
       where: { name: "Starter", isActive: true },
     });
 
     if (!starterPlan) {
-      // Auto-create Starter plan if it doesn't exist (fallback if seed hasn't run)
-      const limits = getPlanLimitsForDb("Starter");
-      starterPlan = await prisma.plan.create({
-        data: {
-          name: "Starter",
-          dailyLimit: limits.dailyLimit,
-          botLimit: limits.botLimit,
-          storageLimit: limits.storageLimit,
-          teamMemberLimit: limits.teamMemberLimit,
-          price: 0,
-          isActive: true,
+      console.error("Starter plan not found in database. Ensure migrations have been run.");
+      return NextResponse.json(
+        { 
+          error: "System configuration error. Please contact support or ensure database migrations have been completed.",
+          code: "PLAN_NOT_FOUND"
         },
-      });
+        { status: 500 }
+      );
     }
 
     const user = await prisma.user.create({
