@@ -145,22 +145,24 @@
   }
 
   function addGreeting() {
-    addMessage("Loading...", "assistant", true);
+    var loadingDiv = document.createElement("div");
+    loadingDiv.className = "atlas-msg assistant loading";
+    loadingDiv.textContent = "Loading...";
+    messagesEl.appendChild(loadingDiv);
     var defaultPrompts = ["What do you offer?", "How can I contact you?", "Tell me about your services", "What are your hours?"];
-    fetch(baseUrl + "/api/embed/info?botId=" + encodeURIComponent(botId))
+    var embedUrl = (baseUrl || window.location.origin).replace(/\/$/, "") + "/api/embed/info?botId=" + encodeURIComponent(botId);
+    fetch(embedUrl)
       .then((r) => r.json())
       .then((data) => {
-        const last = messagesEl.lastElementChild;
-        if (last) last.remove();
+        if (loadingDiv.parentNode) loadingDiv.remove();
         addMessage(data.greeting || "Hi! How can I help you today?", "assistant");
         quickPromptsList = data.quickPrompts && Array.isArray(data.quickPrompts) ? data.quickPrompts : defaultPrompts;
         addQuickPrompts(quickPromptsList);
         var brandingEl = panel.querySelector(".atlas-branding");
         if (brandingEl) brandingEl.style.display = data.hideBranding ? "none" : "block";
       })
-      .catch(() => {
-        const last = messagesEl.lastElementChild;
-        if (last) last.remove();
+      .catch(function () {
+        if (loadingDiv.parentNode) loadingDiv.remove();
         addMessage("Hi! How can I help you today?", "assistant");
         quickPromptsList = defaultPrompts;
         addQuickPrompts(quickPromptsList);
@@ -181,7 +183,8 @@
     messagesEl.appendChild(loadingEl);
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
-    fetch(baseUrl + "/api/chat", {
+    var chatUrl = (baseUrl || window.location.origin).replace(/\/$/, "") + "/api/chat";
+    fetch(chatUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -196,15 +199,26 @@
         history: [],
       }),
     })
-      .then((r) => r.json().then(d => ({ status: r.status, data: d })))
-      .then(function(result) {
-        loadingEl.remove();
+      .then(function (r) {
+        return r.text().then(function (text) {
+          var data;
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch (e) {
+            data = { error: r.ok ? "Invalid response" : "Server error" };
+          }
+          return { status: r.status, data: data };
+        });
+      })
+      .then(function (result) {
+        if (loadingEl.parentNode) loadingEl.remove();
         if (result.status === 402 && result.data.quotaExceeded) {
           addMessage("⚠️ This bot has reached its daily message limit. Please contact the site owner or try again tomorrow.", "assistant");
         } else if (result.data.error) {
-          var msg = result.data.error && result.data.error.length < 200 ? result.data.error : "Sorry, something went wrong. Please try again.";
-          addMessage(msg, "assistant");
-        } else {
+          var errMsg = typeof result.data.error === "string" ? result.data.error : "Sorry, something went wrong. Please try again.";
+          if (errMsg.length > 300) errMsg = "Sorry, something went wrong. Please try again.";
+          addMessage(errMsg, "assistant");
+        } else if (result.data.response != null) {
           chatId = result.data.chatId;
           addMessage(result.data.response, "assistant");
           if (result.data.shouldCaptureLead) {
@@ -213,11 +227,17 @@
           if (clickedQuickPrompt && quickPromptsList.length > 0) {
             addQuickPrompts(quickPromptsList, clickedQuickPrompt);
           }
+        } else {
+          addMessage("Sorry, something went wrong. Please try again.", "assistant");
         }
       })
-      .catch(() => {
-        loadingEl.remove();
-        addMessage("Sorry, something went wrong. Please try again.", "assistant");
+      .catch(function (err) {
+        if (loadingEl.parentNode) loadingEl.remove();
+        var msg = "Sorry, something went wrong. Please try again.";
+        if (err && err.message && err.message.indexOf("Failed to fetch") !== -1) {
+          msg = "Network error. Please check your connection and try again.";
+        }
+        addMessage(msg, "assistant");
       })
       .finally(() => {
         sendBtn.disabled = false;
@@ -235,16 +255,28 @@
   // Allow external triggers (e.g. demo page chips) to open and send a message
   window.addEventListener("sitebotgpt-send", function (e) {
     if (!e.detail || e.detail.botId !== botId || !e.detail.text || !e.detail.text.trim()) return;
+    var textToSend = e.detail.text.trim();
     if (!isOpen) {
       isOpen = true;
       panel.style.display = "flex";
       bubble.innerHTML = closeIcon;
       bubble.setAttribute("aria-label", "Close chat");
-      if (messagesEl.children.length === 0) addGreeting();
+      if (messagesEl.children.length === 0) {
+        addGreeting();
+        // Wait for greeting to load (or 500ms) so panel is ready and we don't race with addGreeting
+        setTimeout(function () {
+          sendMessage(textToSend);
+        }, 500);
+      } else {
+        setTimeout(function () {
+          sendMessage(textToSend);
+        }, 100);
+      }
+    } else {
+      setTimeout(function () {
+        sendMessage(textToSend);
+      }, 100);
     }
-    setTimeout(function () {
-      sendMessage(e.detail.text.trim());
-    }, 150);
   });
 
   sendBtn.addEventListener("click", () => sendMessage(inputEl.value));

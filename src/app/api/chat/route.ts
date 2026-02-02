@@ -5,6 +5,18 @@ import { rateLimit } from "@/lib/rate-limit";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { getOwnerIdFromApiKey, getApiKeyFromRequest } from "@/lib/api-key-auth";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url",
+};
+
+function jsonWithCors(body: object, init?: ResponseInit) {
+  const res = NextResponse.json(body, init);
+  Object.entries(CORS_HEADERS).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
+
 export async function POST(req: Request) {
   const body = (await req.json()) as {
     botId?: string;
@@ -22,7 +34,7 @@ export async function POST(req: Request) {
     : `chat:${widgetBotKey || "unknown"}:${visitorId}`;
   const { success } = rateLimit(rlKey, 30, 60000);
   if (!success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonWithCors({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   try {
@@ -31,14 +43,14 @@ export async function POST(req: Request) {
     if (apiKeyRaw) {
       const ownerId = await getOwnerIdFromApiKey(req);
       if (!ownerId) {
-        return NextResponse.json(
+        return jsonWithCors(
           { error: "Invalid API key or your plan does not include API access. Upgrade to Scale or Enterprise." },
           { status: 401 }
         );
       }
       const requestedBotId = bodyBotId || widgetBotKey;
       if (!requestedBotId) {
-        return NextResponse.json(
+        return jsonWithCors(
           { error: "botId is required when using API key. Send botId in the request body." },
           { status: 400 }
         );
@@ -63,7 +75,7 @@ export async function POST(req: Request) {
     }
 
     if (!bot) {
-      return NextResponse.json(
+      return jsonWithCors(
         { error: "Bot not found. Use the embed code from Dashboard → your bot → Embed code, or your bot's public key (atlas_...). With API key, send a botId that belongs to your account." },
         { status: 400 }
       );
@@ -71,7 +83,7 @@ export async function POST(req: Request) {
 
     const planUsage = await getPlanUsage(bot.userId);
     if (planUsage && planUsage.usedMessages >= planUsage.totalMessages) {
-      return NextResponse.json(
+      return jsonWithCors(
         { 
           error: "Daily message limit reached. Please upgrade your plan to continue.", 
           quotaExceeded: true,
@@ -84,7 +96,7 @@ export async function POST(req: Request) {
 
     const sanitized = String(message).slice(0, 4000).trim();
     if (!sanitized) {
-      return NextResponse.json({ error: "Message required" }, { status: 400 });
+      return jsonWithCors({ error: "Message required" }, { status: 400 });
     }
 
     let chat;
@@ -172,7 +184,7 @@ export async function POST(req: Request) {
       bot.leadCaptureTrigger === "always" ||
       (bot.leadCaptureTrigger === "uncertain" && confidence < bot.confidenceThreshold);
 
-    return NextResponse.json({
+    return jsonWithCors({
       response,
       sources,
       chatId: chat.id,
@@ -185,7 +197,7 @@ export async function POST(req: Request) {
     if (error instanceof Error) message = error.message;
     else if (typeof (error as { error?: { message?: string } })?.error?.message === "string")
       message = (error as { error: { message: string } }).error.message;
-    return NextResponse.json(
+    return jsonWithCors(
       { error: message },
       { status: 500 }
     );
