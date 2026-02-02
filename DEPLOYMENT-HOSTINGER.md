@@ -43,7 +43,7 @@ In **Node.js Apps** → your app → **Environment Variables**, add at minimum:
 4. **Node.js version:** 20 or 22.
 5. **Build command:** `npm run build` (default)
    - `postinstall` runs `prisma generate`
-6. **Start command:** `npm start`
+6. **Start command:** **must be** `npm start` (not `next start`). Tables are created when the app starts; if you use `next start`, migrations never run and the database stays empty.
 7. **Root directory:** Leave default.
 8. **Domain:** Attach your domain (e.g. `sitebotgpt.com`).
 9. Click **Deploy**.
@@ -79,9 +79,9 @@ See `.env.example` for full list.
 |------|---------|
 | Install | `npm install` (runs `postinstall` → prisma generate) |
 | Build | `npm run build` |
-| Start | `npm start` |
+| Start | **`npm start`** (required—runs migrations then Next.js; do not use `next start`) |
 
-Use the default Hostinger build settings.
+Use the default Hostinger build settings. If the database has no tables, the Start command is almost always wrong (e.g. `next start` instead of `npm start`) or `DATABASE_URL` is not set in Environment Variables.
 
 ---
 
@@ -91,7 +91,7 @@ Use the default Hostinger build settings.
 |-------|---------------|
 | Build fails on "Cannot find module '@prisma/client'" | `postinstall` should run prisma generate. Check `.npmrc` has `legacy-peer-deps=true` if needed. |
 | 500 or "DB error" on `/api/db-test` | `DATABASE_URL` correct; migrations run at startup—restart app after fixing env. |
-| No tables in database | `DATABASE_URL` must be in env. Migrations run at app startup; restart the app after adding/fixing `DATABASE_URL`. |
+| No tables in database | 1) **Start command** must be exactly `npm start` (not `next start`). 2) **DATABASE_URL** must be set in Environment Variables before first start. 3) Restart the app after adding/fixing it. 4) In deployment logs, look for `[start-with-migrate] Running database migrations...` and `Migrations completed.`—if you see `Skipping migrations` instead, DATABASE_URL is missing or wrong. |
 | NextAuth redirect errors | `NEXTAUTH_URL` = exact app URL. |
 | Styles not applied | Tailwind in `dependencies`; hard refresh (Ctrl+Shift+R). |
 
