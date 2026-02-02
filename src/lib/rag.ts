@@ -13,6 +13,7 @@ import { openai, CHAT_MODEL } from "./openai";
 import { generateEmbedding } from "./embeddings";
 import { prisma } from "./db";
 import { searchVectors, type VectorResult } from "./vector-search";
+import { responseCache, normalizeCacheKey, botCache } from "./cache";
 
 export interface RAGContext {
   chunks: VectorResult[];
