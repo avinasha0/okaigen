@@ -209,53 +209,57 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={!canViewAnalytics ? "/dashboard/analytics" : `/dashboard/bots/${bot.id}/analytics`} className="flex-1 min-w-[100px] sm:flex-none">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={`w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewAnalytics ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
-                          title={!canViewAnalytics ? "Upgrade to view analytics" : undefined}
-                        >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`flex-1 min-w-[100px] sm:flex-none w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewAnalytics ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
+                        title={!canViewAnalytics ? "Upgrade to view analytics" : undefined}
+                        asChild
+                      >
+                        <Link href={!canViewAnalytics ? "/dashboard/analytics" : `/dashboard/bots/${bot.id}/analytics`}>
                           {!canViewAnalytics && (
                             <svg className="h-3.5 w-3.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                           )}
                           Analytics
-                        </Button>
-                      </Link>
-                      <Link href={`/dashboard/bots/${bot.id}/chats`} className="flex-1 min-w-[100px] sm:flex-none">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full border-zinc-300 text-zinc-700 sm:w-auto"
-                        >
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-w-[100px] sm:flex-none w-full border-zinc-300 text-zinc-700 sm:w-auto"
+                        asChild
+                      >
+                        <Link href={`/dashboard/bots/${bot.id}/chats`}>
                           Chats
-                        </Button>
-                      </Link>
-                      <Link href={!canViewLeads ? "/dashboard/leads" : `/dashboard/bots/${bot.id}/leads`} className="flex-1 min-w-[100px] sm:flex-none">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={`w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewLeads ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
-                          title={!canViewLeads ? "Upgrade to view leads" : undefined}
-                        >
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`flex-1 min-w-[100px] sm:flex-none w-full sm:w-auto inline-flex items-center gap-1.5 ${!canViewLeads ? "border-amber-200 bg-amber-50/50 text-zinc-500" : "border-zinc-300 text-zinc-700"}`}
+                        title={!canViewLeads ? "Upgrade to view leads" : undefined}
+                        asChild
+                      >
+                        <Link href={!canViewLeads ? "/dashboard/leads" : `/dashboard/bots/${bot.id}/leads`}>
                           {!canViewLeads && (
                             <svg className="h-3.5 w-3.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                           )}
                           Leads
-                        </Button>
-                      </Link>
-                      <Link href={`/dashboard/bots/${bot.id}`} className="flex-1 min-w-[100px] sm:flex-none">
-                        <Button
-                          size="sm"
-                          className="w-full bg-[#1a6aff] hover:bg-[#1557e0] sm:w-auto"
-                        >
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 min-w-[100px] sm:flex-none w-full bg-[#1a6aff] hover:bg-[#1557e0] sm:w-auto"
+                        asChild
+                      >
+                        <Link href={`/dashboard/bots/${bot.id}`}>
                           Open
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 ))}
