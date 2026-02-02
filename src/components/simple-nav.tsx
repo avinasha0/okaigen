@@ -16,9 +16,9 @@ export function SimpleNav({ links, ctaLabel = "Start free", ctaHref = "/signup" 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 min-w-0 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex min-w-0 shrink items-center justify-start" aria-label="SiteBotGPT home">
-          <span className="relative flex h-12 min-h-[48px] w-full max-w-[140px] shrink overflow-hidden bg-transparent sm:max-w-[180px] sm:h-14 sm:min-h-[56px] md:max-w-[260px] md:h-16 md:min-h-[64px] md:w-[260px] md:shrink-0 lg:w-[360px]">
-            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 140px, (max-width: 768px) 180px, (max-width: 1024px) 260px, 360px" priority unoptimized />
+        <Link href="/" className="flex shrink-0 items-center justify-start" aria-label="SiteBotGPT home">
+          <span className="relative flex h-12 min-h-[48px] w-[120px] overflow-hidden bg-transparent sm:h-14 sm:min-h-[56px] sm:w-[160px] md:h-16 md:min-h-[64px] md:w-[260px] lg:w-[360px]">
+            <Image src="/sitebotgpt.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 120px, (max-width: 768px) 160px, (max-width: 1024px) 260px, 360px" priority unoptimized />
           </span>
         </Link>
 
