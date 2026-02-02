@@ -6,6 +6,8 @@ import { extractTextFromHtml } from "@/lib/scraper";
 import { estimateTokenCount } from "@/lib/tokenizer";
 import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
 import { getBotForUser } from "@/lib/team";
+import { getPlanUsage } from "@/lib/plan-usage";
+import { getPageLimit } from "@/lib/plans-config";
 
 /** Force dynamic so this route is never statically optimized (avoids 405 on POST on Vercel). */
 export const dynamic = "force-dynamic";
@@ -50,10 +52,17 @@ export async function POST(
     );
   }
   try {
+    let streamResponse = false;
+    try {
+      const body = await req.json();
+      streamResponse = !!(body && typeof body === "object" && (body as { stream?: boolean }).stream);
+    } catch {
+      // no body or invalid JSON – use normal JSON response
+    }
     const { auth } = await import("@/lib/auth");
     const { prisma } = await import("@/lib/db");
     const { botId } = await params;
-    console.log("[train] POST botId=", botId);
+    console.log("[train] POST botId=", botId, "stream=", streamResponse);
     const cronAuth = isCronRequest(req);
     let resolvedBotId: string;
 
@@ -91,7 +100,9 @@ export async function POST(
       return NextResponse.json({ error: "Bot not found" }, { status: 404 });
     }
     const bot = botWithSources;
-    console.log("[train] Bot found. sources count:", bot.sources.length, "pending:", bot.sources.filter(s => s.status === "pending").length);
+    const planUsage = cronAuth ? null : await getPlanUsage(bot.userId);
+    const pageLimit = planUsage ? getPageLimit(planUsage.planName) : 50;
+    console.log("[train] Bot found. sources count:", bot.sources.length, "pending:", bot.sources.filter(s => s.status === "pending").length, "pageLimit:", pageLimit);
 
     let pendingSources = bot.sources.filter((s) => s.status === "pending");
 
@@ -113,7 +124,9 @@ export async function POST(
 
     let totalChunks = 0;
     let totalPages = 0;
+    let trainEmit: ((ev: object) => void) | undefined;
 
+    const runTraining = async () => {
     for (const source of pendingSources) {
     try {
       await prisma.source.update({
@@ -139,13 +152,13 @@ export async function POST(
             if (res.ok && text.trim().length > 100) {
               pages = [{ url: `${urlOrigin}/`, title: "SiteBotGPT", content: text }];
             } else {
-              pages = await crawlWebsite(url);
+              pages = await crawlWebsite(url, pageLimit);
             }
           } catch {
-            pages = await crawlWebsite(url);
+            pages = await crawlWebsite(url, pageLimit);
           }
         } else {
-          pages = await crawlWebsite(url);
+          pages = await crawlWebsite(url, pageLimit);
         }
 
         totalPages += pages.length;
@@ -155,7 +168,10 @@ export async function POST(
           );
         }
 
+        trainEmit?.({ type: "pages_discovered", count: pages.length, pages: pages.map((p) => ({ url: p.url, title: p.title })) });
+        let completedCount = 0;
         for (const page of pages) {
+          trainEmit?.({ type: "page", url: page.url, title: page.title, status: "in_progress", considered: pages.length, completed: completedCount, inProgress: 1, pending: pages.length - completedCount - 1 });
           const textChunks = chunkText(page.content, {
             sourceUrl: page.url,
             pageTitle: page.title,
@@ -182,8 +198,12 @@ export async function POST(
             });
             totalChunks++;
           }
+          completedCount++;
+          trainEmit?.({ type: "page", url: page.url, title: page.title, status: "completed", considered: pages.length, completed: completedCount, inProgress: 0, pending: pages.length - completedCount });
         }
       } else if (source.type === "document" && source.documentUrl) {
+        trainEmit?.({ type: "pages_discovered", count: 1, pages: [{ url: source.documentUrl, title: source.title || "document" }] });
+        trainEmit?.({ type: "page", url: source.documentUrl, title: source.title || "document", status: "in_progress", considered: 1, completed: 0, inProgress: 1, pending: 0 });
         // Dynamically import parseDocument only when processing documents
         // This avoids loading pdf-parse (which uses browser APIs) for URL training
         const { parseDocument } = await import("@/lib/document-parser");
@@ -221,6 +241,7 @@ export async function POST(
           totalChunks++;
         }
         totalPages = 1;
+        trainEmit?.({ type: "page", url: source.documentUrl, title: source.title || "document", status: "completed", considered: 1, completed: 1, inProgress: 0, pending: 0 });
       }
 
       await prisma.source.update({
@@ -261,27 +282,77 @@ export async function POST(
       } catch (dbError) {
         console.error("[train] Failed to update source status in DB:", dbError);
       }
-      return NextResponse.json(
-        {
-          error: "Training failed",
-          detail: errorMsg,
+      throw new Error(errorMsg);
+    }
+    }
+    return { totalChunks, totalPages };
+    };
+
+    if (streamResponse) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          trainEmit = (ev: object) => {
+            try {
+              controller.enqueue(encoder.encode(JSON.stringify(ev) + "\n"));
+            } catch (_) {}
+          };
+          try {
+            trainEmit({ type: "init", message: "Starting training..." });
+            const result = await runTraining();
+            if (result.totalChunks > 0) {
+              const currentBot = await prisma.bot.findUnique({
+                where: { id: resolvedBotId },
+                select: { quickPrompts: true },
+              });
+              if (!currentBot?.quickPrompts) {
+                try {
+                  const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
+                  await prisma.bot.update({
+                    where: { id: resolvedBotId },
+                    data: { quickPrompts: JSON.stringify(prompts) },
+                  });
+                } catch {
+                  /* ignore */
+                }
+              }
+            }
+            trainEmit({ type: "done", chunksCreated: result.totalChunks, pagesIndexed: result.totalPages });
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            trainEmit({ type: "error", error: "Training failed", detail: msg });
+          } finally {
+            controller.close();
+          }
         },
+      });
+      return new Response(stream, {
+        headers: { "Content-Type": "application/x-ndjson" },
+      });
+    }
+
+    let result: { totalChunks: number; totalPages: number };
+    try {
+      result = await runTraining();
+    } catch (trainErr) {
+      const detail = trainErr instanceof Error ? trainErr.message : "Unknown error";
+      return NextResponse.json(
+        { error: "Training failed", detail },
         { status: 500 }
       );
     }
-    }
 
     // Auto-generate quick prompts from content if bot has none
-    if (totalChunks > 0) {
+    if (result.totalChunks > 0) {
       const currentBot = await prisma.bot.findUnique({
-        where: { id: botId },
+        where: { id: resolvedBotId },
         select: { quickPrompts: true },
       });
       if (!currentBot?.quickPrompts) {
         try {
-          const prompts = await suggestQuickPromptsFromContent(botId);
+          const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
           await prisma.bot.update({
-            where: { id: botId },
+            where: { id: resolvedBotId },
             data: { quickPrompts: JSON.stringify(prompts) },
           });
         } catch {
@@ -292,8 +363,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      chunksCreated: totalChunks,
-      pagesIndexed: totalPages,
+      chunksCreated: result.totalChunks,
+      pagesIndexed: result.totalPages,
     });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -357,7 +428,10 @@ async function discoverUrlsFromSitemap(origin: string): Promise<string[]> {
   return urls;
 }
 
-async function crawlWebsite(startUrl: string): Promise<{ url: string; title: string; content: string }[]> {
+async function crawlWebsite(
+  startUrl: string,
+  maxPages: number = 50
+): Promise<{ url: string; title: string; content: string }[]> {
   const origin = new URL(startUrl).origin;
   const visited = new Set<string>();
   let toVisit: string[] = [startUrl];
@@ -369,7 +443,6 @@ async function crawlWebsite(startUrl: string): Promise<{ url: string; title: str
   }
 
   const results: { url: string; title: string; content: string }[] = [];
-  const maxPages = 50;
 
   if (!(await isAllowedByRobotsTxt(startUrl))) return results;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -27,8 +27,25 @@ function DashboardShellInner({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRefMobile = useRef<HTMLDivElement>(null);
+  const profileRefDesktop = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { isStarterPlan, canViewLeads: hasLeads, canViewAnalytics: hasAnalytics, hasApiAccess, hasWebhooks } = usePlan();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      const inside =
+        (profileRefMobile.current && profileRefMobile.current.contains(target)) ||
+        (profileRefDesktop.current && profileRefDesktop.current.contains(target));
+      if (!inside) setProfileOpen(false);
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [profileOpen]);
 
   const handleBotsClick = (e: React.MouseEvent) => {
     setSidebarOpen(false);
@@ -52,11 +69,32 @@ function DashboardShellInner({
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
-          <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
-            <Image src="/sitebotgpt_logowhite.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
+        <Link href="/dashboard" className="flex h-14 min-w-0 flex-1 items-center" aria-label="SiteBotGPT dashboard">
+          <span className="relative flex h-8 w-full max-w-[150px] shrink-0 overflow-hidden bg-transparent">
+            <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="150px" priority unoptimized />
           </span>
         </Link>
+        <div className="relative shrink-0" ref={profileRefMobile}>
+          <button
+            type="button"
+            onClick={() => setProfileOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            aria-label="Profile"
+            aria-expanded={profileOpen}
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-zinc-700 bg-zinc-800 py-2 shadow-xl">
+              <div className="truncate px-4 py-2 text-sm text-zinc-300">{userEmail ?? "User"}</div>
+              <div className="border-t border-zinc-700 px-2 pt-2">
+                <SignOutButton className="w-full rounded px-3 py-2 text-left text-zinc-400 hover:bg-zinc-700 hover:text-white" />
+              </div>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Overlay when sidebar open on mobile */}
@@ -71,14 +109,14 @@ function DashboardShellInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-200 ease-out md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col overflow-hidden border-r border-zinc-800 bg-zinc-900 transition-transform duration-200 ease-out md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4 md:h-16 md:px-6">
-          <Link href="/dashboard" className="flex items-center" aria-label="SiteBotGPT dashboard">
-            <span className="relative flex h-14 min-h-[56px] w-[240px] min-w-[200px] shrink-0 overflow-hidden bg-transparent">
-              <Image src="/sitebotgpt_logowhite.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="240px" priority unoptimized />
+        <div className="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 px-3 md:h-12 md:px-4">
+          <Link href="/dashboard" className="flex h-10 w-full items-center md:h-12" aria-label="SiteBotGPT dashboard">
+            <span className="relative flex h-8 w-full shrink-0 overflow-hidden bg-transparent md:h-10 md:max-w-[130px]">
+              <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="130px" priority unoptimized />
             </span>
           </Link>
           <button
@@ -92,7 +130,7 @@ function DashboardShellInner({
             </svg>
           </button>
         </div>
-        <nav className="flex-1 space-y-0.5 px-3 py-4">
+        <nav className="flex-1 space-y-0.5 overflow-hidden px-3 py-4">
           <Link
             href="/dashboard"
             onClick={() => setSidebarOpen(false)}
@@ -123,8 +161,10 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Leads</span>
             {!hasLeads && (
-              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade to view leads">
-                Upgrade
+              <span className="shrink-0 rounded bg-amber-500/20 p-1 text-amber-400" title="Upgrade to view leads">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </span>
             )}
           </Link>
@@ -138,8 +178,10 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Analytics</span>
             {!hasAnalytics && (
-              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade to view analytics">
-                Upgrade
+              <span className="shrink-0 rounded bg-amber-500/20 p-1 text-amber-400" title="Upgrade to view analytics">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </span>
             )}
           </Link>
@@ -163,8 +205,10 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">API</span>
             {!hasApiAccess && (
-              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade for API access">
-                Upgrade
+              <span className="shrink-0 rounded bg-amber-500/20 p-1 text-amber-400" title="Upgrade for API access">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </span>
             )}
           </Link>
@@ -178,8 +222,10 @@ function DashboardShellInner({
             </svg>
             <span className="flex-1">Webhooks</span>
             {!hasWebhooks && (
-              <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-400" title="Upgrade for webhooks">
-                Upgrade
+              <span className="shrink-0 rounded bg-amber-500/20 p-1 text-amber-400" title="Upgrade for webhooks">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </span>
             )}
           </Link>
@@ -252,24 +298,42 @@ function DashboardShellInner({
               </div>
               <Link
                 href="/dashboard/pricing"
-                className="mt-2 block text-center text-xs font-medium text-[#1a6aff] hover:underline"
+                className="mt-2 flex items-center justify-center gap-1.5 text-xs font-medium text-[#1a6aff] hover:underline"
               >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
                 Upgrade plan
               </Link>
             </div>
           </div>
         )}
-        <div className="border-t border-zinc-800 p-4">
-          <div className="mb-2 truncate px-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Account</div>
-          <p className="truncate px-3 text-sm text-zinc-400">{userEmail ?? "User"}</p>
-          <div className="mt-2 px-3">
-            <SignOutButton className="text-zinc-400 hover:text-white" />
-          </div>
-        </div>
       </aside>
 
       {/* Main */}
       <main className="min-h-screen min-w-0 flex-1 pt-14 md:pt-0 md:pl-64">
+        {/* Profile icon top right (desktop) */}
+        <div className="absolute right-4 top-4 z-40 hidden md:block" ref={profileRefDesktop}>
+          <button
+            type="button"
+            onClick={() => setProfileOpen((o) => !o)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 shadow-sm hover:bg-zinc-50 hover:text-zinc-900"
+            aria-label="Profile"
+            aria-expanded={profileOpen}
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-zinc-200 bg-white py-2 shadow-lg">
+              <div className="truncate px-4 py-2 text-sm text-zinc-600">{userEmail ?? "User"}</div>
+              <div className="border-t border-zinc-100 px-2 pt-2">
+                <SignOutButton className="w-full rounded px-3 py-2 text-left text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900" />
+              </div>
+            </div>
+          )}
+        </div>
         {children}
       </main>
     </div>

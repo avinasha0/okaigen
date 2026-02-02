@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const leadSchema = z.object({
   botId: z.string(),
+  chatId: z.string().optional(),
   name: z.string().optional(),
   email: z.string().email(),
   phone: z.string().optional(),
@@ -43,6 +44,16 @@ export async function POST(req: Request) {
       pageUrl: data.pageUrl,
     },
   });
+
+  if (data.chatId && (data.name || data.email)) {
+    await prisma.chat.updateMany({
+      where: { id: data.chatId, botId: bot.id },
+      data: {
+        visitorName: data.name ?? undefined,
+        visitorEmail: data.email,
+      },
+    });
+  }
 
   const { triggerWebhooks } = await import("@/lib/webhooks");
   triggerWebhooks(bot.userId, "lead.captured", {

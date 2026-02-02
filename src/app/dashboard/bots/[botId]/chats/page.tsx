@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 
 interface Chat {
   id: string;
+  visitorName: string | null;
   visitorEmail: string | null;
   pageUrl: string | null;
   createdAt: string;
@@ -106,7 +107,7 @@ export default function ChatsPage() {
                       }`}
                     >
                       <div className="truncate">
-                        {chat.visitorEmail || "Anonymous"}
+                        {chat.visitorName || chat.visitorEmail || "Unknown"}
                       </div>
                       <div className="text-xs text-gray-500">
                         {new Date(chat.createdAt).toLocaleDateString()}
@@ -123,7 +124,7 @@ export default function ChatsPage() {
             <CardHeader>
               <CardTitle>
                 {selected
-                  ? selected.visitorEmail || "Anonymous"
+                  ? selected.visitorName || selected.visitorEmail || "Unknown"
                   : "Select a chat"}
               </CardTitle>
               {selected?.pageUrl && (

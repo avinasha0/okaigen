@@ -51,7 +51,7 @@ export const PLAN_CAPABILITIES: Record<PlanName, PlanCapabilities> = {
     apiAccess: false,
     webhooks: false,
     prioritySupport: false,
-    pageLimit: 500,
+    pageLimit: 10,
     refreshSchedule: "manual",
   },
   Growth: {
@@ -168,6 +168,11 @@ export function canManualRefresh(planName: string): boolean {
 export function hasAutoRefresh(planName: string): boolean {
   const schedule = getCapabilities(planName)?.refreshSchedule;
   return schedule === "weekly" || schedule === "daily";
+}
+
+/** Max pages to crawl for website training (Starter: 10, Growth: 2000, etc.) */
+export function getPageLimit(planName: string): number {
+  return getCapabilities(planName)?.pageLimit ?? 10;
 }
 
 /** Limits for DB seed / display (dailyLimit, botLimit, storageLimit, teamMemberLimit) */

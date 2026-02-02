@@ -9,7 +9,7 @@ export const PLANS = [
     features: [
       "1 chatbot",
       "Up to 10 messages per day",
-      "Website training",
+      "Website training (up to 10 pages)",
       "Chat widget embed",
       { text: "Document training", excluded: true },
       { text: "Lead capture", excluded: true },

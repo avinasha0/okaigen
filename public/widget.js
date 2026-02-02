@@ -122,7 +122,7 @@
       fetch(baseUrl + "/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ botId, email, name: name || undefined, phone: phone || undefined, pageUrl: window.location.href }),
+        body: JSON.stringify({ botId, chatId: chatId || undefined, email, name: name || undefined, phone: phone || undefined, pageUrl: window.location.href }),
       })
         .then((r) => r.json())
         .then(function (data) {

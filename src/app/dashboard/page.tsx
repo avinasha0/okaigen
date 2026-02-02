@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { NewBotButton } from "@/components/new-bot-button";
+import { SupportRequestForm } from "@/components/support-request-form";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -50,16 +51,13 @@ export default async function DashboardPage() {
     <div className="min-h-screen">
       {/* Top bar */}
       <div className="border-b border-zinc-200 bg-white px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
-              Dashboard
-            </h1>
-            <p className="mt-0.5 text-sm text-zinc-500">
-              Manage your AI assistants and view usage
-            </p>
-          </div>
-          <NewBotButton canCreate={canCreateBot} planUsage={planUsage} className="w-full sm:w-auto" />
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
+            Dashboard
+          </h1>
+          <p className="mt-0.5 text-sm text-zinc-500">
+            Manage your AI assistants and view usage
+          </p>
         </div>
       </div>
 
@@ -274,6 +272,11 @@ export default async function DashboardPage() {
               </div>
             </Card>
           )}
+        </div>
+
+        {/* Support section */}
+        <div className="mt-8">
+          <SupportRequestForm />
         </div>
       </div>
     </div>
