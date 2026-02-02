@@ -166,6 +166,7 @@ npm start
 | 500 on app or “DB error” on `/api/db-test` | `DATABASE_URL` in hPanel; correct user/password/db name; schema applied (`migrate deploy` or `db push`). |
 | NextAuth redirect or session errors | `NEXTAUTH_URL` and `AUTH_SECRET` set in hPanel; `NEXTAUTH_URL` = exact app URL (e.g. `https://yourdomain.com`). |
 | Webhooks (Stripe/Razorpay/PayPal) fail | Webhook URL uses HTTPS and correct path; env has the right `*_WEBHOOK_SECRET`. |
+| Styles/CSS not applied | `tailwindcss` and `@tailwindcss/postcss` are in `dependencies` (required for build). Hard refresh (Ctrl+Shift+R) to clear cache. |
 
 ---
 
