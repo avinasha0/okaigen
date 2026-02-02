@@ -60,7 +60,7 @@
   panel.className = "atlas-widget atlas-panel";
   panel.style.display = "none";
   panel.innerHTML = `
-    <div class="atlas-header">Chat</div>
+    <div class="atlas-header">SiteBotGPT Helper</div>
     <div class="atlas-messages"></div>
     <div class="atlas-input-wrap">
       <input type="text" class="atlas-input" placeholder="Ask a question..." />
