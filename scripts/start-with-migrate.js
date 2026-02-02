@@ -36,6 +36,11 @@ if (isPlaceholder) {
     "[start-with-migrate] Set DATABASE_URL in your hosting Environment Variables and use Start command: npm start"
   );
 } else {
+  // Log that we're using a real DB (helpful when DB was recreated elsewhere)
+  const hostMatch = dbUrl.match(/@([^/]+)\//);
+  const host = hostMatch ? hostMatch[1].replace(/:.*$/, "") : "unknown";
+  console.log("[start-with-migrate] DATABASE_URL set, host: " + host);
+
   try {
     console.log("[start-with-migrate] Running database migrations...");
     execSync("npx prisma migrate deploy", { stdio: "inherit" });
@@ -53,7 +58,8 @@ if (isPlaceholder) {
     }
   } catch (err) {
     console.error("[start-with-migrate] prisma migrate deploy failed:", err.message);
-    process.exit(1);
+    console.warn("[start-with-migrate] Continuing to start app. Fix DATABASE_URL and restart to run migrations.");
+    // Don't exit(1) so the app can start; you can fix DB and restart
   }
 }
 

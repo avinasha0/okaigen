@@ -41,9 +41,12 @@ In **Node.js Apps** → your app → **Environment Variables**, add at minimum:
 2. Click **Add Website** (or **Create Node.js App**).
 3. Choose **Import Git Repository** (GitHub) or **Upload** (ZIP).
 4. **Node.js version:** 20 or 22.
-5. **Build command:** `npm run build` (default)
-   - `postinstall` runs `prisma generate`
-6. **Start command:** **must be** `npm start` (not `next start`). Tables are created when the app starts; if you use `next start`, migrations never run and the database stays empty.
+5. **Install command:** `npm install` (default)
+   - `postinstall` automatically runs `prisma generate`
+6. **Build command:** Either:
+   - `npm run build` (recommended - `prisma generate` already ran in postinstall)
+   - `prisma generate && next build` (also works, but redundant since postinstall already generates)
+7. **Start command:** **must be** `npm start` (not `next start`). Tables and plans are created when the app starts; if you use `next start`, migrations and seeding never run.
 7. **Root directory:** Leave default.
 8. **Domain:** Attach your domain (e.g. `sitebotgpt.com`).
 9. Click **Deploy**.
@@ -75,11 +78,11 @@ See `.env.example` for full list.
 
 ## 6. Build / start commands summary
 
-| Step | Command |
-|------|---------|
-| Install | `npm install` (runs `postinstall` → prisma generate) |
-| Build | `npm run build` |
-| Start | **`npm start`** (required—runs migrations, seeds plans, then starts Next.js; do not use `next start`) |
+| Step | Command | Notes |
+|------|---------|-------|
+| Install | `npm install` | Automatically runs `postinstall` → `prisma generate` |
+| Build | `npm run build` or `prisma generate && next build` | Both work; `npm run build` is simpler since generate already ran |
+| Start | **`npm start`** | Required—runs migrations, seeds plans, then starts Next.js; do not use `next start` |
 
 Use the default Hostinger build settings. On startup, `npm start` automatically:
 1. Runs `prisma migrate deploy` (creates tables)
