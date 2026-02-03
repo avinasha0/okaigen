@@ -37,15 +37,23 @@ export async function POST(
     }
     const u = new URL(normalizedUrl);
     const title = u.pathname === "/" || !u.pathname ? u.hostname : u.hostname + u.pathname;
+    const now = new Date();
+    
+    console.log(`[sources] Creating URL source: botId=${botId}, url=${normalizedUrl}, title=${title}`);
+    
     const source = await prisma.source.create({
       data: {
+        id: generateId(),
         botId,
         type: "url",
         url: normalizedUrl,
         title,
         status: "pending",
+        updatedAt: now,
       },
     });
+    
+    console.log(`[sources] URL source created: sourceId=${source.id}`);
     return NextResponse.json({
       sources: [{ id: source.id, title: source.title }],
     });
