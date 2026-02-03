@@ -32,7 +32,7 @@ export async function GET(
       botId,
       ...(search
         ? {
-            messages: {
+            chatmessage: {
               some: {
                 content: { contains: search },
               },
@@ -48,8 +48,8 @@ export async function GET(
       pageUrl: true,
       createdAt: true,
       updatedAt: true,
-      _count: { select: { messages: true } },
-      messages: {
+      _count: { select: { chatmessage: true } },
+      chatmessage: {
         orderBy: { createdAt: "desc" },
         take: 1,
         select: { id: true, role: true, content: true, createdAt: true },

@@ -30,7 +30,7 @@ export async function GET(
       pageUrl: true,
       createdAt: true,
       updatedAt: true,
-      messages: {
+      chatmessage: {
         orderBy: { createdAt: "asc" },
         select: { id: true, role: true, content: true, createdAt: true },
       },

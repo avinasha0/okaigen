@@ -23,6 +23,7 @@
   let isOpen = false;
   let chatId = null;
   let quickPromptsList = [];
+  let answeredPrompts = []; // Track which prompts have been answered
   const visitorId = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
   const style = document.createElement("style");
@@ -103,6 +104,31 @@
     div.textContent = content;
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function addStreamingMessage() {
+    const div = document.createElement("div");
+    div.className = "atlas-msg assistant";
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function typeText(element, text, speed = 15) {
+    if (!text) return null;
+    let index = 0;
+    const timer = setInterval(function() {
+      if (index < text.length) {
+        element.textContent += text[index];
+        index++;
+        // Auto-scroll to bottom
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      } else {
+        clearInterval(timer);
+      }
+    }, speed);
+    return timer;
   }
 
   function showLeadForm() {
@@ -137,7 +163,17 @@
   }
 
   function addQuickPrompts(prompts, excludeText) {
-    var list = Array.isArray(prompts) ? (excludeText ? prompts.filter(function (p) { return p !== excludeText; }) : prompts) : [];
+    // Remove any existing quick prompts wrapper to avoid duplicates
+    var existingWraps = messagesEl.querySelectorAll(".atlas-quick-prompts-wrap");
+    existingWraps.forEach(function(w) { w.remove(); });
+    
+    // Filter out prompts that have already been answered
+    var list = Array.isArray(prompts) ? prompts.filter(function (p) {
+      // Exclude the current prompt being clicked
+      if (excludeText && p === excludeText) return false;
+      // Exclude prompts that have already been answered
+      return answeredPrompts.indexOf(p) === -1;
+    }) : [];
     if (list.length === 0) return;
     const wrap = document.createElement("div");
     wrap.className = "atlas-quick-prompts-wrap";
@@ -150,6 +186,10 @@
       btn.textContent = q;
       btn.addEventListener("click", function () {
         wrap.remove();
+        // Mark this prompt as answered
+        if (answeredPrompts.indexOf(q) === -1) {
+          answeredPrompts.push(q);
+        }
         sendMessage(q, q);
       });
       container.appendChild(btn);
@@ -199,6 +239,8 @@
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
     var chatUrl = (baseUrl || window.location.origin).replace(/\/$/, "") + "/api/chat";
+    
+    // Use streaming by default for better UX
     fetch(chatUrl, {
       method: "POST",
       headers: {
@@ -212,9 +254,29 @@
         message: text.trim(),
         chatId,
         history: [],
+        stream: true, // Enable streaming
       }),
     })
       .then(function (r) {
+        if (!r.ok) {
+          return r.text().then(function (text) {
+            var data;
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch (e) {
+              data = { error: "Server error" };
+            }
+            return { status: r.status, data: data, stream: false };
+          });
+        }
+
+        // Check if response is streaming (text/event-stream)
+        const contentType = r.headers.get("content-type") || "";
+        if (contentType.includes("text/event-stream")) {
+          return { status: r.status, stream: true, reader: r.body.getReader() };
+        }
+
+        // Fallback to non-streaming
         return r.text().then(function (text) {
           var data;
           try {
@@ -222,28 +284,106 @@
           } catch (e) {
             data = { error: r.ok ? "Invalid response" : "Server error" };
           }
-          return { status: r.status, data: data };
+          return { status: r.status, data: data, stream: false };
         });
       })
       .then(function (result) {
         if (loadingEl.parentNode) loadingEl.remove();
-        if (result.status === 402 && result.data.quotaExceeded) {
-          addMessage("⚠️ This bot has reached its daily message limit. Please contact the site owner or try again tomorrow.", "assistant");
-        } else if (result.data.error) {
-          var errMsg = typeof result.data.error === "string" ? result.data.error : "Sorry, something went wrong. Please try again.";
-          if (errMsg.length > 300) errMsg = "Sorry, something went wrong. Please try again.";
-          addMessage(errMsg, "assistant");
-        } else if (result.data.response != null) {
-          chatId = result.data.chatId;
-          addMessage(result.data.response, "assistant");
-          if (result.data.shouldCaptureLead) {
-            showLeadForm();
+
+        if (result.stream && result.reader) {
+          // Handle streaming response
+          const decoder = new TextDecoder();
+          const streamingMsgEl = addStreamingMessage();
+          let buffer = "";
+          let fullResponse = "";
+          let metadata = null;
+
+          function processStream() {
+            result.reader.read().then(function (chunk) {
+              if (chunk.done) {
+                if (metadata) {
+                  chatId = metadata.chatId || chatId;
+                  if (metadata.shouldCaptureLead) {
+                    showLeadForm();
+                  }
+                  // Show remaining prompts after each answer if there are unanswered prompts
+                  if (quickPromptsList.length > 0 && answeredPrompts.length < quickPromptsList.length) {
+                    // Small delay to ensure answer is fully displayed
+                    setTimeout(function() {
+                      addQuickPrompts(quickPromptsList);
+                    }, 500);
+                  }
+                }
+                sendBtn.disabled = false;
+                return;
+              }
+
+              buffer += decoder.decode(chunk.value, { stream: true });
+              const lines = buffer.split("\n\n");
+              buffer = lines.pop() || "";
+
+              for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (line.startsWith("data: ")) {
+                  try {
+                    var data = JSON.parse(line.slice(6));
+                    if (data.done) {
+                      metadata = data;
+                    } else if (data.chunk && typeof data.chunk === "string") {
+                      fullResponse += data.chunk;
+                      // Append chunk directly for real-time streaming effect (like ChatGPT)
+                      // This creates a natural letter-by-letter appearance as chunks arrive
+                      streamingMsgEl.textContent += data.chunk;
+                      messagesEl.scrollTop = messagesEl.scrollHeight;
+                    }
+                  } catch (e) {
+                    // Ignore parse errors
+                  }
+                }
+              }
+
+              processStream();
+            }).catch(function (err) {
+              if (streamingMsgEl.parentNode) {
+                var msg = "Sorry, something went wrong. Please try again.";
+                if (err && err.message && err.message.indexOf("Failed to fetch") !== -1) {
+                  msg = "Network error. Please check your connection and try again.";
+                }
+                streamingMsgEl.textContent = msg;
+              }
+              sendBtn.disabled = false;
+            });
           }
-          if (clickedQuickPrompt && quickPromptsList.length > 0) {
-            addQuickPrompts(quickPromptsList, clickedQuickPrompt);
-          }
+
+          processStream();
         } else {
-          addMessage("Sorry, something went wrong. Please try again.", "assistant");
+          // Handle non-streaming response (fallback)
+          if (result.status === 402 && result.data.quotaExceeded) {
+            addMessage("⚠️ This bot has reached its daily message limit. Please contact the site owner or try again tomorrow.", "assistant");
+          } else if (result.data.error) {
+            var errMsg = typeof result.data.error === "string" ? result.data.error : "Sorry, something went wrong. Please try again.";
+            if (errMsg.length > 300) errMsg = "Sorry, something went wrong. Please try again.";
+            addMessage(errMsg, "assistant");
+          } else if (result.data.response != null) {
+            chatId = result.data.chatId;
+            const msgEl = addMessage("", "assistant");
+            // Type out the response character by character
+            typeText(msgEl, result.data.response, 15);
+            if (result.data.shouldCaptureLead) {
+              setTimeout(function() {
+                showLeadForm();
+              }, result.data.response.length * 15 + 500);
+            }
+            // Show remaining prompts after each answer if there are unanswered prompts
+            if (quickPromptsList.length > 0 && answeredPrompts.length < quickPromptsList.length) {
+              setTimeout(function() {
+                addQuickPrompts(quickPromptsList);
+              }, result.data.response.length * 15 + 500);
+            }
+          } else {
+            addMessage("Sorry, something went wrong. Please try again.", "assistant");
+          }
+          sendBtn.disabled = false;
         }
       })
       .catch(function (err) {
@@ -253,8 +393,6 @@
           msg = "Network error. Please check your connection and try again.";
         }
         addMessage(msg, "assistant");
-      })
-      .finally(() => {
         sendBtn.disabled = false;
       });
   }
@@ -264,7 +402,11 @@
     panel.style.display = isOpen ? "flex" : "none";
     bubble.innerHTML = isOpen ? closeIcon : chatIconHtml;
     bubble.setAttribute("aria-label", isOpen ? "Close chat" : "Open chat");
-    if (isOpen && messagesEl.children.length === 0) addGreeting();
+    if (isOpen && messagesEl.children.length === 0) {
+      // Reset answered prompts when opening fresh chat
+      answeredPrompts = [];
+      addGreeting();
+    }
   });
 
   // Allow external triggers (e.g. demo page chips) to open and send a message

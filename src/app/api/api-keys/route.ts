@@ -5,6 +5,7 @@ import { getEffectiveOwnerId } from "@/lib/team";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { hasApiAccess } from "@/lib/plans-config";
 import { generateApiKey } from "@/lib/api-key";
+import { generateId } from "@/lib/utils";
 import { z } from "zod";
 
 /** List API keys for the current account (owner). Keys show prefix only, never the secret. */
@@ -14,7 +15,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const keys = await prisma.apiKey.findMany({
+  const keys = await prisma.apikey.findMany({
     where: { userId: ownerId },
     select: { id: true, name: true, keyPrefix: true, lastUsedAt: true, createdAt: true },
     orderBy: { createdAt: "desc" },
@@ -47,8 +48,8 @@ export async function POST(req: Request) {
   }
 
   const { rawKey, prefix, hash } = generateApiKey();
-  const key = await prisma.apiKey.create({
-    data: { userId: ownerId, name: parsed.data.name, keyPrefix: prefix, keyHash: hash },
+  const key = await prisma.apikey.create({
+    data: { id: generateId(), userId: ownerId, name: parsed.data.name, keyPrefix: prefix, keyHash: hash },
     select: { id: true, name: true, keyPrefix: true, createdAt: true },
   });
   return NextResponse.json({

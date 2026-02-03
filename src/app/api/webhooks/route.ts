@@ -5,6 +5,7 @@ import { getEffectiveOwnerId } from "@/lib/team";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { hasWebhooks } from "@/lib/plans-config";
 import { generateWebhookSecret, WEBHOOK_EVENTS } from "@/lib/webhooks";
+import { generateId } from "@/lib/utils";
 import { z } from "zod";
 
 /** List webhooks for the current account (owner). */
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
   const secret = generateWebhookSecret();
   const webhook = await prisma.webhook.create({
     data: {
+      id: generateId(),
       userId: ownerId,
       url: parsed.data.url,
       secret,

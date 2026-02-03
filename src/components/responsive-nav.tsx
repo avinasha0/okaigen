@@ -19,8 +19,8 @@ export function ResponsiveNav() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 min-w-0 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center justify-start" aria-label="SiteBotGPT home">
-          <span className="relative flex h-14 min-h-[56px] w-[200px] overflow-hidden bg-transparent sm:h-14 sm:min-h-[56px] sm:w-[200px] md:h-16 md:min-h-[64px] md:w-[260px] lg:w-[360px]">
-            <Image src="/sitebotgpt_logob.png" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 200px, (max-width: 768px) 200px, (max-width: 1024px) 260px, 360px" priority />
+          <span className="relative flex h-10 min-h-[40px] w-[150px] overflow-hidden bg-transparent sm:h-10 sm:min-h-[40px] sm:w-[150px] md:h-12 md:min-h-[48px] md:w-[200px] lg:w-[260px]">
+            <Image src="/sitebotgpt_logob.png" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 150px, (max-width: 768px) 150px, (max-width: 1024px) 200px, 260px" priority />
           </span>
         </Link>
 

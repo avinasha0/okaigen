@@ -115,8 +115,8 @@ function DashboardShellInner({
       >
         <div className="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 px-3 md:h-12 md:px-4">
           <Link href="/dashboard" className="flex h-10 w-full items-center md:h-12" aria-label="SiteBotGPT dashboard">
-            <span className="relative flex h-8 w-full shrink-0 overflow-hidden bg-transparent md:h-10 md:max-w-[130px]">
-              <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="130px" priority />
+            <span className="relative flex h-6 w-full shrink-0 overflow-hidden bg-transparent md:h-8 md:max-w-[100px]">
+              <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="100px" priority />
             </span>
           </Link>
           <button
@@ -260,7 +260,7 @@ function DashboardShellInner({
                 <div>
                   <div className="flex justify-between text-xs text-zinc-400">
                     <span>Messages today</span>
-                    <span>{planUsage.usedMessages.toLocaleString()} / {planUsage.totalMessages.toLocaleString()}</span>
+                    <span>{planUsage.usedMessages.toLocaleString('en-US')} / {planUsage.totalMessages.toLocaleString('en-US')}</span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-700">
                     <div

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getBotForUser } from "@/lib/team";
+import { generateId } from "@/lib/utils";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
@@ -96,14 +97,17 @@ export async function POST(
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const documentUrl = `${baseUrl}/uploads/${botId}/${safeName}`;
+    const now = new Date();
 
     const source = await prisma.source.create({
       data: {
+        id: generateId(),
         botId,
         type: "document",
         documentUrl,
         title: file.name,
         status: "pending",
+        updatedAt: now,
       },
     });
 

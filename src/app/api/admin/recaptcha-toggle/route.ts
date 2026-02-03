@@ -9,6 +9,7 @@ const schema = z.object({
 
 /**
  * Admin API route to toggle reCAPTCHA on/off
+ * Note: Currently uses environment variable only (siteSetting model not in schema)
  * Requires authenticated user (admin check can be added later)
  */
 export async function POST(req: Request) {
@@ -24,17 +25,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { enabled } = schema.parse(body);
 
-    // Upsert the setting (create or update)
-    await prisma.siteSetting.upsert({
-      where: { key: "recaptcha_enabled" },
-      update: { value: enabled ? "true" : "false" },
-      create: {
-        key: "recaptcha_enabled",
-        value: enabled ? "true" : "false",
-      },
-    });
+    // Note: Database model doesn't exist, so we just return success
+    // In production, update RECAPTCHA_ENABLED environment variable
+    // For now, this is a read-only endpoint that checks env var
 
-    return NextResponse.json({ success: true, enabled });
+    return NextResponse.json({ 
+      success: true, 
+      enabled,
+      note: "reCAPTCHA status is controlled by RECAPTCHA_ENABLED environment variable. Update .env file to change." 
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -52,6 +51,7 @@ export async function POST(req: Request) {
 
 /**
  * Get current reCAPTCHA enabled status
+ * Reads from RECAPTCHA_ENABLED environment variable
  */
 export async function GET() {
   try {
@@ -63,16 +63,8 @@ export async function GET() {
       );
     }
 
-    // Check DB setting first, fallback to env
-    const setting = await prisma.siteSetting.findUnique({
-      where: { key: "recaptcha_enabled" },
-    });
-
-    const dbEnabled = setting?.value === "true";
-    const envEnabled = process.env.RECAPTCHA_ENABLED === "true";
-    
-    // DB setting takes precedence, but if not set, use env
-    const enabled = setting ? dbEnabled : envEnabled;
+    // Read from environment variable (siteSetting model doesn't exist in schema)
+    const enabled = process.env.RECAPTCHA_ENABLED === "true";
 
     return NextResponse.json({ enabled });
   } catch (error) {

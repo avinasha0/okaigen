@@ -7,7 +7,7 @@ import { prisma } from "./db";
  */
 export async function getEffectiveOwnerId(userId: string): Promise<string> {
   try {
-    const membership = await prisma.accountMember.findFirst({
+    const membership = await prisma.accountmember.findFirst({
       where: { memberUserId: userId },
       select: { accountOwnerId: true },
     });
@@ -22,7 +22,7 @@ export async function getEffectiveOwnerId(userId: string): Promise<string> {
 /** Count of team members (owner + invited members) for an account owner. */
 export async function getTeamMemberCount(accountOwnerId: string): Promise<number> {
   try {
-    const count = await prisma.accountMember.count({
+    const count = await prisma.accountmember.count({
       where: { accountOwnerId },
     });
     return 1 + count; // owner + members
@@ -36,7 +36,7 @@ export async function getTeamMemberCount(accountOwnerId: string): Promise<number
 /** Check if user can manage team (is account owner, not a member). */
 export async function isAccountOwner(userId: string): Promise<boolean> {
   try {
-    const membership = await prisma.accountMember.findFirst({
+    const membership = await prisma.accountmember.findFirst({
       where: { memberUserId: userId },
     });
     return !membership;

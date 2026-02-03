@@ -18,11 +18,11 @@ export async function DELETE(
 
   if (targetUserId === session.user.id) {
     if (!isOwner) {
-      const membership = await prisma.accountMember.findFirst({
+      const membership = await prisma.accountmember.findFirst({
         where: { memberUserId: session.user.id },
       });
       if (membership) {
-        await prisma.accountMember.delete({ where: { id: membership.id } });
+        await prisma.accountmember.delete({ where: { id: membership.id } });
         return NextResponse.json({ success: true, message: "You have left the team" });
       }
     }
@@ -33,7 +33,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Only the account owner can remove team members" }, { status: 403 });
   }
 
-  const membership = await prisma.accountMember.findFirst({
+  const membership = await prisma.accountmember.findFirst({
     where: {
       accountOwnerId: session.user.id,
       memberUserId: targetUserId,
@@ -44,6 +44,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Team member not found" }, { status: 404 });
   }
 
-  await prisma.accountMember.delete({ where: { id: membership.id } });
+  await prisma.accountmember.delete({ where: { id: membership.id } });
   return NextResponse.json({ success: true });
 }

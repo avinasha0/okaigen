@@ -22,7 +22,7 @@ export async function assignPlanToUser(
     return;
   }
 
-  await prisma.userPlan.upsert({
+  await prisma.userplan.upsert({
     where: { userId },
     create: {
       userId,
@@ -51,7 +51,7 @@ export async function downgradeUserToStarter(userId: string) {
   });
   if (!starterPlan) return;
 
-  await prisma.userPlan.upsert({
+  await prisma.userplan.upsert({
     where: { userId },
     create: {
       userId,

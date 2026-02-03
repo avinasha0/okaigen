@@ -17,12 +17,12 @@ import { usePlan } from "@/contexts/plan-context";
 export default function BotSetupPage() {
   const router = useRouter();
   const params = useParams();
-  const botId = params.botId as string;
+  const botId = params?.botId as string | undefined;
   const [bot, setBot] = useState<{
     id: string;
     name: string;
-    sources: { id: string; type: string; title: string | null; status: string; error?: string | null }[];
-    _count: { chunks: number };
+    source: { id: string; type: string; title: string | null; status: string; error?: string | null }[];
+    _count: { chunk: number };
   } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [addingUrl, setAddingUrl] = useState(false);
@@ -47,11 +47,32 @@ export default function BotSetupPage() {
         : "Auto (daily)";
 
   useEffect(() => {
+    if (!botId) {
+      console.error("Bot ID is missing from params:", params);
+      return;
+    }
     fetch(`/api/bots/${botId}`)
-      .then((r) => r.json())
-      .then(setBot)
-      .catch(() => router.push("/dashboard"));
-  }, [botId, router]);
+      .then(async (r) => {
+        if (!r.ok) {
+          const error = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+          console.error("Failed to fetch bot:", error);
+          if (r.status === 404) {
+            alert(`Bot not found. You may not have access to this bot.`);
+          }
+          router.push("/dashboard");
+          return;
+        }
+        return r.json();
+      })
+      .then((data) => {
+        if (data) setBot(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching bot:", err);
+        alert(`Error loading bot: ${err.message}`);
+        router.push("/dashboard");
+      });
+  }, [botId, router, params]);
 
   async function handleAddUrl() {
     const url = newUrl.trim();
@@ -69,8 +90,8 @@ export default function BotSetupPage() {
         prev
           ? {
               ...prev,
-              sources: [
-                ...prev.sources,
+              source: [
+                ...prev.source,
                 ...data.sources.map((s: { id: string; title: string }) => ({
                   id: s.id,
                   type: "url",
@@ -108,8 +129,8 @@ export default function BotSetupPage() {
         prev
           ? {
               ...prev,
-              sources: [
-                ...prev.sources,
+              source: [
+                ...prev.source,
                 ...data.sources.map((s: { id: string; title: string }) => ({
                   id: s.id,
                   type: "document",
@@ -237,8 +258,8 @@ export default function BotSetupPage() {
           prev
             ? {
                 ...prev,
-                _count: { chunks: prev._count.chunks + chunksCreated },
-                sources: prev.sources.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
+                _count: { chunk: prev._count.chunk + chunksCreated },
+                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
               }
             : null
         );
@@ -250,8 +271,8 @@ export default function BotSetupPage() {
           prev
             ? {
                 ...prev,
-                _count: { chunks: prev._count.chunks + (data.chunksCreated || 0) },
-                sources: prev.sources.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
+                _count: { chunk: prev._count.chunk + (data.chunksCreated || 0) },
+                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
               }
             : null
         );
@@ -277,14 +298,22 @@ export default function BotSetupPage() {
     }
   }
 
-  const hasPending = bot?.sources.some((s) => s.status === "pending") ?? false;
-  const hasFailed = bot?.sources.some((s) => s.status === "failed") ?? false;
+  const hasPending = bot?.source.some((s) => s.status === "pending") ?? false;
+  const hasFailed = bot?.source.some((s) => s.status === "failed") ?? false;
   const canTrain = hasPending || hasFailed;
+
+  if (!botId) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-red-500">Error: Bot ID is missing</div>
+      </div>
+    );
+  }
 
   if (!bot) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">Loading bot...</div>
       </div>
     );
   }
@@ -355,9 +384,9 @@ export default function BotSetupPage() {
                 Add specific pages (e.g. /services.html) if the crawler missed them
               </p>
             )}
-            {bot.sources.length > 0 && (
+            {bot.source.length > 0 && (
               <ul className="mt-4 space-y-2">
-                {bot.sources.map((s) => (
+                {bot.source.map((s) => (
                   <li
                     key={s.id}
                     className="flex flex-col gap-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
@@ -478,13 +507,13 @@ export default function BotSetupPage() {
               >
                 {training ? "Training..." : hasFailed ? "Retry training" : "Start training"}
               </Button>
-              {bot._count.chunks > 0 && (
+              {bot._count.chunk > 0 && (
                 <p className="flex items-center text-sm text-gray-600">
-                  {bot._count.chunks} chunks indexed
+                  {bot._count.chunk} chunks indexed
                 </p>
               )}
             </div>
-            {!canTrain && bot.sources.length === 0 && (
+            {!canTrain && bot.source.length === 0 && (
               <p className="text-sm text-amber-600">
                 {isStarterPlan
                   ? "Add a website URL above to train your bot."

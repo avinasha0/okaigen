@@ -47,7 +47,7 @@ export async function GET(
     prisma.lead.count({
       where: { botId, createdAt: { gte: since } },
     }),
-    prisma.usageLog.findMany({
+    prisma.usagelog.findMany({
       where: {
         botId,
         type: "message",
@@ -55,7 +55,7 @@ export async function GET(
       },
       select: { createdAt: true, count: true },
     }),
-    prisma.chatMessage.findMany({
+    prisma.chatmessage.findMany({
       where: {
         chat: { botId },
         role: "user",

@@ -5,6 +5,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
 import { verifyCaptcha } from "@/lib/recaptcha";
+import { generateId } from "@/lib/utils";
 
 const schema = z.object({
   email: z.string().email(),
@@ -38,20 +39,46 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Get Starter plan (should exist from migration seed)
-    const starterPlan = await prisma.plan.findFirst({
+    // Ensure Starter plan exists - create if missing
+    let starterPlan = await prisma.plan.findFirst({
       where: { name: "Starter", isActive: true },
     });
 
     if (!starterPlan) {
-      console.error("Starter plan not found in database. Ensure migrations have been run.");
-      return NextResponse.json(
-        { 
-          error: "System configuration error. Please contact support or ensure database migrations have been completed.",
-          code: "PLAN_NOT_FOUND"
-        },
-        { status: 500 }
-      );
+      // Create Starter plan if it doesn't exist (permanent fix)
+      const { getPlanLimitsForDb } = await import("@/lib/plans-config");
+      const limits = getPlanLimitsForDb("Starter");
+      try {
+        starterPlan = await prisma.plan.create({
+          data: {
+            id: generateId(),
+            name: "Starter",
+            dailyLimit: limits.dailyLimit,
+            botLimit: limits.botLimit,
+            storageLimit: limits.storageLimit,
+            teamMemberLimit: limits.teamMemberLimit,
+            price: 0,
+            isActive: true,
+            updatedAt: new Date(),
+          },
+        });
+        console.log("Created missing Starter plan during registration");
+      } catch (createError) {
+        console.error("Failed to create Starter plan:", createError);
+        // Try to fetch again in case of race condition
+        starterPlan = await prisma.plan.findFirst({
+          where: { name: "Starter", isActive: true },
+        });
+        if (!starterPlan) {
+          return NextResponse.json(
+            { 
+              error: "System configuration error. Please contact support.",
+              code: "PLAN_CREATION_FAILED"
+            },
+            { status: 500 }
+          );
+        }
+      }
     }
 
     const user = await prisma.user.create({
@@ -60,7 +87,7 @@ export async function POST(req: Request) {
         name: name || null,
         password: hashedPassword,
         termsAcceptedAt: new Date(),
-        userPlan: {
+        userplan: {
           create: {
             planId: starterPlan.id,
             startsAt: new Date(),
@@ -73,7 +100,7 @@ export async function POST(req: Request) {
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${user.id}`;
-    await prisma.verificationToken.create({
+    await prisma.verificationtoken.create({
       data: { identifier, token: verifyToken, expires: verifyExpires },
     });
     const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${encodeURIComponent(verifyToken)}`;

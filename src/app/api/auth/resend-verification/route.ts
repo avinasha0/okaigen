@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     }
 
     // Delete old verification tokens
-    await prisma.verificationToken.deleteMany({
+    await prisma.verificationtoken.deleteMany({
       where: {
         identifier: `email-verification:${session.user.id}`,
       },
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${session.user.id}`;
-    await prisma.verificationToken.create({
+    await prisma.verificationtoken.create({
       data: { identifier, token: verifyToken, expires: verifyExpires },
     });
 

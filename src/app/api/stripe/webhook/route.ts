@@ -123,7 +123,7 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
   const periodEnd = (sub as { current_period_end?: number }).current_period_end;
   const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000) : null;
 
-  await prisma.userPlan.upsert({
+  await prisma.userplan.upsert({
     where: { userId },
     create: {
       userId,
@@ -147,7 +147,7 @@ async function downgradeUserToStarter(userId: string) {
   });
   if (!starterPlan) return;
 
-  await prisma.userPlan.upsert({
+  await prisma.userplan.upsert({
     where: { userId },
     create: {
       userId,

@@ -21,8 +21,8 @@ export default function ChatbotROICalculatorPage() {
           <div><label className="block text-sm font-medium">Deflection %</label><input type="number" value={rate} onChange={(e) => setRate(Number(e.target.value) || 0)} className="mt-1 w-full rounded-lg border px-3 py-2" /></div>
         </div>
         <div className="rounded-xl border bg-slate-50 p-6">
-          <p className="font-semibold">Monthly savings: ${monthly.toLocaleString()}</p>
-          <p className="font-semibold">Yearly savings: ${yearly.toLocaleString()}</p>
+          <p className="font-semibold">Monthly savings: ${monthly.toLocaleString('en-US')}</p>
+          <p className="font-semibold">Yearly savings: ${yearly.toLocaleString('en-US')}</p>
         </div>
       </div>
     </ToolPageLayout>

@@ -14,12 +14,12 @@ export async function DELETE(
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
   const { id } = await params;
-  const key = await prisma.apiKey.findFirst({
+  const key = await prisma.apikey.findFirst({
     where: { id, userId: ownerId },
   });
   if (!key) {
     return NextResponse.json({ error: "API key not found" }, { status: 404 });
   }
-  await prisma.apiKey.delete({ where: { id } });
+  await prisma.apikey.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

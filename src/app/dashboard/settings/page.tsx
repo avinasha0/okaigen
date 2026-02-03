@@ -106,7 +106,7 @@ export default async function SettingsPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-600">Messages today</span>
                   <span className="font-medium text-slate-900">
-                    {planUsage.usedMessages.toLocaleString()} / {planUsage.totalMessages.toLocaleString()}
+                    {planUsage.usedMessages.toLocaleString('en-US')} / {planUsage.totalMessages.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">

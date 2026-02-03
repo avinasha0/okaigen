@@ -1,6 +1,3 @@
-// SiteBotGPT - AI Chatbot SaaS
-// MySQL Database Schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,32 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  name          String?
-  image         String?
-  password      String?   // For email auth
-  removeBrandingAddOn Boolean @default(false) // Purchased "Remove SiteBotGPT branding" add-on
-  termsAcceptedAt DateTime?   // Signup: "I agree to Terms & Privacy"
-  stripeCustomerId String? @unique // Stripe Customer for billing portal & subscriptions
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts              Account[]
-  bots                  Bot[]
-  sessions              Session[]
-  userPlan              UserPlan?
-  apiKeys               ApiKey[]
-  webhooks              Webhook[]
-  accountMembersAsOwner AccountMember[]  @relation("AccountOwner")
-  accountMembersAsMember AccountMember[] @relation("AccountMember")
-  invitationsSent       TeamInvitation[]
-}
-
-model Account {
-  id                String  @id @default(cuid())
+model account {
+  id                String  @id
   userId            String
   type              String
   provider          String
@@ -47,298 +20,290 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
+model accountmember {
+  id                                      String   @id
+  accountOwnerId                          String
+  memberUserId                            String
+  role                                    String   @default("member")
+  createdAt                               DateTime @default(now())
+  user_accountmember_accountOwnerIdTouser user     @relation("accountmember_accountOwnerIdTouser", fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "AccountMember_accountOwnerId_fkey")
+  user_accountmember_memberUserIdTouser   user     @relation("accountmember_memberUserIdTouser", fields: [memberUserId], references: [id], onDelete: Cascade, map: "AccountMember_memberUserId_fkey")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([accountOwnerId, memberUserId], map: "AccountMember_accountOwnerId_memberUserId_key")
+  @@index([accountOwnerId], map: "AccountMember_accountOwnerId_idx")
+  @@index([memberUserId], map: "AccountMember_memberUserId_idx")
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-model Bot {
-  id              String   @id @default(cuid())
-  name            String
-  userId          String
-  greetingMessage String   @default("Hi! How can I help you today?") @db.VarChar(500)
-  tone            String   @default("friendly") // formal, friendly, casual
-  confidenceThreshold Float @default(0.7)
-  leadCaptureTrigger  String @default("uncertain") // uncertain, always, never
-  humanFallbackMessage String @default("I'm not sure about that. Would you like to leave your contact and we'll get back to you?") @db.VarChar(500)
-  quickPrompts    String?  @db.Text // JSON array: ["Question 1", "Question 2"]
-  publicKey       String?  @unique // For widget token validation
-  removeBranding Boolean  @default(false) // White-label: hide "Powered by SiteBotGPT" in widget (add-on)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sources    Source[]
-  chunks     Chunk[]
-  chats      Chat[]
-  leads      Lead[]
-  usageLogs  UsageLog[]
-
-  @@index([userId])
-  @@index([publicKey])
-}
-
-model Source {
-  id              String    @id @default(cuid())
-  botId           String
-  type            String    // url, document
-  url             String?   @db.Text // For website pages
-  documentUrl     String?   @db.Text // For uploaded files
-  title           String?
-  status          String    @default("pending") // pending, processing, completed, failed
-  pageCount       Int       @default(0)
-  error           String?   @db.Text
-  lastRefreshedAt DateTime? // When content was last re-crawled/re-indexed (for auto-refresh)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  bot    Bot    @relation(fields: [botId], references: [id], onDelete: Cascade)
-  chunks Chunk[]
-
-  @@index([botId])
-  @@index([status])
-}
-
-model Chunk {
-  id         String   @id @default(cuid())
-  botId      String
-  sourceId   String
-  content    String   @db.LongText
-  metadata   Json?    // { sourceUrl, pageTitle, documentName }
-  tokenCount Int      @default(0)
-  createdAt  DateTime @default(now())
-
-  bot    Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
-  source Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  embedding Embedding?
-
-  @@index([botId])
-  @@index([sourceId])
-  @@index([botId, createdAt]) // Optimization: Composite index for efficient chunk retrieval by botId and createdAt
-}
-
-model Embedding {
-  id        String   @id @default(cuid())
-  chunkId   String   @unique
-  botId     String
-  vector    Json     // Array of floats from OpenAI
-  createdAt DateTime @default(now())
-
-  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-
-  @@index([botId])
-}
-
-model Chat {
-  id          String   @id @default(cuid())
-  botId       String
-  visitorId   String?  // Anonymous or identified
-  visitorEmail String?
-  visitorName  String?
-  pageUrl     String?  @db.Text
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  bot     Bot          @relation(fields: [botId], references: [id], onDelete: Cascade)
-  messages ChatMessage[]
-
-  @@index([botId])
-  @@index([visitorId])
-  @@index([createdAt])
-  @@index([botId, createdAt])
-}
-
-model ChatMessage {
-  id        String   @id @default(cuid())
-  chatId    String
-  role      String   // user, assistant
-  content   String   @db.LongText
-  sources   Json?    // Cited source URLs
-  createdAt DateTime @default(now())
-
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@index([chatId])
-}
-
-model Lead {
-  id        String   @id @default(cuid())
-  botId     String
-  name      String?
-  email     String
-  phone     String?
-  message   String?  @db.Text
-  pageUrl   String?  @db.Text
-  status    String   @default("new") // new, contacted, qualified, converted, lost
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade)
-
-  @@index([botId])
-  @@index([email])
-  @@index([status])
-  @@index([botId, createdAt])
-}
-
-model UsageLog {
-  id        String   @id @default(cuid())
-  botId     String
-  type      String   // message, crawl, embed
-  count     Int      @default(1)
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade)
-
-  @@index([botId])
-  @@index([createdAt])
-  @@index([botId, createdAt])
-}
-
-// Billing: Plan limits + gateway-specific plan/price IDs
-model Plan {
-  id             String   @id @default(cuid())
-  name           String
-  dailyLimit     Int      @default(100) // Messages per day
-  botLimit       Int      @default(3)
-  storageLimit   Int      @default(50)  // MB
-  teamMemberLimit Int     @default(1)   // Owner + invited members
-  price          Float    @default(0)
-  stripePriceIdMonthly String?  // Stripe (international)
-  stripePriceIdYearly  String?
-  razorpayPlanIdMonthly String?  // Razorpay (India)
-  razorpayPlanIdYearly  String?
-  paypalPlanIdMonthly   String?  // PayPal (international)
-  paypalPlanIdYearly    String?
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  userPlans UserPlan[]
-}
-
-// Team: account owner can invite members to access their bots/dashboard
-model AccountMember {
-  id             String   @id @default(cuid())
-  accountOwnerId String  // User who owns the plan and bots
-  memberUserId   String  // Invited user who can view/edit owner's resources
-  role           String  @default("member") // admin | member
-  createdAt      DateTime @default(now())
-
-  accountOwner User @relation("AccountOwner", fields: [accountOwnerId], references: [id], onDelete: Cascade)
-  member       User @relation("AccountMember", fields: [memberUserId], references: [id], onDelete: Cascade)
-
-  @@unique([accountOwnerId, memberUserId])
-  @@index([accountOwnerId])
-  @@index([memberUserId])
-}
-
-model TeamInvitation {
-  id             String   @id @default(cuid())
-  accountOwnerId String
-  email          String
-  role           String   @default("member") // admin | member
-  token          String   @unique
-  expiresAt      DateTime
-  createdAt      DateTime @default(now())
-
-  accountOwner User @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade)
-
-  @@index([accountOwnerId])
-  @@index([token])
-}
-
-model UserPlan {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  planId    String
-  stripeSubscriptionId String?  // Stripe
-  razorpaySubscriptionId String?  // Razorpay (India)
-  paypalSubscriptionId  String?  // PayPal (international)
-  stripePriceId        String?
-  currentPeriodEnd     DateTime?
-  startsAt  DateTime @default(now())
-  endsAt    DateTime?
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-// API keys for programmatic access (Scale, Enterprise). Key secret is hashed; prefix shown in UI.
-model ApiKey {
-  id         String    @id @default(cuid())
-  userId     String    // Account owner who owns this key
-  name       String    @db.VarChar(255) // e.g. "Production", "Development"
-  keyPrefix  String    @db.VarChar(20)  // e.g. "sk_live_abc1" for display
-  keyHash    String    @db.VarChar(64)  // SHA-256 hex of full key
+model apikey {
+  id         String    @id
+  userId     String
+  name       String    @db.VarChar(255)
+  keyPrefix  String    @db.VarChar(20)
+  keyHash    String    @db.VarChar(64)
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
+  user       user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "ApiKey_userId_fkey")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([keyHash])
+  @@index([keyHash], map: "ApiKey_keyHash_idx")
+  @@index([userId], map: "ApiKey_userId_idx")
 }
 
-// Webhooks: receive HTTP callbacks for events (Scale, Enterprise). Secret used to sign payloads.
-model Webhook {
-  id          String   @id @default(cuid())
-  userId      String   // Account owner
-  url         String   @db.Text // Endpoint URL (HTTPS)
-  secret      String   @db.VarChar(64) // Signing secret (plain, for HMAC)
-  events      String   @db.VarChar(255) // Comma-separated: lead.captured,chat.message
-  description String?  @db.VarChar(500)
-  createdAt   DateTime @default(now())
+model bot {
+  id                   String     @id
+  name                 String
+  userId               String
+  greetingMessage      String     @default("Hi! How can I help you today?") @db.VarChar(500)
+  tone                 String     @default("friendly")
+  confidenceThreshold  Float      @default(0.7)
+  leadCaptureTrigger   String     @default("uncertain")
+  humanFallbackMessage String     @default("I'm not sure about that. Would you like to leave your contact and we'll get back to you?") @db.VarChar(500)
+  publicKey            String?    @unique(map: "Bot_publicKey_key")
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime
+  quickPrompts         String?    @db.Text
+  removeBranding       Boolean    @default(false)
+  user                 user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Bot_userId_fkey")
+  chat                 chat[]
+  chunk                chunk[]
+  lead                 lead[]
+  source               source[]
+  usagelog             usagelog[]
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+  @@index([publicKey], map: "Bot_publicKey_idx")
+  @@index([userId], map: "Bot_userId_idx")
 }
 
-// Contact form submissions (public /contact page)
-model ContactSubmission {
-  id        String   @id @default(cuid())
+model chat {
+  id           String        @id
+  botId        String
+  visitorId    String?
+  visitorEmail String?
+  visitorName  String?
+  pageUrl      String?       @db.Text
+  metadata     String?       @db.LongText
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  bot          bot           @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chat_botId_fkey")
+  chatmessage  chatmessage[]
+
+  @@index([botId], map: "Chat_botId_idx")
+  @@index([createdAt], map: "Chat_createdAt_idx")
+  @@index([visitorId], map: "Chat_visitorId_idx")
+}
+
+model chatmessage {
+  id        String   @id
+  chatId    String
+  role      String
+  content   String   @db.LongText
+  sources   String?  @db.LongText
+  createdAt DateTime @default(now())
+  chat      chat     @relation(fields: [chatId], references: [id], onDelete: Cascade, map: "ChatMessage_chatId_fkey")
+
+  @@index([chatId], map: "ChatMessage_chatId_idx")
+}
+
+model chunk {
+  id         String     @id
+  botId      String
+  sourceId   String
+  content    String     @db.LongText
+  metadata   String?    @db.LongText
+  tokenCount Int        @default(0)
+  createdAt  DateTime   @default(now())
+  bot        bot        @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chunk_botId_fkey")
+  source     source     @relation(fields: [sourceId], references: [id], onDelete: Cascade, map: "Chunk_sourceId_fkey")
+  embedding  embedding?
+
+  @@index([botId], map: "Chunk_botId_idx")
+  @@index([sourceId], map: "Chunk_sourceId_idx")
+}
+
+model contactsubmission {
+  id        String   @id
   name      String   @db.VarChar(255)
   email     String   @db.VarChar(255)
   subject   String   @db.VarChar(500)
   message   String   @db.Text
-  status    String   @default("new") // new, read, replied, archived
+  status    String   @default("new")
   createdAt DateTime @default(now())
 
-  @@index([createdAt])
-  @@index([status])
+  @@index([createdAt], map: "ContactSubmission_createdAt_idx")
+  @@index([status], map: "ContactSubmission_status_idx")
 }
 
-// Site-wide settings (admin-controlled)
-model SiteSetting {
-  id        String   @id @default(cuid())
-  key       String   @unique // e.g. "recaptcha_enabled"
-  value     String   @db.Text // JSON or string value
-  updatedAt DateTime @updatedAt
+model embedding {
+  id        String   @id
+  chunkId   String   @unique(map: "Embedding_chunkId_key")
+  botId     String
+  vector    String   @db.LongText
   createdAt DateTime @default(now())
+  chunk     chunk    @relation(fields: [chunkId], references: [id], onDelete: Cascade, map: "Embedding_chunkId_fkey")
 
-  @@index([key])
+  @@index([botId], map: "Embedding_botId_idx")
+}
+
+model lead {
+  id        String   @id
+  botId     String
+  name      String?
+  email     String
+  message   String?  @db.Text
+  pageUrl   String?  @db.Text
+  metadata  String?  @db.LongText
+  createdAt DateTime @default(now())
+  phone     String?
+  status    String   @default("new")
+  bot       bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Lead_botId_fkey")
+
+  @@index([botId], map: "Lead_botId_idx")
+  @@index([email], map: "Lead_email_idx")
+  @@index([status], map: "Lead_status_idx")
+}
+
+model plan {
+  id                    String     @id
+  name                  String
+  dailyLimit            Int        @default(100)
+  botLimit              Int        @default(3)
+  storageLimit          Int        @default(50)
+  price                 Float      @default(0)
+  isActive              Boolean    @default(true)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime
+  teamMemberLimit       Int        @default(1)
+  paypalPlanIdMonthly   String?
+  paypalPlanIdYearly    String?
+  razorpayPlanIdMonthly String?
+  razorpayPlanIdYearly  String?
+  stripePriceIdMonthly  String?
+  stripePriceIdYearly   String?
+  userplan              userplan[]
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model source {
+  id              String    @id
+  botId           String
+  type            String
+  url             String?   @db.Text
+  documentUrl     String?   @db.Text
+  title           String?
+  status          String    @default("pending")
+  pageCount       Int       @default(0)
+  error           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  lastRefreshedAt DateTime?
+  chunk           chunk[]
+  bot             bot       @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Source_botId_fkey")
+
+  @@index([botId], map: "Source_botId_idx")
+  @@index([status], map: "Source_status_idx")
+}
+
+model teaminvitation {
+  id             String   @id
+  accountOwnerId String
+  email          String
+  role           String   @default("member")
+  token          String   @unique(map: "TeamInvitation_token_key")
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  user           user     @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "TeamInvitation_accountOwnerId_fkey")
+
+  @@index([accountOwnerId], map: "TeamInvitation_accountOwnerId_idx")
+  @@index([token], map: "TeamInvitation_token_idx")
+}
+
+model usagelog {
+  id        String   @id
+  botId     String
+  type      String
+  count     Int      @default(1)
+  metadata  String?  @db.LongText
+  createdAt DateTime @default(now())
+  bot       bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "UsageLog_botId_fkey")
+
+  @@index([botId, createdAt], map: "UsageLog_botId_createdAt_idx")
+  @@index([botId], map: "UsageLog_botId_idx")
+  @@index([createdAt], map: "UsageLog_createdAt_idx")
+}
+
+model user {
+  id                                               String           @id
+  email                                            String           @unique(map: "User_email_key")
+  emailVerified                                    DateTime?
+  name                                             String?
+  image                                            String?
+  password                                         String?
+  createdAt                                        DateTime         @default(now())
+  updatedAt                                        DateTime
+  removeBrandingAddOn                              Boolean          @default(false)
+  termsAcceptedAt                                  DateTime?
+  stripeCustomerId                                 String?          @unique(map: "User_stripeCustomerId_key")
+  account                                          account[]
+  accountmember_accountmember_accountOwnerIdTouser accountmember[]  @relation("accountmember_accountOwnerIdTouser")
+  accountmember_accountmember_memberUserIdTouser   accountmember[]  @relation("accountmember_memberUserIdTouser")
+  apikey                                           apikey[]
+  bot                                              bot[]
+  session                                          session[]
+  teaminvitation                                   teaminvitation[]
+  userplan                                         userplan?
+  webhook                                          webhook[]
+}
+
+model userplan {
+  id                     String    @id
+  userId                 String    @unique(map: "UserPlan_userId_key")
+  planId                 String
+  startsAt               DateTime  @default(now())
+  endsAt                 DateTime?
+  createdAt              DateTime  @default(now())
+  currentPeriodEnd       DateTime?
+  paypalSubscriptionId   String?
+  razorpaySubscriptionId String?
+  stripePriceId          String?
+  stripeSubscriptionId   String?
+  plan                   plan      @relation(fields: [planId], references: [id], onDelete: Cascade, map: "UserPlan_planId_fkey")
+  user                   user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserPlan_userId_fkey")
+
+  @@index([planId], map: "UserPlan_planId_fkey")
+  @@index([userId], map: "UserPlan_userId_idx")
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+model webhook {
+  id          String   @id
+  userId      String
+  url         String   @db.Text
+  secret      String   @db.VarChar(64)
+  events      String   @db.VarChar(255)
+  description String?  @db.VarChar(500)
+  createdAt   DateTime @default(now())
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Webhook_userId_fkey")
+
+  @@index([userId], map: "Webhook_userId_idx")
 }

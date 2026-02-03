@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { generateId } from "@/lib/utils";
 import { z } from "zod";
 
 const leadSchema = z.object({
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
 
   const lead = await prisma.lead.create({
     data: {
+      id: generateId(),
       botId: bot.id,
       name: data.name,
       email: data.email,

@@ -8,6 +8,7 @@ import { suggestQuickPromptsFromContent } from "@/lib/suggest-prompts";
 import { getBotForUser } from "@/lib/team";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { getPageLimit } from "@/lib/plans-config";
+import { generateId } from "@/lib/utils";
 
 /** Force dynamic so this route is never statically optimized (avoids 405 on POST on Vercel). */
 export const dynamic = "force-dynamic";
@@ -93,7 +94,7 @@ export async function POST(
 
     const botWithSources = await prisma.bot.findUnique({
       where: { id: resolvedBotId },
-      include: { sources: true },
+      include: { source: true },
     });
     if (!botWithSources) {
       console.error("[train] Bot not found in DB. resolvedBotId=", resolvedBotId);
@@ -102,12 +103,12 @@ export async function POST(
     const bot = botWithSources;
     const planUsage = cronAuth ? null : await getPlanUsage(bot.userId);
     const pageLimit = planUsage ? getPageLimit(planUsage.planName) : 50;
-    console.log("[train] Bot found. sources count:", bot.sources.length, "pending:", bot.sources.filter(s => s.status === "pending").length, "pageLimit:", pageLimit);
+    console.log("[train] Bot found. sources count:", bot.source.length, "pending:", bot.source.filter(s => s.status === "pending").length, "pageLimit:", pageLimit);
 
-    let pendingSources = bot.sources.filter((s) => s.status === "pending");
+    let pendingSources = bot.source.filter((s) => s.status === "pending");
 
     if (pendingSources.length === 0) {
-      const failedSources = bot.sources.filter((s) => s.status === "failed");
+      const failedSources = bot.source.filter((s) => s.status === "failed");
       if (failedSources.length > 0) {
         await prisma.source.updateMany({
           where: { id: { in: failedSources.map((s) => s.id) } },
@@ -180,10 +181,11 @@ export async function POST(
           for (const tc of textChunks) {
             const chunk = await prisma.chunk.create({
               data: {
-                botId,
+                id: generateId(),
+                botId: resolvedBotId,
                 sourceId: source.id,
                 content: tc.content,
-                metadata: tc.metadata as object,
+                metadata: tc.metadata ? JSON.stringify(tc.metadata) : null,
                 tokenCount: tc.tokenCount,
               },
             });
@@ -191,9 +193,10 @@ export async function POST(
             const [embedding] = await generateEmbeddings([tc.content]);
             await prisma.embedding.create({
               data: {
+                id: generateId(),
                 chunkId: chunk.id,
-                botId,
-                vector: embedding,
+                botId: resolvedBotId,
+                vector: JSON.stringify(embedding),
               },
             });
             totalChunks++;
@@ -222,10 +225,11 @@ export async function POST(
         for (const tc of textChunks) {
           const chunk = await prisma.chunk.create({
             data: {
-              botId,
+              id: generateId(),
+              botId: resolvedBotId,
               sourceId: source.id,
               content: tc.content,
-              metadata: tc.metadata as object,
+              metadata: tc.metadata ? JSON.stringify(tc.metadata) : null,
               tokenCount: estimateTokenCount(tc.content),
             },
           });
@@ -233,9 +237,10 @@ export async function POST(
           const [embedding] = await generateEmbeddings([tc.content]);
           await prisma.embedding.create({
             data: {
+              id: generateId(),
               chunkId: chunk.id,
-              botId,
-              vector: embedding,
+              botId: resolvedBotId,
+              vector: JSON.stringify(embedding),
             },
           });
           totalChunks++;
@@ -254,9 +259,10 @@ export async function POST(
         },
       });
 
-      await prisma.usageLog.create({
+      await prisma.usagelog.create({
         data: {
-          botId,
+          id: generateId(),
+          botId: resolvedBotId,
           type: "embed",
           count: totalChunks,
         },

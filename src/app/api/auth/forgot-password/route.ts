@@ -34,10 +34,10 @@ export async function POST(req: Request) {
     const expires = new Date(Date.now() + RESET_EXPIRY_HOURS * 60 * 60 * 1000);
     const identifier = `password-reset:${user.email}`;
 
-    await prisma.verificationToken.deleteMany({
+    await prisma.verificationtoken.deleteMany({
       where: { identifier },
     });
-    await prisma.verificationToken.create({
+    await prisma.verificationtoken.create({
       data: { identifier, token, expires },
     });
 

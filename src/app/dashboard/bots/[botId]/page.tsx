@@ -27,8 +27,8 @@ export default async function BotDetailPage({
   const bot = await prisma.bot.findFirst({
     where: { id: botId, userId: ownerId },
     include: {
-      sources: true,
-      _count: { select: { chunks: true, chats: true, leads: true } },
+      source: true,
+      _count: { select: { chunk: true, chat: true, lead: true } },
     },
   });
 
@@ -67,8 +67,8 @@ export default async function BotDetailPage({
         <div className="min-w-0">
           <h1 className="truncate text-xl font-semibold text-slate-900 sm:text-2xl">{bot.name}</h1>
           <p className="mt-1 text-sm text-slate-600">
-            {bot._count.chunks} chunks • {bot._count.chats} chats •{" "}
-            {bot._count.leads} leads
+            {bot._count.chunk} chunks • {bot._count.chat} chats •{" "}
+            {bot._count.lead} leads
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -113,11 +113,11 @@ export default async function BotDetailPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {bot.sources.length === 0 ? (
+            {bot.source.length === 0 ? (
               <p className="text-sm text-slate-500">No sources yet</p>
             ) : (
               <ul className="space-y-2">
-                {bot.sources.map((s) => (
+                {bot.source.map((s) => (
                   <li
                     key={s.id}
                     className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm"

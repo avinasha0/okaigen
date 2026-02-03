@@ -20,10 +20,24 @@ export interface RAGContext {
   confidence: number;
 }
 
-/** Ensures vector from DB (Json) is number[]; MySQL/Prisma can return numeric arrays as strings. */
+/** Ensures vector from DB (stored as JSON string) is number[]; parses JSON if needed. */
 function toNumberVector(raw: unknown): number[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((v) => Number(v)).filter((n) => !Number.isNaN(n));
+  // Handle JSON string (current storage format)
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map((v) => Number(v)).filter((n) => !Number.isNaN(n));
+      }
+    } catch {
+      return [];
+    }
+  }
+  // Handle array (legacy format or direct array)
+  if (Array.isArray(raw)) {
+    return raw.map((v) => Number(v)).filter((n) => !Number.isNaN(n));
+  }
+  return [];
 }
 
 export async function retrieveContext(
@@ -360,4 +374,108 @@ async function generateResponseInternal(
   console.log(`[rag] Response preview: ${response.substring(0, 150)}...`);
 
   return result;
+}
+
+/**
+ * Generate streaming response - returns an async generator that yields text chunks
+ */
+export async function* generateResponseStream(
+  botId: string,
+  userMessage: string,
+  messageHistory: { role: "user" | "assistant"; content: string }[] = []
+): AsyncGenerator<string, { sources: string[]; confidence: number }> {
+  // Get bot config (cached)
+  let bot = botCache.get(botId);
+  if (!bot) {
+    bot = await prisma.bot.findUnique({
+      where: { id: botId },
+      select: {
+        id: true,
+        greetingMessage: true,
+        tone: true,
+        humanFallbackMessage: true,
+        confidenceThreshold: true,
+      },
+    });
+    if (bot) {
+      botCache.set(botId, bot);
+    }
+  }
+
+  if (!bot) {
+    throw new Error("Bot not found");
+  }
+
+  const isQuickPrompt = userMessage.length < 60 && (userMessage.includes("?") || userMessage.split(" ").length < 10);
+  const maxChunks = isQuickPrompt ? 3 : 10;
+  
+  // Retrieve context
+  const { chunks, confidence } = await retrieveContext(botId, userMessage, maxChunks, 0.3);
+
+  const CONFIDENCE_FLOOR = 0.3;
+  if (confidence < CONFIDENCE_FLOOR || chunks.length === 0) {
+    let totalChunks = chunkCountCache.get(botId);
+    if (totalChunks === null) {
+      totalChunks = await prisma.chunk.count({ where: { botId } });
+      chunkCountCache.set(botId, totalChunks);
+    }
+    
+    if (totalChunks === 0) {
+      const fallback = "This bot doesn't have any content yet. Add sources and train it from the dashboard, then try again.";
+      for (const char of fallback) {
+        yield char;
+      }
+      return { sources: [], confidence: 0 };
+    }
+    
+    const fallback = bot.humanFallbackMessage || "I couldn't find this information in your content. Would you like to leave your contact and we'll get back to you?";
+    for (const char of fallback) {
+      yield char;
+    }
+    return { sources: [], confidence };
+  }
+
+  const contextText = chunks.map((c) => c.content).join("\n\n---\n\n");
+  const shouldSummarize = !isQuickPrompt && (contextText.length > 3000 || chunks.length > 5);
+  
+  const contextSummary = shouldSummarize
+    ? await summarizeContext(contextText, userMessage)
+    : contextText.slice(0, isQuickPrompt ? 1500 : 2500);
+
+  const systemPrompt = buildSystemPrompt(
+    bot.greetingMessage,
+    bot.tone,
+    contextSummary,
+    bot.humanFallbackMessage,
+    !shouldSummarize || isQuickPrompt
+  );
+
+  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+    { role: "system", content: systemPrompt },
+    ...messageHistory.slice(-10).map((m) => ({ role: m.role, content: m.content })),
+    { role: "user", content: userMessage },
+  ];
+
+  // Stream the response from OpenAI
+  const stream = await openai.chat.completions.create({
+    model: CHAT_MODEL,
+    messages,
+    temperature: isQuickPrompt ? 0.2 : 0.3,
+    max_tokens: isQuickPrompt ? 120 : 250,
+    stream: true, // Enable streaming
+  }, {
+    timeout: 30000,
+  });
+
+  let fullResponse = "";
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content || "";
+    if (content) {
+      fullResponse += content;
+      yield content;
+    }
+  }
+
+  const sources = [...new Set(chunks.map((c) => c.metadata?.sourceUrl as string).filter(Boolean))];
+  return { sources, confidence };
 }

@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { prisma } from "./db";
 
 const START_OF_TODAY = () => {
@@ -22,11 +21,14 @@ export type PlanUsage = {
 async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
   try {
     const ownerId = await getEffectiveOwnerId(userId);
-    if (!ownerId) return null;
+    if (!ownerId) {
+      console.error("getPlanUsage: No ownerId returned from getEffectiveOwnerId");
+      return null;
+    }
 
     let userPlan;
     try {
-      userPlan = await prisma.userPlan.findUnique({
+      userPlan = await prisma.userplan.findUnique({
         where: { userId: ownerId },
         include: { plan: true },
       });
@@ -36,27 +38,55 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
     }
 
     if (!userPlan) {
-      let defaultPlan;
-      try {
-        defaultPlan = await prisma.plan.findFirst({
-          where: { isActive: true },
-          orderBy: { price: "asc" },
+      // Ensure Starter plan exists - create if missing
+      let starterPlan = await prisma.plan.findFirst({
+        where: { name: "Starter", isActive: true },
+      });
+
+      if (!starterPlan) {
+        // Create Starter plan if it doesn't exist
+        const { getPlanLimitsForDb } = await import("./plans-config");
+        const limits = getPlanLimitsForDb("Starter");
+        starterPlan = await prisma.plan.create({
+          data: {
+            name: "Starter",
+            dailyLimit: limits.dailyLimit,
+            botLimit: limits.botLimit,
+            storageLimit: limits.storageLimit,
+            teamMemberLimit: limits.teamMemberLimit,
+            price: 0,
+            isActive: true,
+          },
         });
-      } catch (dbError: unknown) {
-        console.error("Failed to get default plan:", dbError);
-        return null;
+        console.log("Created missing Starter plan");
       }
-      if (!defaultPlan) return null;
-      
+
+      // Assign Starter plan to user
       try {
-        userPlan = await prisma.userPlan.create({
-          data: { userId: ownerId, planId: defaultPlan.id },
+        userPlan = await prisma.userplan.create({
+          data: { userId: ownerId, planId: starterPlan.id },
           include: { plan: true },
         });
-      } catch (dbError: unknown) {
-        console.error("Failed to create user plan:", dbError);
-        return null;
+        console.log(`Assigned Starter plan to user ${ownerId}`);
+      } catch (createError: unknown) {
+        // If create fails (e.g., race condition), try to fetch again
+        if (createError instanceof Error && createError.message.includes("Unique constraint")) {
+          userPlan = await prisma.userplan.findUnique({
+            where: { userId: ownerId },
+            include: { plan: true },
+          });
+        }
+        if (!userPlan) {
+          console.error("Failed to create user plan:", createError);
+          return null;
+        }
       }
+    }
+
+    // Ensure we have a valid plan
+    if (!userPlan || !userPlan.plan) {
+      console.error("getPlanUsage: userPlan or plan is null after assignment");
+      return null;
     }
 
     const plan = userPlan.plan;
@@ -76,7 +106,7 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
     const startOfToday = START_OF_TODAY();
     let messagesResult;
     try {
-      messagesResult = await prisma.usageLog.aggregate({
+      messagesResult = await prisma.usagelog.aggregate({
         where: {
           botId: { in: botIdList },
           type: "message",
@@ -94,13 +124,11 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
 
     let memberCount = 0;
     try {
-      memberCount = await prisma.accountMember.count({
+      memberCount = await prisma.accountmember.count({
         where: { accountOwnerId: ownerId },
       });
     } catch (dbError: unknown) {
-      // Handle database connection errors gracefully
       console.error("Failed to get team member count:", dbError);
-      // Default to 0 if database is unreachable
       memberCount = 0;
     }
     
@@ -117,18 +145,19 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
       totalTeamMembers,
     };
   } catch (error: unknown) {
-    // Log database connection errors but don't crash
     console.error("getPlanUsage error:", error);
-    // Return null to allow app to continue functioning
+    // Log the full error for debugging
+    if (error instanceof Error) {
+      console.error("getPlanUsage error details:", error.message, error.stack);
+    }
     return null;
   }
 }
 
-/** Get plan and usage for the effective account (owner). Cached 60s to speed up dashboard navigation. */
-export function getPlanUsage(userId: string): Promise<PlanUsage | null> {
-  return unstable_cache(
-    (id: string) => getPlanUsageUncached(id),
-    ["plan-usage", userId],
-    { revalidate: 60 }
-  )(userId);
+/** Get plan and usage for the effective account (owner). No caching to ensure plan changes are immediately reflected. */
+export async function getPlanUsage(userId: string): Promise<PlanUsage | null> {
+  // Permanent fix: No caching - always fetch fresh data from database
+  // This ensures plan changes (via SQL or API) are immediately reflected
+  // Plan data changes infrequently, so accuracy is more important than cache performance
+  return getPlanUsageUncached(userId);
 }

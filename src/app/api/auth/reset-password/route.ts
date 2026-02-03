@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const record = await prisma.verificationToken.findFirst({
+    const record = await prisma.verificationtoken.findFirst({
       where: {
         identifier: { startsWith: "password-reset:" },
         token,
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         where: { id: user.id },
         data: { password: hashedPassword },
       }),
-      prisma.verificationToken.deleteMany({
+      prisma.verificationtoken.deleteMany({
         where: { identifier: record.identifier },
       }),
     ]);

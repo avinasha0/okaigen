@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "You cannot invite yourself" }, { status: 400 });
   }
   if (existingUser) {
-    const alreadyMember = await prisma.accountMember.findUnique({
+    const alreadyMember = await prisma.accountmember.findUnique({
       where: {
         accountOwnerId_memberUserId: {
           accountOwnerId: session.user.id,
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const existingInvite = await prisma.teamInvitation.findFirst({
+  const existingInvite = await prisma.teaminvitation.findFirst({
     where: {
       accountOwnerId: session.user.id,
       email: normalizedEmail,
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-  await prisma.teamInvitation.create({
+  await prisma.teaminvitation.create({
     data: {
       accountOwnerId: session.user.id,
       email: normalizedEmail,

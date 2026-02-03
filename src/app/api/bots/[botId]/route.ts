@@ -34,8 +34,8 @@ export async function GET(
   const fullBot = await prisma.bot.findUnique({
     where: { id: bot.id },
     include: {
-      sources: true,
-      _count: { select: { chunks: true, chats: true, leads: true } },
+      source: true,
+      _count: { select: { chunk: true, chat: true, lead: true } },
     },
   });
   return NextResponse.json(fullBot);

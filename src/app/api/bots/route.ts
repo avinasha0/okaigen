@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-import { generateBotPublicKey } from "@/lib/utils";
+import { generateBotPublicKey, generateId } from "@/lib/utils";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { getEffectiveOwnerId } from "@/lib/team";
 import { requireEmailVerificationForApi } from "@/lib/email-verification";
@@ -39,7 +39,7 @@ export async function GET() {
       publicKey: true,
       createdAt: true,
       updatedAt: true,
-      _count: { select: { chunks: true, sources: true } },
+      _count: { select: { chunk: true, source: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -76,34 +76,56 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, websiteUrl } = createSchema.parse(body);
 
+    const now = new Date();
     const bot = await prisma.bot.create({
       data: {
+        id: generateId(),
         name,
         userId: ownerId,
         publicKey: generateBotPublicKey(),
+        updatedAt: now,
       },
     });
 
     if (websiteUrl) {
-      const normalizedUrl = websiteUrl.startsWith("http")
-        ? websiteUrl
-        : `https://${websiteUrl}`;
-      await prisma.source.create({
-        data: {
-          botId: bot.id,
-          type: "url",
-          url: normalizedUrl,
-          title: new URL(normalizedUrl).hostname,
-          status: "pending",
-        },
-      });
+      try {
+        const normalizedUrl = websiteUrl.startsWith("http")
+          ? websiteUrl
+          : `https://${websiteUrl}`;
+        
+        // Parse URL safely
+        let urlTitle: string;
+        try {
+          const urlObj = new URL(normalizedUrl);
+          urlTitle = urlObj.hostname || normalizedUrl;
+        } catch (urlError) {
+          console.warn("Failed to parse URL, using original URL as title:", urlError);
+          urlTitle = normalizedUrl;
+        }
+        
+        await prisma.source.create({
+          data: {
+            id: generateId(),
+            botId: bot.id,
+            type: "url",
+            url: normalizedUrl,
+            title: urlTitle,
+            status: "pending",
+            updatedAt: now,
+          },
+        });
+      } catch (sourceError) {
+        // Log source creation error but don't fail bot creation
+        console.error("Failed to create source for bot:", sourceError);
+        // Bot is already created, so we continue
+      }
     }
 
     const fullBot = await prisma.bot.findUnique({
       where: { id: bot.id },
       include: {
-        sources: true,
-        _count: { select: { chunks: true } },
+        source: true,
+        _count: { select: { chunk: true } },
       },
     });
 
@@ -115,9 +137,18 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    // Enhanced error logging for debugging
     console.error("Create bot error:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    // Return more detailed error message in development
+    const errorMessage = process.env.NODE_ENV === 'development' && error instanceof Error
+      ? `Failed to create bot: ${error.message}`
+      : "Failed to create bot";
     return NextResponse.json(
-      { error: "Failed to create bot" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -22,7 +22,7 @@ export default async function DashboardLayout({
     redirect("/verify-email");
   }
 
-  // getPlanUsage is cached 60s via unstable_cache — fast on repeat navigations
+  // getPlanUsage fetches fresh data from database — plan changes are immediately reflected
   const planUsage = session.user.id ? await getPlanUsage(session.user.id) : null;
   const showEmailVerifyBanner = session.user.email && !session.user.emailVerified;
 
@@ -62,7 +62,7 @@ export default async function DashboardLayout({
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-red-800">Quota limit reached</h3>
               <p className="mt-1 text-sm text-red-700">
-                {planUsage.usedMessages >= planUsage.totalMessages && `Daily message limit reached (${planUsage.usedMessages.toLocaleString()} / ${planUsage.totalMessages.toLocaleString()}). `}
+                {planUsage.usedMessages >= planUsage.totalMessages && `Daily message limit reached (${planUsage.usedMessages.toLocaleString('en-US')} / ${planUsage.totalMessages.toLocaleString('en-US')}). `}
                 {planUsage.usedBots >= planUsage.totalBots && `Bot limit reached (${planUsage.usedBots} / ${planUsage.totalBots}). `}
                 <Link href="/pricing" className="font-semibold underline hover:text-red-900">Upgrade your plan</Link> to continue.
               </p>

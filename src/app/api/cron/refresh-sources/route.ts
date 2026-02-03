@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   });
 
   for (const bot of bots) {
-    const userPlan = await prisma.userPlan.findUnique({
+    const userPlan = await prisma.userplan.findUnique({
       where: { userId: bot.userId },
       include: { plan: true },
     });

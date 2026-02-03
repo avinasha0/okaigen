@@ -27,7 +27,7 @@ export default async function DashboardPage() {
         id: true,
         name: true,
         createdAt: true,
-        _count: { select: { chunks: true, chats: true, leads: true } },
+        _count: { select: { chunk: true, chat: true, lead: true } },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -45,9 +45,9 @@ export default async function DashboardPage() {
   const totals = bots.reduce(
     (acc, b) => ({
       bots: acc.bots + 1,
-      chunks: acc.chunks + b._count.chunks,
-      chats: acc.chats + b._count.chats,
-      leads: acc.leads + b._count.leads,
+      chunks: acc.chunks + b._count.chunk,
+      chats: acc.chats + b._count.chat,
+      leads: acc.leads + b._count.lead,
     }),
     { bots: 0, chunks: 0, chats: 0, leads: 0 }
   );
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold text-zinc-900">
-                {totals.chunks.toLocaleString()}
+                {totals.chunks.toLocaleString('en-US')}
               </div>
             </CardContent>
           </Card>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold text-zinc-900">
-                {totals.chats.toLocaleString()}
+                {totals.chats.toLocaleString('en-US')}
               </div>
             </CardContent>
           </Card>
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold text-zinc-900">
-                {totals.leads.toLocaleString()}
+                {totals.leads.toLocaleString('en-US')}
               </div>
             </CardContent>
           </Card>
@@ -207,8 +207,8 @@ export default async function DashboardPage() {
                         {bot.name}
                       </Link>
                       <p className="mt-1 text-sm text-zinc-500">
-                        {bot._count.chunks} chunks · {bot._count.chats} chats ·{" "}
-                        {bot._count.leads} leads
+                        {bot._count.chunk} chunks · {bot._count.chat} chats ·{" "}
+                        {bot._count.lead} leads
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

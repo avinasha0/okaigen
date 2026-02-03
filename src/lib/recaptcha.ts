@@ -6,57 +6,13 @@
  */
 
 /**
- * Check if reCAPTCHA is enabled (checks both env and DB)
+ * Check if reCAPTCHA is enabled (reads from environment variable)
  * This is a server-side function - use getRecaptchaEnabled() for server components
  */
 export async function isRecaptchaEnabled(): Promise<boolean> {
-  // First check env variable (fastest)
+  // Read from environment variable only (siteSetting model doesn't exist in schema)
   const envEnabled = process.env.RECAPTCHA_ENABLED === "true";
-  if (!envEnabled) {
-    // If env says disabled, check DB as fallback (for admin override)
-    // But if DB check fails, gracefully fall back to env value
-    try {
-      const { prisma } = await import("@/lib/db");
-      
-      // Try to query the SiteSetting table
-      // This will fail gracefully if table doesn't exist (before migration)
-      let setting;
-      try {
-        setting = await prisma.siteSetting.findUnique({
-          where: { key: "recaptcha_enabled" },
-        });
-      } catch (queryError) {
-        // Table might not exist yet - this is fine, use env value
-        return false;
-      }
-      
-      // If setting exists and is true, return true
-      if (setting?.value === "true") {
-        return true;
-      }
-      
-      // Otherwise, use env value (false)
-      return false;
-    } catch (error) {
-      // If DB check fails for any reason (connection, table doesn't exist, etc.)
-      // Gracefully fall back to env value
-      // Don't log table-not-found errors as they're expected before migration
-      if (error instanceof Error) {
-        const isTableNotFound = 
-          error.message.includes("doesn't exist") || 
-          error.message.includes("Unknown table") ||
-          error.message.includes("Table") && error.message.includes("doesn't exist") ||
-          error.message.includes("P1001") || // Prisma connection error
-          error.message.includes("P2021"); // Prisma table doesn't exist
-        
-        if (!isTableNotFound) {
-          console.warn("[reCAPTCHA] DB check failed, using env value:", error.message);
-        }
-      }
-      return false;
-    }
-  }
-  return true;
+  return envEnabled;
 }
 
 /**
