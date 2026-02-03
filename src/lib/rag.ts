@@ -91,14 +91,19 @@ export async function retrieveContext(
   console.log(`[rag] chunksWithVectors: ${chunksWithVectors.length} chunks with valid embeddings >= ${minSimilarity}`);
 
   // Apply adaptive windowing to top candidates
-  const results = topChunks.length > 0
+  const results: VectorResult[] = topChunks.length > 0
     ? (() => {
         const topScore = topChunks[0].similarity;
         const scoreWindow = Math.max(minSimilarity, topScore - 0.1);
         return topChunks
           .filter((r) => r.similarity >= scoreWindow)
           .slice(0, maxChunks)
-          .map(({ similarity, ...rest }) => ({ ...rest, similarity }));
+          .map(({ id, content, metadata, similarity }) => ({ 
+            chunkId: id, 
+            content, 
+            metadata, 
+            similarity 
+          }));
       })()
     : [];
 
