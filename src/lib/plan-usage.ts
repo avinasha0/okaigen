@@ -22,40 +22,72 @@ export type PlanUsage = {
 async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
   try {
     const ownerId = await getEffectiveOwnerId(userId);
+    if (!ownerId) return null;
 
-    let userPlan = await prisma.userPlan.findUnique({
-      where: { userId: ownerId },
-      include: { plan: true },
-    });
-
-    if (!userPlan) {
-      const defaultPlan = await prisma.plan.findFirst({
-        where: { isActive: true },
-        orderBy: { price: "asc" },
-      });
-      if (!defaultPlan) return null;
-      userPlan = await prisma.userPlan.create({
-        data: { userId: ownerId, planId: defaultPlan.id },
+    let userPlan;
+    try {
+      userPlan = await prisma.userPlan.findUnique({
+        where: { userId: ownerId },
         include: { plan: true },
       });
+    } catch (dbError: unknown) {
+      console.error("Failed to get user plan:", dbError);
+      return null;
+    }
+
+    if (!userPlan) {
+      let defaultPlan;
+      try {
+        defaultPlan = await prisma.plan.findFirst({
+          where: { isActive: true },
+          orderBy: { price: "asc" },
+        });
+      } catch (dbError: unknown) {
+        console.error("Failed to get default plan:", dbError);
+        return null;
+      }
+      if (!defaultPlan) return null;
+      
+      try {
+        userPlan = await prisma.userPlan.create({
+          data: { userId: ownerId, planId: defaultPlan.id },
+          include: { plan: true },
+        });
+      } catch (dbError: unknown) {
+        console.error("Failed to create user plan:", dbError);
+        return null;
+      }
     }
 
     const plan = userPlan.plan;
-    const botIds = await prisma.bot.findMany({
-      where: { userId: ownerId },
-      select: { id: true },
-    });
+    
+    let botIds;
+    try {
+      botIds = await prisma.bot.findMany({
+        where: { userId: ownerId },
+        select: { id: true },
+      });
+    } catch (dbError: unknown) {
+      console.error("Failed to get bots:", dbError);
+      botIds = [];
+    }
     const botIdList = botIds.map((b) => b.id);
 
     const startOfToday = START_OF_TODAY();
-    const messagesResult = await prisma.usageLog.aggregate({
-      where: {
-        botId: { in: botIdList },
-        type: "message",
-        createdAt: { gte: startOfToday },
-      },
-      _sum: { count: true },
-    });
+    let messagesResult;
+    try {
+      messagesResult = await prisma.usageLog.aggregate({
+        where: {
+          botId: { in: botIdList },
+          type: "message",
+          createdAt: { gte: startOfToday },
+        },
+        _sum: { count: true },
+      });
+    } catch (dbError: unknown) {
+      console.error("Failed to get usage logs:", dbError);
+      messagesResult = { _sum: { count: null } };
+    }
 
     const usedMessages = messagesResult._sum.count ?? 0;
     const usedBots = botIds.length;
