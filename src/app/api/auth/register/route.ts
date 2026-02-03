@@ -4,12 +4,14 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
+import { verifyRecaptchaToken } from "@/lib/recaptcha";
 
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(1).optional(),
   acceptTerms: z.boolean().refine((v) => v === true, { message: "You must agree to the Terms of Service and Privacy Policy" }),
+  recaptchaToken: z.string().optional(),
 });
 
 const VERIFY_EXPIRY_DAYS = 7;
@@ -18,7 +20,15 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, name, acceptTerms } = schema.parse(body);
+    const { email, password, name, acceptTerms, recaptchaToken } = schema.parse(body);
+
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, "signup");
+    if (!recaptchaResult.success) {
+      return NextResponse.json(
+        { error: "Verification failed. Please try again." },
+        { status: 400 }
+      );
+    }
 
     const existing = await prisma.user.findUnique({
       where: { email },

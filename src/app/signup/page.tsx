@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { getToken } = useRecaptcha();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,10 +46,17 @@ function SignupForm() {
     }
     setLoading(true);
     try {
+      const recaptchaToken = await getToken("signup");
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password, name: name || undefined, acceptTerms: true }),
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password,
+          name: name || undefined,
+          acceptTerms: true,
+          recaptchaToken: recaptchaToken || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 import {
   Card,
   CardContent,
@@ -22,6 +23,7 @@ function generateTicketNumber(): string {
 }
 
 export function SupportRequestForm() {
+  const { getToken } = useRecaptcha();
   const [open, setOpen] = useState(false);
   const [ticketNumber] = useState(() => generateTicketNumber());
   const [name, setName] = useState("");
@@ -48,6 +50,7 @@ export function SupportRequestForm() {
     setError("");
     setSubmitting(true);
     try {
+      const recaptchaToken = await getToken("contact");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,6 +59,7 @@ export function SupportRequestForm() {
           email: email.trim(),
           subject: `${subject} [${ticketNumber}]`,
           message: `Ticket: ${ticketNumber}\n\n${(message.trim() || "No additional message.").slice(0, 10000)}`,
+          recaptchaToken: recaptchaToken || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));

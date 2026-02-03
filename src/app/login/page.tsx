@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { getToken } = useRecaptcha();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const verified = searchParams.get("verified") === "1";
   const errorParam = searchParams.get("error");
@@ -45,9 +47,11 @@ function LoginForm() {
     }
     setLoading(true);
     try {
+      const recaptchaToken = await getToken("login");
       const res = await signIn("credentials", {
         email: trimmedEmail,
         password,
+        recaptchaToken: recaptchaToken || undefined,
         redirect: false,
       });
       if (res?.error) {

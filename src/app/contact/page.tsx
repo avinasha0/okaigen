@@ -7,9 +7,11 @@ import { ResponsiveNav } from "@/components/responsive-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
+  const { getToken } = useRecaptcha();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -28,10 +30,17 @@ export default function ContactPage() {
     setError("");
     setSubmitting(true);
     try {
+      const recaptchaToken = await getToken("contact");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+          recaptchaToken: recaptchaToken || undefined,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
