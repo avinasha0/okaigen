@@ -36,16 +36,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
         if (!recaptchaResult.success) {
           // Log the error for debugging
+          const token = credentials.recaptchaToken as string | undefined;
           console.error("reCAPTCHA verification failed:", {
             error: recaptchaResult.error,
-            tokenProvided: !!credentials.recaptchaToken,
-            tokenLength: credentials.recaptchaToken?.length || 0,
+            tokenProvided: !!token,
+            tokenLength: typeof token === "string" ? token.length : 0,
             isEnabled: process.env.NODE_ENV === "production" && !!process.env.RECAPTCHA_SECRET_KEY,
           });
           
-          // If token expired or invalid, we should still allow login attempt
-          // but log it for monitoring. In production, you might want to be stricter.
-          // For now, we'll fail to encourage users to complete reCAPTCHA properly
+          // Return null to fail authentication
           return null;
         }
 
