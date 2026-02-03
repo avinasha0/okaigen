@@ -55,9 +55,13 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    await prisma.contactSubmission.create({
+    console.log(`[contact] Creating contact submission: email=${email}, subject=${subject}`);
+    
+    await prisma.contactsubmission.create({
       data: { name, email, subject, message },
     });
+    
+    console.log(`[contact] Contact submission created successfully`);
 
     // Send notification email to site owner (if EMAIL_SERVER and CONTACT_EMAIL/EMAIL_FROM are set)
     const toEmail = getContactToEmail();
