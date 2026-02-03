@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
     const { name, email, subject, message, recaptchaToken } = parsed.data;
 
-    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, "contact");
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
     if (!recaptchaResult.success) {
       return NextResponse.json(
         { error: "Verification failed. Please try again." },

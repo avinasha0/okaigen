@@ -1,5 +1,5 @@
 /**
- * reCAPTCHA v3 server-side verification.
+ * reCAPTCHA v2 server-side verification.
  * Only enabled in production (not on localhost). Set RECAPTCHA_SECRET_KEY in production.
  */
 
@@ -12,13 +12,12 @@ export function isRecaptchaEnabled(): boolean {
 }
 
 /**
- * Verify a reCAPTCHA v3 token with Google. Returns true if valid and score acceptable.
+ * Verify a reCAPTCHA v2 token with Google. Returns true if valid.
  * When reCAPTCHA is disabled (e.g. localhost), returns true without calling Google.
  */
 export async function verifyRecaptchaToken(
-  token: string | null | undefined,
-  action?: string
-): Promise<{ success: boolean; score?: number; error?: string }> {
+  token: string | null | undefined
+): Promise<{ success: boolean; error?: string }> {
   if (!isRecaptchaEnabled()) {
     return { success: true };
   }
@@ -38,13 +37,10 @@ export async function verifyRecaptchaToken(
       body: new URLSearchParams({
         secret,
         response: token,
-        ...(action && { action }),
       }),
     });
     const data = (await res.json()) as {
       success: boolean;
-      score?: number;
-      action?: string;
       "error-codes"?: string[];
     };
 
@@ -52,13 +48,7 @@ export async function verifyRecaptchaToken(
       const codes = data["error-codes"]?.join(", ") ?? "unknown";
       return { success: false, error: codes };
     }
-    // Optional: enforce minimum score (e.g. 0.5). reCAPTCHA v3 returns 0.0-1.0.
-    const score = data.score ?? 0;
-    const minScore = 0.5;
-    if (score < minScore) {
-      return { success: false, score, error: "Score too low" };
-    }
-    return { success: true, score };
+    return { success: true };
   } catch (e) {
     console.error("reCAPTCHA verify error:", e);
     return { success: false, error: "Verification failed" };

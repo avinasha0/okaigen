@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { ReCaptcha } from "@/components/recaptcha";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { getToken } = useRecaptcha();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +46,6 @@ function SignupForm() {
     }
     setLoading(true);
     try {
-      const recaptchaToken = await getToken("signup");
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -219,6 +218,9 @@ function SignupForm() {
                     Privacy Policy
                   </Link>
                 </Label>
+              </div>
+              <div className="flex justify-center">
+                <ReCaptcha onChange={setRecaptchaToken} />
               </div>
               <Button
                 type="submit"

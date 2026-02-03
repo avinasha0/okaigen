@@ -31,8 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         const recaptchaResult = await verifyRecaptchaToken(
-          credentials.recaptchaToken as string | undefined,
-          "login"
+          credentials.recaptchaToken as string | undefined
         );
         if (!recaptchaResult.success) return null;
 

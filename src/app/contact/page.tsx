@@ -7,15 +7,15 @@ import { ResponsiveNav } from "@/components/responsive-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { ReCaptcha } from "@/components/recaptcha";
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
-  const { getToken } = useRecaptcha();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   useEffect(() => {
     const sub = searchParams.get("subject");
     if (sub) setSubject(decodeURIComponent(sub));
@@ -30,7 +30,6 @@ export default function ContactPage() {
     setError("");
     setSubmitting(true);
     try {
-      const recaptchaToken = await getToken("contact");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,6 +154,9 @@ export default function ContactPage() {
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-[#1a6aff] focus:outline-none focus:ring-1 focus:ring-[#1a6aff]"
                 />
                 <p className="text-xs text-slate-500">At least 10 characters. Max 10,000.</p>
+              </div>
+              <div className="flex justify-center">
+                <ReCaptcha onChange={setRecaptchaToken} />
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Button

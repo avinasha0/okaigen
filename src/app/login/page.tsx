@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { ReCaptcha } from "@/components/recaptcha";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { getToken } = useRecaptcha();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const verified = searchParams.get("verified") === "1";
   const errorParam = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +47,6 @@ function LoginForm() {
     }
     setLoading(true);
     try {
-      const recaptchaToken = await getToken("login");
       const res = await signIn("credentials", {
         email: trimmedEmail,
         password,
@@ -183,6 +182,9 @@ function LoginForm() {
                   required
                   className="h-12 rounded-xl border-slate-200 bg-white focus:border-[#1a6aff] focus:ring-[#1a6aff]/20"
                 />
+              </div>
+              <div className="flex justify-center">
+                <ReCaptcha onChange={setRecaptchaToken} />
               </div>
               <Button
                 type="submit"

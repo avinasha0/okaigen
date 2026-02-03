@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
+import { ReCaptcha } from "@/components/recaptcha";
 import {
   Card,
   CardContent,
@@ -23,12 +23,12 @@ function generateTicketNumber(): string {
 }
 
 export function SupportRequestForm() {
-  const { getToken } = useRecaptcha();
   const [open, setOpen] = useState(false);
   const [ticketNumber] = useState(() => generateTicketNumber());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -169,6 +169,9 @@ export function SupportRequestForm() {
                 {error && (
                   <p className="text-sm text-red-600">{error}</p>
                 )}
+                <div className="flex justify-center">
+                  <ReCaptcha onChange={setRecaptchaToken} />
+                </div>
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" disabled={submitting}>
                     {submitting ? "Submitting..." : "Submit"}

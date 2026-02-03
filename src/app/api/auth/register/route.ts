@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, name, acceptTerms, recaptchaToken } = schema.parse(body);
 
-    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, "signup");
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
     if (!recaptchaResult.success) {
       return NextResponse.json(
         { error: "Verification failed. Please try again." },
