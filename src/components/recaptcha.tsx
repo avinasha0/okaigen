@@ -6,7 +6,17 @@ declare global {
   interface Window {
     grecaptcha?: {
       ready: (cb: () => void) => void;
-      render: (container: HTMLElement, options: { sitekey: string; theme?: "light" | "dark"; size?: "normal" | "compact" }) => number;
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          theme?: "light" | "dark";
+          size?: "normal" | "compact";
+          callback?: (token: string) => void;
+          "expired-callback"?: () => void;
+          "error-callback"?: () => void;
+        }
+      ) => number;
       getResponse: (widgetId: number) => string;
       reset: (widgetId: number) => void;
     };
