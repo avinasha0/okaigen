@@ -58,17 +58,30 @@ function LoginForm() {
         recaptchaToken: recaptchaToken || undefined,
         redirect: false,
       });
+      
+      // Handle response - NextAuth v5 returns { error, ok, status, url } or undefined
       if (res?.error) {
-        // Reset reCAPTCHA on error so user can try again
         setRecaptchaToken(null);
         recaptchaReset?.();
         setError("Invalid email or password");
         setLoading(false);
         return;
       }
-      router.replace(callbackUrl);
-      router.refresh();
+      
+      // If no error, assume success and navigate
+      // Reset loading immediately to prevent stuck state
+      setLoading(false);
+      
+      // Navigate to callback URL
+      if (callbackUrl) {
+        router.push(callbackUrl);
+        router.refresh();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setRecaptchaToken(null);
       recaptchaReset?.();
       setError("Something went wrong. Please try again.");
