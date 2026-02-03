@@ -18,6 +18,7 @@ function ResetPasswordForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const getCaptchaToken = useCaptcha();
 
   useEffect(() => {
     if (!token) setError("Invalid or missing reset link. Please request a new one from the forgot password page.");

@@ -20,6 +20,7 @@ function SignupForm() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const getCaptchaToken = useCaptcha();
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
