@@ -310,3 +310,15 @@ model Webhook {
 
   @@index([userId], map: "Webhook_userId_idx")
 }
+
+model Waitlist {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(255)
+  email     String   @db.VarChar(255)
+  planName  String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+
+  @@unique([email, planName], map: "Waitlist_email_planName_key")
+  @@index([email], map: "Waitlist_email_idx")
+  @@index([planName], map: "Waitlist_planName_idx")
+}

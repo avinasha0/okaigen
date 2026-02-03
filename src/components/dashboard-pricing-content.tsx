@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PLANS } from "@/lib/plans";
-import { CheckoutButton } from "@/components/checkout-button";
+import { WaitlistModal } from "@/components/waitlist-modal";
 
 export function DashboardPricingContent({
   currentPlanName,
@@ -14,6 +14,8 @@ export function DashboardPricingContent({
   canceled?: boolean;
 }) {
   const [yearly, setYearly] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
   const interval = yearly ? "yearly" : "monthly";
 
   return (
@@ -156,17 +158,21 @@ export function DashboardPricingContent({
                 >
                   {plan.cta}
                 </Link>
-              ) : (
-                <CheckoutButton
-                  planName={plan.name}
-                  interval={interval}
-                  currentPlanName={currentPlanName}
-                  variant={plan.highlight ? "primary" : "secondary"}
-                  className={plan.highlight ? "shadow-lg shadow-[#1a6aff]/25" : ""}
+              ) : plan.name === "Growth" || plan.name === "Scale" ? (
+                <button
+                  onClick={() => {
+                    setSelectedPlan(plan.name);
+                    setWaitlistOpen(true);
+                  }}
+                  className={`flex w-full items-center justify-center rounded-xl border-2 px-4 py-3.5 text-sm font-semibold transition-all ${
+                    plan.highlight
+                      ? "border-[#1a6aff] bg-[#1a6aff] text-white shadow-lg shadow-[#1a6aff]/25 hover:bg-[#0d5aeb]"
+                      : "border-[#1a6aff] bg-white text-[#1a6aff] hover:bg-[#1a6aff]/5"
+                  }`}
                 >
-                  {currentPlanName === plan.name ? "Current plan" : "Upgrade"}
-                </CheckoutButton>
-              )}
+                  {currentPlanName === plan.name ? "Current plan" : "Join the Waitlist"}
+                </button>
+              ) : null}
             </div>
           </div>
         ))}
@@ -175,6 +181,12 @@ export function DashboardPricingContent({
       <p className="mt-8 text-center text-sm text-slate-500">
         Cancel anytime • Manage billing in Settings
       </p>
+
+      <WaitlistModal
+        open={waitlistOpen}
+        onOpenChange={setWaitlistOpen}
+        planName={selectedPlan}
+      />
     </div>
   );
 }
