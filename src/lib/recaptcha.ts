@@ -45,8 +45,16 @@ export async function verifyRecaptchaToken(
     };
 
     if (!data.success) {
-      const codes = data["error-codes"]?.join(", ") ?? "unknown";
-      return { success: false, error: codes };
+      const codes = data["error-codes"] || [];
+      const errorMessage = codes.join(", ");
+      
+      // Handle specific error codes more gracefully
+      // "timeout-or-duplicate" means token expired or was already used
+      if (codes.includes("timeout-or-duplicate") || codes.includes("invalid-input-response")) {
+        return { success: false, error: `Token expired or invalid: ${errorMessage}` };
+      }
+      
+      return { success: false, error: errorMessage };
     }
     return { success: true };
   } catch (e) {

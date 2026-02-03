@@ -59,39 +59,25 @@ function LoginForm() {
         redirect: false,
       });
       
-      // Handle response - NextAuth v5 returns { error, ok, status, url } or undefined
-      console.log("SignIn response:", res); // Debug log
-      
+      // Handle response - NextAuth v5 returns { error, ok, status, url }
+      // IMPORTANT: Check error FIRST - NextAuth can return ok=true even with errors!
       if (res?.error) {
+        // Reset reCAPTCHA to get fresh token (tokens expire after ~2 minutes)
         setRecaptchaToken(null);
         recaptchaReset?.();
-        setError("Invalid email or password");
+        
+        // Check if error might be due to expired reCAPTCHA token
+        if (res.error === "CredentialsSignin" && recaptchaToken) {
+          setError("Login failed. Please check the reCAPTCHA box again and try.");
+        } else {
+          setError("Invalid email or password");
+        }
         setLoading(false);
         return;
       }
       
-      // Check if signIn was actually successful
-      // NextAuth v5: ok=true means success, ok=false means failure, undefined might mean error
-      if (res === undefined) {
-        // No response - likely an error occurred
-        setRecaptchaToken(null);
-        recaptchaReset?.();
-        setError("Sign in failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-      
-      if (res?.ok === false) {
-        // Explicit failure
-        setRecaptchaToken(null);
-        recaptchaReset?.();
-        setError("Sign in failed. Please check your credentials and try again.");
-        setLoading(false);
-        return;
-      }
-      
-      // Success - verify we have a valid response before navigating
-      if (res?.ok === true || res?.url || (!res?.error && res?.status === 200)) {
+      // Only proceed if there's no error and we have a successful response
+      if (res?.ok === true && !res?.error) {
         // Reset loading before navigation
         setLoading(false);
         
@@ -103,11 +89,10 @@ function LoginForm() {
         }
         router.refresh();
       } else {
-        // Unexpected response - treat as failure
-        console.warn("Unexpected signIn response:", res);
+        // Failure or unexpected response
         setRecaptchaToken(null);
         recaptchaReset?.();
-        setError("Sign in failed. Please try again.");
+        setError("Sign in failed. Please check your credentials and try again.");
         setLoading(false);
       }
     } catch (err) {
