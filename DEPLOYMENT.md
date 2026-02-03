@@ -1,8 +1,23 @@
-# SiteBotGPT - VPS Deployment Guide
+# SiteBotGPT - Deployment Guide
 
 **Production website:** [https://sitebotgpt.com](https://sitebotgpt.com)
 
-This guide covers deploying SiteBotGPT on a single VPS with Nginx and PM2.
+## Vercel
+
+The Vercel build uses **`prisma generate && next build`** only. It does **not** run `prisma migrate deploy` or `db:seed` because the build environment cannot reach your database (e.g. Hostinger MySQL). Run migrations and seed from a machine that can reach the DB (e.g. locally with `DATABASE_URL` set to your production URL):
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+```
+
+See also `vercel.json` and `DEPLOYMENT-HOSTINGER.md` for Hostinger Node.js Apps.
+
+---
+
+## VPS (Nginx + PM2)
+
+This section covers deploying on a single VPS with Nginx and PM2.
 
 ## Prerequisites
 
