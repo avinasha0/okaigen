@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { ReCaptcha } from "@/components/recaptcha";
+import { ReCaptcha, isRecaptchaEnabled } from "@/components/recaptcha";
 
 function LoginForm() {
   const router = useRouter();
@@ -19,6 +19,7 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [recaptchaReset, setRecaptchaReset] = useState<(() => void) | null>(null);
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
 
@@ -45,6 +46,10 @@ function LoginForm() {
       setError("Please enter your password");
       return;
     }
+    if (isRecaptchaEnabled && !recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification");
+      return;
+    }
     setLoading(true);
     try {
       const res = await signIn("credentials", {
@@ -54,14 +59,19 @@ function LoginForm() {
         redirect: false,
       });
       if (res?.error) {
+        // Reset reCAPTCHA on error so user can try again
+        setRecaptchaToken(null);
+        recaptchaReset?.();
         setError("Invalid email or password");
         setLoading(false);
         return;
       }
       router.replace(callbackUrl);
       router.refresh();
-    } catch {
-      setError("Something went wrong");
+    } catch (err) {
+      setRecaptchaToken(null);
+      recaptchaReset?.();
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
@@ -184,7 +194,7 @@ function LoginForm() {
                 />
               </div>
               <div className="flex justify-center">
-                <ReCaptcha onChange={setRecaptchaToken} />
+                <ReCaptcha onChange={setRecaptchaToken} onReset={setRecaptchaReset} />
               </div>
               <Button
                 type="submit"

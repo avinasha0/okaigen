@@ -30,10 +30,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Verify reCAPTCHA first, but only fail if it's actually required and invalid
         const recaptchaResult = await verifyRecaptchaToken(
           credentials.recaptchaToken as string | undefined
         );
-        if (!recaptchaResult.success) return null;
+        if (!recaptchaResult.success) {
+          // Log the error for debugging but don't expose it to user
+          console.error("reCAPTCHA verification failed:", recaptchaResult.error);
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
