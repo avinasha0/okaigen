@@ -177,32 +177,99 @@ export default function LandingPage() {
         </section>
 
         {/* Imagine - Before / After */}
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
-            Imagine what you could do with an expert chatbot answering questions 24/7
+        <section className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="before-after">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/80" aria-hidden />
+          <h2 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl lg:leading-tight">
+            Imagine what you could do with an expert chatbot answering questions{" "}
+            <span className="bg-gradient-to-r from-[#1a6aff] to-indigo-600 bg-clip-text text-transparent">24/7</span>
           </h2>
-          <div className="mt-16 grid gap-8 md:grid-cols-2">
-            <div className="rounded-2xl border border-rose-200/80 bg-rose-50/40 p-8">
-              <h3 className="text-lg font-semibold text-slate-900">Before</h3>
-              <p className="mt-2 text-sm text-slate-600">Fickle, one-size-fits-all chatbots that do more harm than good</p>
-              <ul className="mt-6 space-y-3 text-slate-600">
-                <li>• Generic AI tools that don&apos;t know your product</li>
-                <li>• Custom bots that break and are hard to maintain</li>
-                <li>• Support staff taking months to train</li>
-                <li>• Bogged down with support tickets</li>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
+            Stop losing leads and time. See the difference a trained AI support agent makes.
+          </p>
+
+          <div className="mt-12 grid gap-6 md:mt-16 md:grid-cols-2 md:gap-8 lg:gap-10">
+            {/* Before */}
+            <div className="group relative overflow-hidden rounded-2xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 to-rose-50/50 p-8 shadow-lg shadow-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-xl hover:shadow-rose-200/40 hover:-translate-y-0.5">
+              <div className="absolute right-4 top-4 rounded-full bg-rose-200/60 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-800">
+                The old way
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-200/80 text-rose-700" aria-hidden>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Before</h3>
+                  <p className="mt-0.5 text-sm font-medium text-rose-800/90">Fickle, one-size-fits-all chatbots that do more harm than good</p>
+                </div>
+              </div>
+              <ul className="mt-6 space-y-4">
+                {[
+                  "Generic AI tools that don't know your product",
+                  "Custom bots that break and are hard to maintain",
+                  "Support staff taking months to train",
+                  "Bogged down with support tickets",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-700">
+                    <span className="mt-1.5 h-5 w-5 shrink-0 rounded-full bg-rose-300/70 flex items-center justify-center" aria-hidden>
+                      <svg className="h-3 w-3 text-rose-800" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-8">
-              <h3 className="text-lg font-semibold text-slate-900">After</h3>
-              <p className="mt-2 text-sm text-slate-600">An automated resource that supercharges your support team</p>
-              <ul className="mt-6 space-y-3 text-slate-600">
-                <li>• 24/7 quality support with instant responses</li>
-                <li>• Most questions handled automatically</li>
-                <li>• Your team twice as productive</li>
-                <li>• Time freed for higher-level tasks</li>
+
+            {/* After */}
+            <div className="group relative overflow-hidden rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-8 shadow-lg shadow-emerald-100/50 transition-all duration-300 hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-200/50 hover:-translate-y-0.5">
+              <div className="absolute right-4 top-4 rounded-full bg-emerald-400/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+                With SiteBotGPT
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-400 text-white shadow-md shadow-emerald-400/40" aria-hidden>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">After</h3>
+                  <p className="mt-0.5 text-sm font-medium text-emerald-800">An automated resource that supercharges your support team</p>
+                </div>
+              </div>
+              <ul className="mt-6 space-y-4">
+                {[
+                  "24/7 quality support with instant responses",
+                  "Most questions handled automatically",
+                  "Your team twice as productive",
+                  "Time freed for higher-level tasks",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-700">
+                    <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white" aria-hidden>
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
+              <Link
+                href="/signup"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1a6aff] to-indigo-600 px-6 py-4 font-semibold text-white shadow-lg shadow-[#1a6aff]/30 transition-all hover:from-[#0d5aeb] hover:to-indigo-700 hover:shadow-xl hover:shadow-[#1a6aff]/40 active:scale-[0.98]"
+              >
+                Get your expert chatbot free
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
             </div>
           </div>
+
+          <p className="mt-8 text-center">
+            <Link href="/demo" className="inline-flex items-center gap-2 rounded-full border-2 border-[#1a6aff] bg-white px-6 py-3 font-semibold text-[#1a6aff] transition-colors hover:bg-[#1a6aff]/5">
+              Or try the live demo first
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            </Link>
+          </p>
         </section>
 
         {/* How it works */}
