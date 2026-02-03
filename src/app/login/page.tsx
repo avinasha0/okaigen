@@ -18,8 +18,6 @@ function LoginForm() {
   const errorParam = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const [recaptchaReset, setRecaptchaReset] = useState<(() => void) | null>(null);
   const [recaptchaGetToken, setRecaptchaGetToken] = useState<(() => string | null) | null>(null);
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
@@ -34,7 +32,6 @@ function LoginForm() {
     // Reset all form state
     setEmail("");
     setPassword("");
-    setRecaptchaToken(null);
     setError("");
     setLoading(false);
   }, []); // Run once on mount
@@ -57,21 +54,8 @@ function LoginForm() {
       setError("Please enter your password");
       return;
     }
-    // Get fresh token right before submission to avoid expiration
-    let finalToken = recaptchaToken;
-    if (isRecaptchaEnabled) {
-      if (recaptchaGetToken) {
-        const freshToken = recaptchaGetToken();
-        if (!freshToken) {
-          setError("Please complete the reCAPTCHA verification");
-          return;
-        }
-        finalToken = freshToken;
-      } else if (!recaptchaToken) {
-        setError("Please complete the reCAPTCHA verification");
-        return;
-      }
-    }
+    // Get token from widget right before submission
+    const finalToken = isRecaptchaEnabled && recaptchaGetToken ? recaptchaGetToken() : null;
     
     setLoading(true);
     try {
@@ -82,46 +66,21 @@ function LoginForm() {
         redirect: false,
       });
       
-      // Handle response - NextAuth v5 returns { error, ok, status, url }
-      // IMPORTANT: Check error FIRST - NextAuth can return ok=true even with errors!
       if (res?.error) {
-        // Reset reCAPTCHA to get fresh token (tokens expire after ~2 minutes)
-        setRecaptchaToken(null);
-        recaptchaReset?.();
-        
-        // Check if error might be due to expired reCAPTCHA token
-        if (res.error === "CredentialsSignin" && recaptchaToken) {
-          setError("Login failed. Please check the reCAPTCHA box again and try.");
-        } else {
-          setError("Invalid email or password");
-        }
+        setError("Invalid email or password");
         setLoading(false);
         return;
       }
       
-      // Only proceed if there's no error and we have a successful response
       if (res?.ok === true && !res?.error) {
-        // Reset loading before navigation
         setLoading(false);
-        
-        // Navigate to callback URL
-        if (callbackUrl && callbackUrl !== "/login") {
-          router.push(callbackUrl);
-        } else {
-          router.push("/dashboard");
-        }
+        router.push(callbackUrl && callbackUrl !== "/login" ? callbackUrl : "/dashboard");
         router.refresh();
       } else {
-        // Failure or unexpected response
-        setRecaptchaToken(null);
-        recaptchaReset?.();
-        setError("Sign in failed. Please check your credentials and try again.");
+        setError("Sign in failed. Please try again.");
         setLoading(false);
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setRecaptchaToken(null);
-      recaptchaReset?.();
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
@@ -245,11 +204,7 @@ function LoginForm() {
                 />
               </div>
               <div className="flex justify-center">
-                <ReCaptcha 
-                  onChange={setRecaptchaToken} 
-                  onReset={setRecaptchaReset}
-                  onGetToken={setRecaptchaGetToken}
-                />
+                <ReCaptcha onGetToken={setRecaptchaGetToken} />
               </div>
               <Button
                 type="submit"

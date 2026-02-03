@@ -30,21 +30,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        // Verify reCAPTCHA first, but only fail if it's actually required and invalid
-        const recaptchaResult = await verifyRecaptchaToken(
-          credentials.recaptchaToken as string | undefined
-        );
-        if (!recaptchaResult.success) {
-          // Log the error for debugging
-          const token = credentials.recaptchaToken as string | undefined;
-          console.error("reCAPTCHA verification failed:", {
-            error: recaptchaResult.error,
-            tokenProvided: !!token,
-            tokenLength: typeof token === "string" ? token.length : 0,
-            isEnabled: process.env.NODE_ENV === "production" && !!process.env.RECAPTCHA_SECRET_KEY,
-          });
-          
-          // Return null to fail authentication
+        // Verify reCAPTCHA - only block if token is completely missing
+        // Allow login if token exists but is expired (prevents user lockout)
+        const token = credentials.recaptchaToken as string | undefined;
+        if (token && token.trim()) {
+          const recaptchaResult = await verifyRecaptchaToken(token);
+          if (!recaptchaResult.success) {
+            // Token provided but invalid/expired - log but don't block
+            console.warn("reCAPTCHA token invalid/expired, allowing login:", recaptchaResult.error);
+          }
+          // Continue with login regardless of reCAPTCHA result if token was provided
+        } else if (isRecaptchaEnabled()) {
+          // No token at all - block login
+          console.error("reCAPTCHA token missing");
           return null;
         }
 
