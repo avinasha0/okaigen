@@ -20,6 +20,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [recaptchaReset, setRecaptchaReset] = useState<(() => void) | null>(null);
+  const [recaptchaGetToken, setRecaptchaGetToken] = useState<(() => string | null) | null>(null);
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
 
@@ -56,16 +57,28 @@ function LoginForm() {
       setError("Please enter your password");
       return;
     }
-    if (isRecaptchaEnabled && !recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification");
-      return;
+    // Get fresh token right before submission to avoid expiration
+    let finalToken = recaptchaToken;
+    if (isRecaptchaEnabled) {
+      if (recaptchaGetToken) {
+        const freshToken = recaptchaGetToken();
+        if (!freshToken) {
+          setError("Please complete the reCAPTCHA verification");
+          return;
+        }
+        finalToken = freshToken;
+      } else if (!recaptchaToken) {
+        setError("Please complete the reCAPTCHA verification");
+        return;
+      }
     }
+    
     setLoading(true);
     try {
       const res = await signIn("credentials", {
         email: trimmedEmail,
         password,
-        recaptchaToken: recaptchaToken || undefined,
+        recaptchaToken: finalToken || undefined,
         redirect: false,
       });
       
@@ -232,7 +245,11 @@ function LoginForm() {
                 />
               </div>
               <div className="flex justify-center">
-                <ReCaptcha onChange={setRecaptchaToken} onReset={setRecaptchaReset} />
+                <ReCaptcha 
+                  onChange={setRecaptchaToken} 
+                  onReset={setRecaptchaReset}
+                  onGetToken={setRecaptchaGetToken}
+                />
               </div>
               <Button
                 type="submit"

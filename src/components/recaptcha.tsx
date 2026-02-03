@@ -36,6 +36,7 @@ interface ReCaptchaProps {
   theme?: "light" | "dark";
   size?: "normal" | "compact";
   onReset?: (reset: () => void) => void;
+  onGetToken?: (getToken: () => string | null) => void;
 }
 
 /** Export to check if reCAPTCHA is enabled */
@@ -45,7 +46,7 @@ export const isRecaptchaEnabled = recaptchaEnabled;
  * reCAPTCHA v2 checkbox component. Only renders when enabled in production.
  * On localhost, renders nothing (reCAPTCHA disabled).
  */
-export function ReCaptcha({ onChange, theme = "light", size = "normal", onReset }: ReCaptchaProps) {
+export function ReCaptcha({ onChange, theme = "light", size = "normal", onReset, onGetToken }: ReCaptchaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
   const [ready, setReady] = useState(false);
@@ -62,11 +63,25 @@ export function ReCaptcha({ onChange, theme = "light", size = "normal", onReset 
     }
   };
 
+  const getToken = (): string | null => {
+    if (widgetIdRef.current !== null && window.grecaptcha) {
+      try {
+        return window.grecaptcha.getResponse(widgetIdRef.current);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     if (onReset) {
       onReset(reset);
     }
-  }, [onReset]);
+    if (onGetToken) {
+      onGetToken(getToken);
+    }
+  }, [onReset, onGetToken]);
 
   useEffect(() => {
     if (!recaptchaEnabled || !SITE_KEY) {
