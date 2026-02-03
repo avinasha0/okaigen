@@ -67,9 +67,10 @@ function LoginForm() {
       }
       
       if (res?.ok === true && !res?.error) {
-        setLoading(false);
-        router.push(callbackUrl && callbackUrl !== "/login" ? callbackUrl : "/dashboard");
-        router.refresh();
+        // Use window.location.href for a full page reload to ensure session cookie is set
+        // This prevents race conditions where middleware checks session before cookie is available
+        const destination = callbackUrl && callbackUrl !== "/login" ? callbackUrl : "/dashboard";
+        window.location.href = destination;
       } else {
         setError("Sign in failed. Please try again.");
         setLoading(false);
