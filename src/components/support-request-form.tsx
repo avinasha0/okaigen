@@ -50,7 +50,6 @@ export function SupportRequestForm() {
     setError("");
     setSubmitting(true);
     try {
-      const recaptchaToken = await getToken("contact");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
