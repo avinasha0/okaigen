@@ -14,11 +14,11 @@ export async function DELETE(
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
   const { id } = await params;
-  const webhook = await prisma.Webhook.findFirst({
+  const webhook = await prisma.webhook.findFirst({
     where: { id, userId: ownerId }});
   if (!webhook) {
     return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
   }
-  await prisma.Webhook.delete({ where: { id } });
+  await prisma.webhook.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

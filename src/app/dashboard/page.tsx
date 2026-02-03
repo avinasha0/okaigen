@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const ownerId = await getEffectiveOwnerId(session.user.id);
 
   const [bots, planUsage] = await Promise.all([
-    prisma.Bot.findMany({
+    prisma.bot.findMany({
       where: { userId: ownerId },
       select: {
         id: true,

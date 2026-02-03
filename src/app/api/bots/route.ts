@@ -30,7 +30,7 @@ export async function GET() {
   if (emailCheck) return emailCheck;
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const bots = await prisma.Bot.findMany({
+  const bots = await prisma.bot.findMany({
     where: { userId: ownerId },
     select: {
       id: true,
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     const { name, websiteUrl } = createSchema.parse(body);
 
     const now = new Date();
-    const bot = await prisma.Bot.create({
+    const bot = await prisma.bot.create({
       data: {name,
         userId: ownerId,
         publicKey: generateBotPublicKey(),
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
           urlTitle = normalizedUrl;
         }
         
-        await prisma.Source.create({
+        await prisma.source.create({
           data: {botId: bot.id,
             type: "url",
             url: normalizedUrl,
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const fullBot = await prisma.Bot.findUnique({
+    const fullBot = await prisma.bot.findUnique({
       where: { id: bot.id },
       include: {
         source: true,

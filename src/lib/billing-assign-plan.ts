@@ -14,14 +14,14 @@ export async function assignPlanToUser(
     paypalSubscriptionId?: string | null;
   } = {}
 ) {
-  const plan = await prisma.Plan.findFirst({
+  const plan = await prisma.plan.findFirst({
     where: { name: planName, isActive: true }});
   if (!plan) {
     console.warn("assignPlanToUser: plan not found", planName);
     return;
   }
 
-  await prisma.UserPlan.upsert({
+  await prisma.userPlan.upsert({
     where: { userId },
     create: {
 
@@ -43,11 +43,11 @@ export async function assignPlanToUser(
  * Downgrade user to Starter (e.g. after subscription cancelled).
  */
 export async function downgradeUserToStarter(userId: string) {
-  const starterPlan = await prisma.Plan.findFirst({
+  const starterPlan = await prisma.plan.findFirst({
     where: { name: "Starter", isActive: true }});
   if (!starterPlan) return;
 
-  await prisma.UserPlan.upsert({
+  await prisma.userPlan.upsert({
     where: { userId },
     create: {
 

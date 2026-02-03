@@ -15,7 +15,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const keys = await prisma.ApiKey.findMany({
+  const keys = await prisma.apiKey.findMany({
     where: { userId: ownerId },
     select: { id: true, name: true, keyPrefix: true, lastUsedAt: true, createdAt: true },
     orderBy: { createdAt: "desc" }});
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   }
 
   const { rawKey, prefix, hash } = generateApiKey();
-  const key = await prisma.ApiKey.create({
+  const key = await prisma.apiKey.create({
     data: {userId: ownerId, name: parsed.data.name, keyPrefix: prefix, keyHash: hash },
     select: { id: true, name: true, keyPrefix: true, createdAt: true }});
   return NextResponse.json({

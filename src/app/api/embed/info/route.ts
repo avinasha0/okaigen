@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     return jsonWithCors({ error: "botId required" }, { status: 400 });
   }
 
-  const bot = await prisma.Bot.findFirst({
+  const bot = await prisma.bot.findFirst({
     where: botId.startsWith("atlas_")
       ? { publicKey: botId }
       : { id: botId },

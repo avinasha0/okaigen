@@ -10,17 +10,17 @@ const PRICES: Record<PlanName, number> = {
   Enterprise: 999};
 
 async function main() {
-  const existingFree = await prisma.Plan.findFirst({ where: { name: "Free" } });
+  const existingFree = await prisma.plan.findFirst({ where: { name: "Free" } });
   if (existingFree) {
-    await prisma.Plan.update({
+    await prisma.plan.update({
       where: { id: existingFree.id },
       data: { name: "Starter", dailyLimit: 10, botLimit: 1 }});
     console.log("Migrated plan Free → Starter");
   }
 
-  const existingPro = await prisma.Plan.findFirst({ where: { name: "Pro" } });
+  const existingPro = await prisma.plan.findFirst({ where: { name: "Pro" } });
   if (existingPro) {
-    await prisma.Plan.update({
+    await prisma.plan.update({
       where: { id: existingPro.id },
       data: { name: "Growth", dailyLimit: 70, botLimit: 3 }});
     console.log("Migrated plan Pro → Growth");
@@ -43,7 +43,7 @@ async function main() {
     const razorpayIds = razorpayPlanIds[name as keyof typeof razorpayPlanIds];
     const paypalIds = paypalPlanIds[name as keyof typeof paypalPlanIds];
 
-    const existing = await prisma.Plan.findFirst({ where: { name } });
+    const existing = await prisma.plan.findFirst({ where: { name } });
     const planData = {
       dailyLimit: limits.dailyLimit,
       botLimit: limits.botLimit,
@@ -58,12 +58,12 @@ async function main() {
       paypalPlanIdYearly: paypalIds?.yearly || null,
       isActive: true};
     if (existing) {
-      await prisma.Plan.update({
+      await prisma.plan.update({
         where: { id: existing.id },
         data: planData});
       console.log(`Plan ${name} updated`);
     } else {
-      await prisma.Plan.create({
+      await prisma.plan.create({
         data: {name, 
           ...planData,
           updatedAt: new Date()}});

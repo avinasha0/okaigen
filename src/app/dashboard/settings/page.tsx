@@ -17,7 +17,7 @@ export default async function SettingsPage() {
   const session = await auth();
   const planUsage = session?.user?.id ? await getPlanUsage(session.user.id) : null;
   const userRecord = session?.user?.id
-    ? await prisma.User.findUnique({
+    ? await prisma.user.findUnique({
         where: { id: session.user.id },
         select: { password: true }})
     : null;

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
-      const plan = await prisma.Plan.findFirst({
+      const plan = await prisma.plan.findFirst({
         where: {
           isActive: true,
           OR: [

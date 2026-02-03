@@ -19,7 +19,7 @@ export async function POST() {
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const user = await prisma.User.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: ownerId },
     select: { stripeCustomerId: true }});
 

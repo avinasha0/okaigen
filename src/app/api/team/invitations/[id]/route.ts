@@ -20,13 +20,13 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const invitation = await prisma.TeamInvitation.findFirst({
+  const invitation = await prisma.teamInvitation.findFirst({
     where: { id, accountOwnerId: session.user.id }});
 
   if (!invitation) {
     return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
   }
 
-  await prisma.TeamInvitation.delete({ where: { id } });
+  await prisma.teamInvitation.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

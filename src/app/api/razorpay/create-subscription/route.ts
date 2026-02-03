@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid interval. Use monthly or yearly." }, { status: 400 });
   }
 
-  const plan = await prisma.Plan.findFirst({
+  const plan = await prisma.plan.findFirst({
     where: { name: planName, isActive: true }});
   if (!plan) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });

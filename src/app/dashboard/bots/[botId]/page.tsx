@@ -22,7 +22,7 @@ export default async function BotDetailPage({
   const session = await auth();
   const { botId } = await params;
   const ownerId = session?.user?.id ? await getEffectiveOwnerId(session.user.id) : "";
-  const bot = await prisma.Bot.findFirst({
+  const bot = await prisma.bot.findFirst({
     where: { id: botId, userId: ownerId },
     include: {
       source: true,
@@ -34,13 +34,13 @@ export default async function BotDetailPage({
   let publicKey = bot.publicKey;
   if (!publicKey) {
     publicKey = generateBotPublicKey();
-    await prisma.Bot.update({
+    await prisma.bot.update({
       where: { id: bot.id },
       data: { publicKey }});
   }
 
   const owner = session?.user?.id
-    ? await prisma.User.findUnique({
+    ? await prisma.user.findUnique({
         where: { id: ownerId },
         select: { removeBrandingAddOn: true }})
     : null;

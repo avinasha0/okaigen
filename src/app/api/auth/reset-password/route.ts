@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const record = await prisma.VerificationToken.findFirst({
+    const record = await prisma.verificationToken.findFirst({
       where: {
         identifier: { startsWith: "password-reset:" },
         token,
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     const email = record.identifier.replace(/^password-reset:/, "");
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email }});
 
     if (!user) {
@@ -43,10 +43,10 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     await prisma.$transaction([
-      prisma.User.update({
+      prisma.user.update({
         where: { id: user.id },
         data: { password: hashedPassword }}),
-      prisma.VerificationToken.deleteMany({
+      prisma.verificationToken.deleteMany({
         where: { identifier: record.identifier }}),
     ]);
 

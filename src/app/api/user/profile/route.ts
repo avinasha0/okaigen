@@ -16,7 +16,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { name } = schema.parse(body);
 
-    await prisma.User.update({
+    await prisma.user.update({
       where: { id: session.user.id },
       data: { name: name ?? null }});
 

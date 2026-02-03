@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const existing = await prisma.User.findUnique({
+    const existing = await prisma.user.findUnique({
       where: { email }});
 
     if (existing) {
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Ensure Starter plan exists - create if missing
-    let starterPlan = await prisma.Plan.findFirst({
+    let starterPlan = await prisma.plan.findFirst({
       where: { name: "Starter", isActive: true }});
 
     if (!starterPlan) {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       const { getPlanLimitsForDb } = await import("@/lib/plans-config");
       const limits = getPlanLimitsForDb("Starter");
       try {
-        starterPlan = await prisma.Plan.create({
+        starterPlan = await prisma.plan.create({
           data: {name: "Starter",
             dailyLimit: limits.dailyLimit,
             botLimit: limits.botLimit,
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       } catch (createError) {
         console.error("Failed to create Starter plan:", createError);
         // Try to fetch again in case of race condition
-        starterPlan = await prisma.Plan.findFirst({
+        starterPlan = await prisma.plan.findFirst({
           where: { name: "Starter", isActive: true }});
         if (!starterPlan) {
           return NextResponse.json(
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     
     console.log(`[register] Creating user: email=${email}, planId=${starterPlan.id}`);
     
-    const user = await prisma.User.create({
+    const user = await prisma.user.create({
       data: {
         email,
         name: name || null,
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${user.id}`;
-    await prisma.VerificationToken.create({
+    await prisma.verificationToken.create({
       data: { identifier, token: verifyToken, expires: verifyExpires }});
     const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${encodeURIComponent(verifyToken)}`;
     await sendEmail({

@@ -41,7 +41,7 @@ export async function POST(
     
     console.log(`[sources] Creating URL source: botId=${botId}, url=${normalizedUrl}, title=${title}`);
     
-    const source = await prisma.Source.create({
+    const source = await prisma.source.create({
       data: {botId,
         type: "url",
         url: normalizedUrl,
@@ -102,7 +102,7 @@ export async function POST(
     const documentUrl = `${baseUrl}/uploads/${botId}/${safeName}`;
     const now = new Date();
 
-    const source = await prisma.Source.create({
+    const source = await prisma.source.create({
       data: {botId,
         type: "document",
         documentUrl,

@@ -87,7 +87,7 @@ async function linkSubscriptionToUser(
   customerId: string,
   subscriptionId: string
 ) {
-  await prisma.User.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { stripeCustomerId: customerId }});
 
@@ -105,7 +105,7 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
       : (sub.items.data[0]?.price as string);
   if (!priceId) return;
 
-  const plan = await prisma.Plan.findFirst({
+  const plan = await prisma.plan.findFirst({
     where: {
       isActive: true,
       OR: [
@@ -120,7 +120,7 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
   const periodEnd = (sub as { current_period_end?: number }).current_period_end;
   const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000) : null;
 
-  await prisma.UserPlan.upsert({
+  await prisma.userPlan.upsert({
     where: { userId },
     create: {
 
@@ -137,11 +137,11 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
 }
 
 async function downgradeUserToStarter(userId: string) {
-  const starterPlan = await prisma.Plan.findFirst({
+  const starterPlan = await prisma.plan.findFirst({
     where: { name: "Starter", isActive: true }});
   if (!starterPlan) return;
 
-  await prisma.UserPlan.upsert({
+  await prisma.userPlan.upsert({
     where: { userId },
     create: {
 

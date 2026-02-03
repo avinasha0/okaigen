@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() }});
 
     // Always return success to avoid email enumeration
@@ -32,9 +32,9 @@ export async function POST(req: Request) {
     const expires = new Date(Date.now() + RESET_EXPIRY_HOURS * 60 * 60 * 1000);
     const identifier = `password-reset:${user.email}`;
 
-    await prisma.VerificationToken.deleteMany({
+    await prisma.verificationToken.deleteMany({
       where: { identifier }});
-    await prisma.VerificationToken.create({
+    await prisma.verificationToken.create({
       data: { identifier, token, expires }});
 
     const resetUrl = `${APP_URL}/reset-password?token=${encodeURIComponent(token)}`;

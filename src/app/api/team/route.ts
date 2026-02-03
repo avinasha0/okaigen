@@ -15,12 +15,12 @@ export async function GET() {
   const canManage = await isAccountOwner(session.user.id);
 
   const [members, invitations] = await Promise.all([
-    prisma.AccountMember.findMany({
+    prisma.accountMember.findMany({
       where: { accountOwnerId: ownerId },
       include: { user_accountmember_memberUserIdTouser: { select: { id: true, email: true, name: true } } },
       orderBy: { createdAt: "asc" }}),
     canManage
-      ? prisma.TeamInvitation.findMany({
+      ? prisma.teamInvitation.findMany({
           where: { accountOwnerId: ownerId },
           orderBy: { createdAt: "desc" }})
       : [],

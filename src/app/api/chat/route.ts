@@ -56,7 +56,7 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      bot = await prisma.Bot.findFirst({
+      bot = await prisma.bot.findFirst({
         where: {
           userId: ownerId,
           ...(requestedBotId.startsWith("atlas_") ? { publicKey: requestedBotId } : { id: requestedBotId })},
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     } else {
       const botKey = widgetBotKey || bodyBotId;
       if (botKey) {
-        bot = await prisma.Bot.findFirst({
+        bot = await prisma.bot.findFirst({
           where: botKey.startsWith("atlas_")
             ? { publicKey: botKey }
             : { id: botKey },
@@ -98,12 +98,12 @@ export async function POST(req: Request) {
 
     let chat;
     if (chatId) {
-      chat = await prisma.Chat.findFirst({
+      chat = await prisma.chat.findFirst({
         where: { id: chatId, botId: bot.id }});
     }
 
     if (!chat) {
-      chat = await prisma.Chat.create({
+      chat = await prisma.chat.create({
         data: {botId: bot.id,
           visitorId: req.headers.get("x-visitor-id") || undefined,
           pageUrl: req.headers.get("x-page-url") || undefined,
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     // Also optimize: only fetch last 10 messages (we only use 10 anyway) and use select to reduce data transfer
     const [prevMessagesResult, userMessage] = await Promise.all([
       chatId 
-        ? prisma.ChatMessage.findMany({
+        ? prisma.chatMessage.findMany({
             where: { chatId: chat.id },
             orderBy: { createdAt: "desc" }, // Get most recent first
             take: 10, // Reduced from 20 since we only use 10
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
               content: true,
               createdAt: true}})
         : Promise.resolve([]),
-      prisma.ChatMessage.create({
+      prisma.chatMessage.create({
         data: {chatId: chat.id,
           role: "user",
           content: sanitized}}),
@@ -175,12 +175,12 @@ export async function POST(req: Request) {
             
             // Save to database
             await Promise.all([
-              prisma.ChatMessage.create({
+              prisma.chatMessage.create({
                 data: {chatId: chat.id,
                   role: "assistant",
                   content: fullResponse,
                   sources: sources.length ? JSON.stringify(sources) : null}}),
-              prisma.UsageLog.create({
+              prisma.usageLog.create({
                 data: {botId: bot.id, type: "message", count: 1 }}),
             ]);
 
@@ -232,12 +232,12 @@ export async function POST(req: Request) {
     const { response, sources, confidence } = await responsePromise;
 
     await Promise.all([
-      prisma.ChatMessage.create({
+      prisma.chatMessage.create({
         data: {chatId: chat.id,
           role: "assistant",
           content: response,
           sources: sources.length ? JSON.stringify(sources) : null}}),
-      prisma.UsageLog.create({
+      prisma.usageLog.create({
         data: { botId: bot.id, type: "message", count: 1 }}),
     ]);
 

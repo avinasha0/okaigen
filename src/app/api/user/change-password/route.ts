@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { password: true }});
 
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
-    await prisma.User.update({
+    await prisma.user.update({
       where: { id: session.user.id },
       data: { password: hashedPassword }});
 

@@ -24,11 +24,11 @@ export async function POST(req: Request) {
   const botIdsToTrain = new Set<string>();
 
   // Get all bots with owner's plan
-  const bots = await prisma.Bot.findMany({
+  const bots = await prisma.bot.findMany({
     select: { id: true, userId: true }});
 
   for (const bot of bots) {
-    const userPlan = await prisma.UserPlan.findUnique({
+    const userPlan = await prisma.userPlan.findUnique({
       where: { userId: bot.userId },
       include: { plan: true }});
     const planName = userPlan?.plan.name ?? "Starter";
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const cutoff = new Date(now - intervalMs);
 
     // Completed sources due for refresh: lastRefreshedAt (or createdAt if never set) before cutoff
-    const sources = await prisma.Source.findMany({
+    const sources = await prisma.source.findMany({
       where: { botId: bot.id, status: "completed" },
       select: { id: true, lastRefreshedAt: true, createdAt: true }});
     const dueSources = sources.filter((s) => {
@@ -50,13 +50,13 @@ export async function POST(req: Request) {
     });
 
     for (const source of dueSources) {
-      const chunks = await prisma.Chunk.findMany({
+      const chunks = await prisma.chunk.findMany({
         where: { sourceId: source.id },
         select: { id: true }});
       const chunkIds = chunks.map((c) => c.id);
-      await prisma.Embedding.deleteMany({ where: { chunkId: { in: chunkIds } } });
-      await prisma.Chunk.deleteMany({ where: { sourceId: source.id } });
-      await prisma.Source.update({
+      await prisma.embedding.deleteMany({ where: { chunkId: { in: chunkIds } } });
+      await prisma.chunk.deleteMany({ where: { sourceId: source.id } });
+      await prisma.source.update({
         where: { id: source.id },
         data: { status: "pending", error: null }});
       botIdsToTrain.add(bot.id);

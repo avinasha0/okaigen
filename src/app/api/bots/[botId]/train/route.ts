@@ -92,7 +92,7 @@ export async function POST(
       console.log("[train] Resolved botId:", resolvedBotId, "for user:", session.user.id);
     }
 
-    const botWithSources = await prisma.Bot.findUnique({
+    const botWithSources = await prisma.bot.findUnique({
       where: { id: resolvedBotId },
       include: { source: true }});
     if (!botWithSources) {
@@ -109,7 +109,7 @@ export async function POST(
     if (pendingSources.length === 0) {
       const failedSources = bot.source.filter((s) => s.status === "failed");
       if (failedSources.length > 0) {
-        await prisma.Source.updateMany({
+        await prisma.source.updateMany({
           where: { id: { in: failedSources.map((s) => s.id) } },
           data: { status: "pending", error: null }});
         pendingSources = failedSources;
@@ -128,7 +128,7 @@ export async function POST(
     const runTraining = async () => {
     for (const source of pendingSources) {
     try {
-      await prisma.Source.update({
+      await prisma.source.update({
         where: { id: source.id },
         data: { status: "processing" }});
 
@@ -175,7 +175,7 @@ export async function POST(
             pageTitle: page.title});
 
           for (const tc of textChunks) {
-            const chunk = await prisma.Chunk.create({
+            const chunk = await prisma.chunk.create({
               data: {botId: resolvedBotId,
                 sourceId: source.id,
                 content: tc.content,
@@ -183,7 +183,7 @@ export async function POST(
                 tokenCount: tc.tokenCount}});
 
             const [embedding] = await generateEmbeddings([tc.content]);
-            await prisma.Embedding.create({
+            await prisma.embedding.create({
               data: {chunkId: chunk.id,
                 botId: resolvedBotId,
                 vector: JSON.stringify(embedding)}});
@@ -210,7 +210,7 @@ export async function POST(
           documentName: parsed.metadata.documentName});
 
         for (const tc of textChunks) {
-          const chunk = await prisma.Chunk.create({
+          const chunk = await prisma.chunk.create({
             data: {botId: resolvedBotId,
               sourceId: source.id,
               content: tc.content,
@@ -218,7 +218,7 @@ export async function POST(
               tokenCount: estimateTokenCount(tc.content)}});
 
           const [embedding] = await generateEmbeddings([tc.content]);
-          await prisma.Embedding.create({
+          await prisma.embedding.create({
             data: {chunkId: chunk.id,
               botId: resolvedBotId,
               vector: JSON.stringify(embedding)}});
@@ -228,7 +228,7 @@ export async function POST(
         trainEmit?.({ type: "page", url: source.documentUrl, title: source.title || "document", status: "completed", considered: 1, completed: 1, inProgress: 0, pending: 0 });
       }
 
-      await prisma.Source.update({
+      await prisma.source.update({
         where: { id: source.id },
         data: {
           status: "completed",
@@ -236,7 +236,7 @@ export async function POST(
           error: null,
           lastRefreshedAt: new Date()}});
 
-      await prisma.UsageLog.create({
+      await prisma.usageLog.create({
         data: {botId: resolvedBotId,
           type: "embed",
           count: totalChunks}});
@@ -251,7 +251,7 @@ export async function POST(
         console.error("[train] PDF parsing error detected. This may be a serverless environment compatibility issue.");
       }
       try {
-        await prisma.Source.update({
+        await prisma.source.update({
           where: { id: source.id },
           data: {
             status: "failed",
@@ -278,13 +278,13 @@ export async function POST(
             trainEmit({ type: "init", message: "Starting training..." });
             const result = await runTraining();
             if (result.totalChunks > 0) {
-              const currentBot = await prisma.Bot.findUnique({
+              const currentBot = await prisma.bot.findUnique({
                 where: { id: resolvedBotId },
                 select: { quickPrompts: true }});
               if (!currentBot?.quickPrompts) {
                 try {
                   const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
-                  await prisma.Bot.update({
+                  await prisma.bot.update({
                     where: { id: resolvedBotId },
                     data: { quickPrompts: JSON.stringify(prompts) }});
                 } catch {
@@ -317,13 +317,13 @@ export async function POST(
 
     // Auto-generate quick prompts from content if bot has none
     if (result.totalChunks > 0) {
-      const currentBot = await prisma.Bot.findUnique({
+      const currentBot = await prisma.bot.findUnique({
         where: { id: resolvedBotId },
         select: { quickPrompts: true }});
       if (!currentBot?.quickPrompts) {
         try {
           const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
-          await prisma.Bot.update({
+          await prisma.bot.update({
             where: { id: resolvedBotId },
             data: { quickPrompts: JSON.stringify(prompts) }});
         } catch {

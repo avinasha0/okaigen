@@ -15,7 +15,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const webhooks = await prisma.Webhook.findMany({
+  const webhooks = await prisma.webhook.findMany({
     where: { userId: ownerId },
     select: { id: true, url: true, events: true, description: true, createdAt: true },
     orderBy: { createdAt: "desc" }});
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   }
 
   const secret = generateWebhookSecret();
-  const webhook = await prisma.Webhook.create({
+  const webhook = await prisma.webhook.create({
     data: {userId: ownerId,
       url: parsed.data.url,
       secret,

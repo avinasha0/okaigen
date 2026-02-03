@@ -27,7 +27,7 @@ export async function GET(
   const cursor = searchParams.get("cursor") || undefined;
 
   // List chats with projection: only last message per chat for preview; cursor-based pagination
-  const chats = await prisma.Chat.findMany({
+  const chats = await prisma.chat.findMany({
     where: {
       botId,
       ...(search

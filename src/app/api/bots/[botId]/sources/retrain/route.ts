@@ -37,21 +37,21 @@ export async function POST(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  const source = await prisma.Source.findFirst({
+  const source = await prisma.source.findFirst({
     where: { id: sourceId, botId }});
 
   if (!source) {
     return NextResponse.json({ error: "Source not found" }, { status: 404 });
   }
 
-  const chunks = await prisma.Chunk.findMany({
+  const chunks = await prisma.chunk.findMany({
     where: { sourceId },
     select: { id: true }});
   const chunkIds = chunks.map((c) => c.id);
 
-  await prisma.Embedding.deleteMany({ where: { chunkId: { in: chunkIds } } });
-  await prisma.Chunk.deleteMany({ where: { sourceId } });
-  await prisma.Source.update({
+  await prisma.embedding.deleteMany({ where: { chunkId: { in: chunkIds } } });
+  await prisma.chunk.deleteMany({ where: { sourceId } });
+  await prisma.source.update({
     where: { id: sourceId },
     data: { status: "pending", error: null }});
 

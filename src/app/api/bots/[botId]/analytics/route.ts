@@ -41,24 +41,24 @@ export async function GET(
     topQuestions,
     sourceStats,
   ] = await Promise.all([
-    prisma.Chat.count({
+    prisma.chat.count({
       where: { botId, createdAt: { gte: since } }}),
-    prisma.Lead.count({
+    prisma.lead.count({
       where: { botId, createdAt: { gte: since } }}),
-    prisma.UsageLog.findMany({
+    prisma.usageLog.findMany({
       where: {
         botId,
         type: "message",
         createdAt: { gte: since }},
       select: { createdAt: true, count: true }}),
-    prisma.ChatMessage.findMany({
+    prisma.chatMessage.findMany({
       where: {
         chat: { botId },
         role: "user",
         createdAt: { gte: since }},
       select: { content: true },
       take: 200}),
-    prisma.Chunk.groupBy({
+    prisma.chunk.groupBy({
       by: ["sourceId"],
       where: { botId },
       _count: true}),
@@ -86,7 +86,7 @@ export async function GET(
     .map(([question, count]) => ({ question, count }));
 
   const sourceIds = sourceStats.map((s) => s.sourceId);
-  const sources = await prisma.Source.findMany({
+  const sources = await prisma.source.findMany({
     where: { id: { in: sourceIds } },
     select: { id: true, title: true, url: true }});
   const sourceMap = Object.fromEntries(sources.map((s) => [s.id, s]));

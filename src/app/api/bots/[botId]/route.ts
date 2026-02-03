@@ -30,7 +30,7 @@ export async function GET(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  const fullBot = await prisma.Bot.findUnique({
+  const fullBot = await prisma.bot.findUnique({
     where: { id: bot.id },
     include: {
       source: true,
@@ -60,7 +60,7 @@ export async function PATCH(
 
     if (data.removeBranding === true) {
       const ownerId = await getEffectiveOwnerId(session.user.id);
-      const owner = await prisma.User.findUnique({
+      const owner = await prisma.user.findUnique({
         where: { id: ownerId },
         select: { removeBrandingAddOn: true }});
       if (!owner?.removeBrandingAddOn) {
@@ -71,7 +71,7 @@ export async function PATCH(
       }
     }
 
-    const updated = await prisma.Bot.update({
+    const updated = await prisma.bot.update({
       where: { id: botId },
       data});
 
@@ -106,7 +106,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  await prisma.Bot.delete({
+  await prisma.bot.delete({
     where: { id: botId }});
 
   return NextResponse.json({ success: true });

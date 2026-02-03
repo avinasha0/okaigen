@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Token required" }, { status: 400 });
   }
 
-  const invitation = await prisma.TeamInvitation.findUnique({
+  const invitation = await prisma.teamInvitation.findUnique({
     where: { token },
     include: { user: { select: { id: true, email: true } } }});
 
@@ -23,11 +23,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid or expired invitation" }, { status: 404 });
   }
   if (invitation.expiresAt < new Date()) {
-    await prisma.TeamInvitation.delete({ where: { id: invitation.id } });
+    await prisma.teamInvitation.delete({ where: { id: invitation.id } });
     return NextResponse.json({ error: "Invitation has expired" }, { status: 410 });
   }
   if (invitation.accountOwnerId === session.user.id) {
-    await prisma.TeamInvitation.delete({ where: { id: invitation.id } });
+    await prisma.teamInvitation.delete({ where: { id: invitation.id } });
     return NextResponse.json({ error: "You cannot accept your own invitation" }, { status: 400 });
   }
 
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
   }
 
   await prisma.$transaction([
-    prisma.AccountMember.create({
+    prisma.accountMember.create({
       data: {
         accountOwnerId: invitation.accountOwnerId,
         memberUserId: session.user.id,
         role: invitation.role}}),
-    prisma.TeamInvitation.delete({ where: { id: invitation.id } }),
+    prisma.teamInvitation.delete({ where: { id: invitation.id } }),
   ]);
 
   return NextResponse.json({

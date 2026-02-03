@@ -21,7 +21,7 @@ export async function triggerWebhooks(
   const planName = planUsage?.planName ?? "Starter";
   if (!hasWebhooks(planName)) return;
 
-  const webhooks = await prisma.Webhook.findMany({
+  const webhooks = await prisma.webhook.findMany({
     where: {
       userId: ownerId,
       events: { contains: event }}});

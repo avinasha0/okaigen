@@ -5,7 +5,7 @@ import { openai, CHAT_MODEL } from "./openai";
 export async function suggestQuickPromptsFromContent(
   botId: string
 ): Promise<string[]> {
-  const chunks = await prisma.Chunk.findMany({
+  const chunks = await prisma.chunk.findMany({
     where: { botId },
     select: { content: true },
     take: 20,

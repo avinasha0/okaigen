@@ -7,7 +7,7 @@ import { prisma } from "./db";
  */
 export async function getEffectiveOwnerId(userId: string): Promise<string> {
   try {
-    const membership = await prisma.AccountMember.findFirst({
+    const membership = await prisma.accountMember.findFirst({
       where: { memberUserId: userId },
       select: { accountOwnerId: true }});
     return membership?.accountOwnerId ?? userId;
@@ -21,7 +21,7 @@ export async function getEffectiveOwnerId(userId: string): Promise<string> {
 /** Count of team members (owner + invited members) for an account owner. */
 export async function getTeamMemberCount(accountOwnerId: string): Promise<number> {
   try {
-    const count = await prisma.AccountMember.count({
+    const count = await prisma.accountMember.count({
       where: { accountOwnerId }});
     return 1 + count; // owner + members
   } catch (error: unknown) {
@@ -34,7 +34,7 @@ export async function getTeamMemberCount(accountOwnerId: string): Promise<number
 /** Check if user can manage team (is account owner, not a member). */
 export async function isAccountOwner(userId: string): Promise<boolean> {
   try {
-    const membership = await prisma.AccountMember.findFirst({
+    const membership = await prisma.accountMember.findFirst({
       where: { memberUserId: userId }});
     return !membership;
   } catch (error: unknown) {
@@ -48,7 +48,7 @@ export async function isAccountOwner(userId: string): Promise<boolean> {
 export async function getBotForUser(userId: string, botId: string) {
   try {
     const ownerId = await getEffectiveOwnerId(userId);
-    return await prisma.Bot.findFirst({
+    return await prisma.bot.findFirst({
       where: { id: botId, userId: ownerId }});
   } catch (error: unknown) {
     // Handle database connection errors gracefully

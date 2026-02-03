@@ -24,7 +24,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const lead = await prisma.Lead.findUnique({
+    const lead = await prisma.lead.findUnique({
       where: { id: leadId },
       include: { bot: { select: { userId: true } } }});
 
@@ -36,7 +36,7 @@ export async function PATCH(
     await prisma.$executeRaw`
       UPDATE Lead SET status = ${status} WHERE id = ${leadId}
     `;
-    const updated = await prisma.Lead.findUniqueOrThrow({
+    const updated = await prisma.lead.findUniqueOrThrow({
       where: { id: leadId }});
 
     return NextResponse.json(updated);

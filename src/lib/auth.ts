@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.User.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
           select: { id: true, email: true, name: true, image: true, emailVerified: true, password: true }});
 
@@ -49,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.id) {
-        await prisma.User.update({
+        await prisma.user.update({
           where: { id: user.id },
           data: { emailVerified: new Date() }});
       }

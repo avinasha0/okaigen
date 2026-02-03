@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const plan = await prisma.Plan.findFirst({
+  const plan = await prisma.plan.findFirst({
     where: { name: planName, isActive: true }});
   if (!plan) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const user = await prisma.User.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: ownerId },
     select: { stripeCustomerId: true, email: true, name: true }});
   if (!user) {

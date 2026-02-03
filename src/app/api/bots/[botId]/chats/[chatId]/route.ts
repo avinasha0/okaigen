@@ -20,7 +20,7 @@ export async function GET(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  const chat = await prisma.Chat.findFirst({
+  const chat = await prisma.chat.findFirst({
     where: { id: chatId, botId },
     select: {
       id: true,

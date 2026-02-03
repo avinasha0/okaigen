@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { email: true, emailVerified: true }});
 
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     }
 
     // Delete old verification tokens
-    await prisma.VerificationToken.deleteMany({
+    await prisma.verificationToken.deleteMany({
       where: {
         identifier: `email-verification:${session.user.id}`}});
 
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${session.user.id}`;
-    await prisma.VerificationToken.create({
+    await prisma.verificationToken.create({
       data: { identifier, token: verifyToken, expires: verifyExpires }});
 
     const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${encodeURIComponent(verifyToken)}`;

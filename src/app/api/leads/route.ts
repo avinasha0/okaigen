@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
   const data = parsed.data;
 
-  const bot = await prisma.Bot.findFirst({
+  const bot = await prisma.bot.findFirst({
     where: data.botId.startsWith("atlas_")
       ? { publicKey: data.botId }
       : { id: data.botId }});
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const lead = await prisma.Lead.create({
+  const lead = await prisma.lead.create({
     data: {botId: bot.id,
       name: data.name,
       email: data.email,
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       pageUrl: data.pageUrl}});
 
   if (data.chatId && (data.name || data.email)) {
-    await prisma.Chat.updateMany({
+    await prisma.chat.updateMany({
       where: { id: data.chatId, botId: bot.id },
       data: {
         visitorName: data.name ?? undefined,
@@ -81,7 +81,7 @@ export async function GET(req: Request) {
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const bots = await prisma.Bot.findMany({
+  const bots = await prisma.bot.findMany({
     where: { userId: ownerId },
     select: { id: true, name: true }});
   const botIds = bots.map((b) => b.id);
@@ -93,7 +93,7 @@ export async function GET(req: Request) {
   const skip = (page - 1) * limit;
 
   const [leads, total] = await Promise.all([
-    prisma.Lead.findMany({
+    prisma.lead.findMany({
       where: { botId: { in: botIds } },
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -108,7 +108,7 @@ export async function GET(req: Request) {
         pageUrl: true,
         status: true,
         createdAt: true}}),
-    prisma.Lead.count({ where: { botId: { in: botIds } } }),
+    prisma.lead.count({ where: { botId: { in: botIds } } }),
   ]);
 
   const leadsWithBot = leads.map((l) => ({

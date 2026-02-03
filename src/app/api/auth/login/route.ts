@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       const { prisma } = await import("@/lib/db");
       const bcrypt = await import("bcryptjs");
       
-      user = await prisma.User.findUnique({
+      user = await prisma.user.findUnique({
         where: { email },
         select: { id: true, email: true, password: true }});
 

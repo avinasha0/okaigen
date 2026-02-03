@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/login?error=missing-token", req.url));
   }
 
-  const record = await prisma.VerificationToken.findFirst({
+  const record = await prisma.verificationToken.findFirst({
     where: {
       identifier: { startsWith: "email-verification:" },
       token,
@@ -23,10 +23,10 @@ export async function GET(req: Request) {
 
   const userId = record.identifier.replace(/^email-verification:/, "");
   await prisma.$transaction([
-    prisma.User.update({
+    prisma.user.update({
       where: { id: userId },
       data: { emailVerified: new Date() }}),
-    prisma.VerificationToken.deleteMany({
+    prisma.verificationToken.deleteMany({
       where: { identifier: record.identifier }}),
   ]);
 

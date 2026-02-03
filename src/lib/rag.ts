@@ -52,7 +52,7 @@ export async function retrieveContext(
   // Optimization: Use JOIN to fetch chunks with embeddings in a single query (more efficient)
   // Also increase limit for better recall, but we'll still filter by similarity
   const CHUNK_LIMIT = 1000; // Increased for better recall, but filtered by similarity
-  const chunksPromise = prisma.Chunk.findMany({
+  const chunksPromise = prisma.chunk.findMany({
     where: {
       botId,
       embedding: { isNot: null }},
@@ -236,7 +236,7 @@ async function generateResponseInternal(
   let bot = botCache.get(botId);
   const botPromise = bot
     ? Promise.resolve(bot)
-    : prisma.Bot.findUnique({
+    : prisma.bot.findUnique({
         where: { id: botId },
         select: {
           id: true,
@@ -276,7 +276,7 @@ async function generateResponseInternal(
       // Check if bot has any chunks at all (cached)
       let totalChunks = chunkCountCache.get(botId);
       if (totalChunks === null) {
-        totalChunks = await prisma.Chunk.count({ where: { botId } });
+        totalChunks = await prisma.chunk.count({ where: { botId } });
         chunkCountCache.set(botId, totalChunks);
       }
       
@@ -373,7 +373,7 @@ export async function* generateResponseStream(
   // Get bot config (cached)
   let bot = botCache.get(botId);
   if (!bot) {
-    bot = await prisma.Bot.findUnique({
+    bot = await prisma.bot.findUnique({
       where: { id: botId },
       select: {
         id: true,
@@ -400,7 +400,7 @@ export async function* generateResponseStream(
   if (confidence < CONFIDENCE_FLOOR || chunks.length === 0) {
     let totalChunks = chunkCountCache.get(botId);
     if (totalChunks === null) {
-      totalChunks = await prisma.Chunk.count({ where: { botId } });
+      totalChunks = await prisma.chunk.count({ where: { botId } });
       chunkCountCache.set(botId, totalChunks);
     }
     
