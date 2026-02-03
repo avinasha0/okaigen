@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { verifyCaptcha } from "@/lib/recaptcha";
 import { z } from "zod";
 
 const schema = z.object({
   token: z.string().min(1, "Reset link is invalid or expired"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  recaptchaToken: z.string().nullable().optional(),
 });
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { token, password } = schema.parse(body);
+    const { token, password, recaptchaToken } = schema.parse(body);
+
+    // Verify reCAPTCHA (graceful fallback - never blocks)
+    await verifyCaptcha(recaptchaToken || null, 0.5);
 
     const record = await prisma.verificationToken.findFirst({
       where: {

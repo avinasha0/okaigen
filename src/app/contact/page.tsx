@@ -7,6 +7,7 @@ import { ResponsiveNav } from "@/components/responsive-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useCaptcha } from "@/hooks/use-captcha";
 
 export default function ContactPage() {
   const searchParams = useSearchParams();
@@ -28,6 +29,7 @@ export default function ContactPage() {
     setError("");
     setSubmitting(true);
     try {
+      const recaptchaToken = await getCaptchaToken("contact");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -36,6 +38,7 @@ export default function ContactPage() {
           email,
           subject,
           message,
+          recaptchaToken,
         }),
       });
       const data = await res.json().catch(() => ({}));

@@ -13,10 +13,12 @@ const corsHeaders = {
 // Content Security Policy
 const cspHeader = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data:",
+  "frame-src 'self' https://www.google.com",
+  "connect-src 'self' https://www.google.com https://www.google.com/recaptcha/api/siteverify",
 ].join("; ");
 
 function hasSession(req: NextRequest): boolean {

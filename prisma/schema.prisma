@@ -330,3 +330,14 @@ model ContactSubmission {
   @@index([createdAt])
   @@index([status])
 }
+
+// Site-wide settings (admin-controlled)
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g. "recaptcha_enabled"
+  value     String   @db.Text // JSON or string value
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([key])
+}

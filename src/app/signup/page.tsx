@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
+import { useCaptcha } from "@/hooks/use-captcha";
 
 function SignupForm() {
   const router = useRouter();
@@ -44,6 +45,7 @@ function SignupForm() {
     }
     setLoading(true);
     try {
+      const recaptchaToken = await getCaptchaToken("signup");
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,6 +54,7 @@ function SignupForm() {
           password,
           name: name || undefined,
           acceptTerms: true,
+          recaptchaToken,
         }),
       });
       const data = await res.json();

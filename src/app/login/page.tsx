@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
+import { useCaptcha } from "@/hooks/use-captcha";
 
 function LoginForm() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
+  const getCaptchaToken = useCaptcha();
 
   // Prefetch dashboard so redirect after login is faster
   useEffect(() => {
@@ -54,19 +56,48 @@ function LoginForm() {
     }
     setLoading(true);
     try {
-      const res = await signIn("credentials", {
+      // Get reCAPTCHA token (gracefully handle if it fails)
+      let recaptchaToken: string | null = null;
+      try {
+        recaptchaToken = await getCaptchaToken("login");
+      } catch (captchaError) {
+        // If reCAPTCHA token generation fails, continue without it (graceful fallback)
+        console.warn("[Login] reCAPTCHA token generation failed, continuing without it:", captchaError);
+      }
+      
+      // Use custom login API route that verifies reCAPTCHA
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password,
+          recaptchaToken,
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setError(data.error || "Invalid email or password");
+        setLoading(false);
+        return;
+      }
+
+      // If API login succeeded, use NextAuth signIn to establish session
+      const signInRes = await signIn("credentials", {
         email: trimmedEmail,
         password,
         redirect: false,
       });
       
-      if (res?.error) {
-        setError("Invalid email or password");
+      if (signInRes?.error) {
+        setError("Sign in failed. Please try again.");
         setLoading(false);
         return;
       }
       
-      if (res?.ok === true && !res?.error) {
+      if (signInRes?.ok === true && !signInRes?.error) {
         // Use window.location.href for a full page reload to ensure session cookie is set
         // This prevents race conditions where middleware checks session before cookie is available
         const destination = callbackUrl && callbackUrl !== "/login" ? callbackUrl : "/dashboard";
@@ -76,7 +107,8 @@ function LoginForm() {
         setLoading(false);
       }
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      console.error("Login error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setLoading(false);
     }
   }

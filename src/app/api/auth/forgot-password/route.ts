@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { verifyCaptcha } from "@/lib/recaptcha";
 import { z } from "zod";
 import crypto from "crypto";
 
 const schema = z.object({
   email: z.string().email(),
+  recaptchaToken: z.string().nullable().optional(),
 });
 
 const RESET_EXPIRY_HOURS = 1;
@@ -14,7 +16,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email } = schema.parse(body);
+    const { email, recaptchaToken } = schema.parse(body);
+
+    // Verify reCAPTCHA (graceful fallback - never blocks)
+    await verifyCaptcha(recaptchaToken || null, 0.5);
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },

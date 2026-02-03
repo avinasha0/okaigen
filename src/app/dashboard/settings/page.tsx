@@ -12,6 +12,7 @@ import {
 import { SettingsProfileForm } from "@/components/settings-profile-form";
 import { SettingsPasswordForm } from "@/components/settings-password-form";
 import { BillingPortalButton } from "@/components/billing-portal-button";
+import { SettingsRecaptchaToggle } from "@/components/settings-recaptcha-toggle";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -140,6 +141,7 @@ export default async function SettingsPage() {
           )}
         </CardContent>
       </Card>
+      <SettingsRecaptchaToggle />
     </div>
   );
 }
