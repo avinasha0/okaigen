@@ -28,6 +28,16 @@ function LoginForm() {
     router.prefetch(callbackUrl);
   }, [callbackUrl, router]);
 
+  // Reset form state when component mounts (e.g., after logout)
+  useEffect(() => {
+    // Reset all form state
+    setEmail("");
+    setPassword("");
+    setRecaptchaToken(null);
+    setError("");
+    setLoading(false);
+  }, []); // Run once on mount
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   async function handleCredentials(e: React.FormEvent) {

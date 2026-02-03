@@ -96,6 +96,19 @@ export function ReCaptcha({ onChange, theme = "light", size = "normal", onReset 
   }, []);
 
   useEffect(() => {
+    // Reset widgetId on mount to ensure fresh widget
+    if (widgetIdRef.current !== null && containerRef.current) {
+      // If widget already exists, reset it first
+      try {
+        if (window.grecaptcha) {
+          window.grecaptcha.reset(widgetIdRef.current);
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+      widgetIdRef.current = null;
+    }
+
     if (!ready || !recaptchaEnabled || !SITE_KEY || !containerRef.current || widgetIdRef.current !== null) {
       return;
     }
@@ -121,6 +134,17 @@ export function ReCaptcha({ onChange, theme = "light", size = "normal", onReset 
         console.error("reCAPTCHA render error:", e);
       }
     }
+
+    // Cleanup: reset widget on unmount
+    return () => {
+      if (widgetIdRef.current !== null && window.grecaptcha) {
+        try {
+          window.grecaptcha.reset(widgetIdRef.current);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
   }, [ready, onChange, theme, size]);
 
   if (!recaptchaEnabled || !SITE_KEY) {
