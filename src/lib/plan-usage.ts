@@ -20,60 +20,76 @@ export type PlanUsage = {
 };
 
 async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
-  const ownerId = await getEffectiveOwnerId(userId);
+  try {
+    const ownerId = await getEffectiveOwnerId(userId);
 
-  let userPlan = await prisma.userPlan.findUnique({
-    where: { userId: ownerId },
-    include: { plan: true },
-  });
-
-  if (!userPlan) {
-    const defaultPlan = await prisma.plan.findFirst({
-      where: { isActive: true },
-      orderBy: { price: "asc" },
-    });
-    if (!defaultPlan) return null;
-    userPlan = await prisma.userPlan.create({
-      data: { userId: ownerId, planId: defaultPlan.id },
+    let userPlan = await prisma.userPlan.findUnique({
+      where: { userId: ownerId },
       include: { plan: true },
     });
+
+    if (!userPlan) {
+      const defaultPlan = await prisma.plan.findFirst({
+        where: { isActive: true },
+        orderBy: { price: "asc" },
+      });
+      if (!defaultPlan) return null;
+      userPlan = await prisma.userPlan.create({
+        data: { userId: ownerId, planId: defaultPlan.id },
+        include: { plan: true },
+      });
+    }
+
+    const plan = userPlan.plan;
+    const botIds = await prisma.bot.findMany({
+      where: { userId: ownerId },
+      select: { id: true },
+    });
+    const botIdList = botIds.map((b) => b.id);
+
+    const startOfToday = START_OF_TODAY();
+    const messagesResult = await prisma.usageLog.aggregate({
+      where: {
+        botId: { in: botIdList },
+        type: "message",
+        createdAt: { gte: startOfToday },
+      },
+      _sum: { count: true },
+    });
+
+    const usedMessages = messagesResult._sum.count ?? 0;
+    const usedBots = botIds.length;
+
+    let memberCount = 0;
+    try {
+      memberCount = await prisma.accountMember.count({
+        where: { accountOwnerId: ownerId },
+      });
+    } catch (dbError: unknown) {
+      // Handle database connection errors gracefully
+      console.error("Failed to get team member count:", dbError);
+      // Default to 0 if database is unreachable
+      memberCount = 0;
+    }
+    
+    const usedTeamMembers = 1 + memberCount;
+    const totalTeamMembers = plan.teamMemberLimit ?? 1;
+
+    return {
+      planName: plan.name,
+      usedMessages,
+      totalMessages: plan.dailyLimit,
+      usedBots,
+      totalBots: plan.botLimit,
+      usedTeamMembers,
+      totalTeamMembers,
+    };
+  } catch (error: unknown) {
+    // Log database connection errors but don't crash
+    console.error("getPlanUsage error:", error);
+    // Return null to allow app to continue functioning
+    return null;
   }
-
-  const plan = userPlan.plan;
-  const botIds = await prisma.bot.findMany({
-    where: { userId: ownerId },
-    select: { id: true },
-  });
-  const botIdList = botIds.map((b) => b.id);
-
-  const startOfToday = START_OF_TODAY();
-  const messagesResult = await prisma.usageLog.aggregate({
-    where: {
-      botId: { in: botIdList },
-      type: "message",
-      createdAt: { gte: startOfToday },
-    },
-    _sum: { count: true },
-  });
-
-  const usedMessages = messagesResult._sum.count ?? 0;
-  const usedBots = botIds.length;
-
-  const memberCount = await prisma.accountMember.count({
-    where: { accountOwnerId: ownerId },
-  });
-  const usedTeamMembers = 1 + memberCount;
-  const totalTeamMembers = plan.teamMemberLimit ?? 1;
-
-  return {
-    planName: plan.name,
-    usedMessages,
-    totalMessages: plan.dailyLimit,
-    usedBots,
-    totalBots: plan.botLimit,
-    usedTeamMembers,
-    totalTeamMembers,
-  };
 }
 
 /** Get plan and usage for the effective account (owner). Cached 60s to speed up dashboard navigation. */
