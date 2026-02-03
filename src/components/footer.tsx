@@ -56,6 +56,7 @@ export function Footer() {
     { name: "Pricing", href: "/pricing" },
     { name: "Integration", href: "/integration" },
     { name: "Documentation", href: "/docs" },
+    { name: "Webhooks", href: "/dashboard/webhooks" },
     { name: "API Docs", href: "/docs/api" },
     { name: "All Tools", href: "/tools" },
   ];
