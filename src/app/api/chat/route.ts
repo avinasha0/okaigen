@@ -197,7 +197,7 @@ export async function POST(req: Request) {
                   chatId: chat.id,
                   role: "assistant",
                   content: fullResponse,
-                  sources: sources.length ? sources : undefined,
+                  sources: sources.length ? JSON.stringify(sources) : null,
                 },
               }),
               prisma.usagelog.create({
@@ -263,7 +263,7 @@ export async function POST(req: Request) {
           chatId: chat.id,
           role: "assistant",
           content: response,
-          sources: sources.length ? sources : undefined,
+          sources: sources.length ? JSON.stringify(sources) : null,
         },
       }),
       prisma.usagelog.create({
