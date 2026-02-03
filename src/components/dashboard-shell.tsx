@@ -57,7 +57,7 @@ function DashboardShellInner({
   return (
     <div className="flex min-h-screen bg-zinc-50">
       {/* Mobile header - dark bg so white logo is visible */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-800 bg-zinc-900 px-4 md:hidden">
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center gap-3 border-b border-white/10 bg-slate-900 px-4 md:hidden">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
@@ -77,7 +77,7 @@ function DashboardShellInner({
           <button
             type="button"
             onClick={() => setProfileOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 hover:bg-white/5 hover:text-white"
             aria-label="Profile"
             aria-expanded={profileOpen}
           >
