@@ -35,8 +35,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.recaptchaToken as string | undefined
         );
         if (!recaptchaResult.success) {
-          // Log the error for debugging but don't expose it to user
-          console.error("reCAPTCHA verification failed:", recaptchaResult.error);
+          // Log the error for debugging
+          console.error("reCAPTCHA verification failed:", {
+            error: recaptchaResult.error,
+            tokenProvided: !!credentials.recaptchaToken,
+            isEnabled: process.env.NODE_ENV === "production" && !!process.env.RECAPTCHA_SECRET_KEY,
+          });
+          // Return null to fail authentication
           return null;
         }
 

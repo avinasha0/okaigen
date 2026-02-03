@@ -60,6 +60,8 @@ function LoginForm() {
       });
       
       // Handle response - NextAuth v5 returns { error, ok, status, url } or undefined
+      console.log("SignIn response:", res); // Debug log
+      
       if (res?.error) {
         setRecaptchaToken(null);
         recaptchaReset?.();
@@ -68,17 +70,45 @@ function LoginForm() {
         return;
       }
       
-      // If no error, assume success and navigate
-      // Reset loading immediately to prevent stuck state
-      setLoading(false);
+      // Check if signIn was actually successful
+      // NextAuth v5: ok=true means success, ok=false means failure, undefined might mean error
+      if (res === undefined) {
+        // No response - likely an error occurred
+        setRecaptchaToken(null);
+        recaptchaReset?.();
+        setError("Sign in failed. Please try again.");
+        setLoading(false);
+        return;
+      }
       
-      // Navigate to callback URL
-      if (callbackUrl) {
-        router.push(callbackUrl);
+      if (res?.ok === false) {
+        // Explicit failure
+        setRecaptchaToken(null);
+        recaptchaReset?.();
+        setError("Sign in failed. Please check your credentials and try again.");
+        setLoading(false);
+        return;
+      }
+      
+      // Success - verify we have a valid response before navigating
+      if (res?.ok === true || res?.url || (!res?.error && res?.status === 200)) {
+        // Reset loading before navigation
+        setLoading(false);
+        
+        // Navigate to callback URL
+        if (callbackUrl && callbackUrl !== "/login") {
+          router.push(callbackUrl);
+        } else {
+          router.push("/dashboard");
+        }
         router.refresh();
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // Unexpected response - treat as failure
+        console.warn("Unexpected signIn response:", res);
+        setRecaptchaToken(null);
+        recaptchaReset?.();
+        setError("Sign in failed. Please try again.");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Login error:", err);
