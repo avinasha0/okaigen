@@ -86,7 +86,7 @@ function DashboardShellInner({
             </svg>
           </button>
           {profileOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-white/10 bg-slate-900 py-2 shadow-xl">
+            <div className="absolute right-0 top-full z-[100] mt-2 w-56 rounded-lg border border-white/10 bg-slate-900 py-2 shadow-xl">
               <div className="truncate px-4 py-2 text-sm text-slate-300">{userEmail ?? "User"}</div>
               <div className="border-t border-white/10 px-2 pt-2">
                 <SignOutButton className="w-full rounded px-3 py-2 text-left text-slate-400 hover:bg-white/10 hover:text-white" />
