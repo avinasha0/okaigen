@@ -89,6 +89,7 @@ export async function POST(req: Request) {
         termsAcceptedAt: new Date(),
         userplan: {
           create: {
+            id: generateId(),
             planId: starterPlan.id,
             startsAt: new Date(),
           },
