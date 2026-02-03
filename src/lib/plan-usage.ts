@@ -61,7 +61,7 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
 
     const plan = userPlan.plan;
     
-    let botIds;
+    let botIds: Array<{ id: string }>;
     try {
       botIds = await prisma.bot.findMany({
         where: { userId: ownerId },
