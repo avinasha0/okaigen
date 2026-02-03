@@ -23,6 +23,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, name, acceptTerms, recaptchaToken } = schema.parse(body);
 
+    console.log(`[register] Registration attempt for email=${email}`);
+
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
@@ -31,6 +33,7 @@ export async function POST(req: Request) {
     });
 
     if (existing) {
+      console.log(`[register] Registration failed: email already exists: ${email}`);
       return NextResponse.json(
         { error: "Email already registered" },
         { status: 400 }
@@ -81,21 +84,30 @@ export async function POST(req: Request) {
       }
     }
 
+    const userId = generateId();
+    const now = new Date();
+    
+    console.log(`[register] Creating user: email=${email}, userId=${userId}, planId=${starterPlan.id}`);
+    
     const user = await prisma.user.create({
       data: {
+        id: userId,
         email,
         name: name || null,
         password: hashedPassword,
-        termsAcceptedAt: new Date(),
+        termsAcceptedAt: now,
+        updatedAt: now,
         userplan: {
           create: {
             id: generateId(),
             planId: starterPlan.id,
-            startsAt: new Date(),
+            startsAt: now,
           },
         },
       },
     });
+    
+    console.log(`[register] User created successfully: userId=${user.id}, email=${user.email}`);
 
     // Email verification: send link (required for email/password users)
     const verifyToken = crypto.randomBytes(32).toString("hex");
@@ -115,9 +127,14 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const msg = error.issues[0]?.message || "Invalid input";
+      console.error(`[register] Validation error:`, error.issues);
       return NextResponse.json({ error: msg }, { status: 400 });
     }
-    console.error("Register error:", error);
+    console.error(`[register] Registration error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error instanceof Error ? error.constructor.name : typeof error,
+    });
     return NextResponse.json(
       { error: "Registration failed" },
       { status: 500 }
