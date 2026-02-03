@@ -84,10 +84,19 @@ export async function retrieveContext(
     // Compute similarity immediately and keep only promising candidates
     const similarity = cosineSimilarity(queryEmbedding, vector);
     if (similarity >= minSimilarity) {
+      // Parse metadata JSON string or use empty object
+      let metadata: Record<string, unknown> = {};
+      if (c.metadata) {
+        try {
+          metadata = JSON.parse(c.metadata) as Record<string, unknown>;
+        } catch {
+          metadata = {};
+        }
+      }
       chunksWithVectors.push({
         id: c.id,
         content: c.content,
-        metadata: (c.metadata as Record<string, unknown>) || {},
+        metadata,
         vector,
         similarity});
     }

@@ -46,6 +46,7 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
         // Create Starter plan if it doesn't exist
         const { getPlanLimitsForDb } = await import("./plans-config");
         const limits = getPlanLimitsForDb("Starter");
+        const now = new Date();
         starterPlan = await prisma.plan.create({
           data: {
             name: "Starter",
@@ -54,7 +55,8 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
             storageLimit: limits.storageLimit,
             teamMemberLimit: limits.teamMemberLimit,
             price: 0,
-            isActive: true}});
+            isActive: true,
+            updatedAt: now}});
         console.log("Created missing Starter plan");
       }
 
