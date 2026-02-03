@@ -4,7 +4,7 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
 import bcrypt from "bcryptjs";
-import { verifyRecaptchaToken } from "./recaptcha";
+import { verifyRecaptchaToken, isRecaptchaEnabled } from "./recaptcha";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
