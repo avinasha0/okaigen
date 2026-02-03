@@ -193,13 +193,14 @@ export default function BotSetupPage() {
               };
               if (event.type === "init") {
                 setTrainingProgress(5);
-              } else if (event.type === "pages_discovered" && event.pages != null) {
+              } else if (event.type === "pages_discovered") {
+                const pageList = event.pages ?? [];
                 setTrainingStatus((prev) => ({
                   considered: event.considered ?? event.count ?? 0,
                   completed: 0,
                   inProgress: 0,
                   pending: (event.considered ?? event.count ?? 0) - 0,
-                  pages: event.pages.map((p) => ({ url: p.url, title: p.title, status: "pending" as const })),
+                  pages: pageList.map((p) => ({ url: p.url, title: p.title, status: "pending" as const })),
                 }));
                 setTrainingProgress(10);
               } else if (event.type === "page" && event.url != null) {
