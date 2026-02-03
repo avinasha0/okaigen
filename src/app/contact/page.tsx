@@ -23,6 +23,7 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [error, setError] = useState("");
+  const getCaptchaToken = useCaptcha();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
