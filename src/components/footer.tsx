@@ -234,6 +234,22 @@ export function Footer() {
                   </svg>
                   for the community
                 </span>
+                {process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === "true" && (
+                  <>
+                    <span className="hidden sm:inline" aria-hidden>·</span>
+                    <span className="text-xs text-slate-600">
+                      This site is protected by reCAPTCHA and the Google{" "}
+                      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">
+                        Privacy Policy
+                      </a>{" "}
+                      and{" "}
+                      <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">
+                        Terms of Service
+                      </a>{" "}
+                      apply.
+                    </span>
+                  </>
+                )}
               </div>
               <a href="mailto:support@sitebotgpt.com" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-500 transition-colors hover:bg-white/5 hover:text-white">
                 <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

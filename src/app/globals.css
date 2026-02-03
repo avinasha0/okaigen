@@ -89,6 +89,14 @@ html {
   overflow-x: hidden;
 }
 
+/* Hide reCAPTCHA badge - required notice must be shown elsewhere */
+.grecaptcha-badge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
 /* Celebration confetti (pricing page) */
 @keyframes confetti-fly {
   0% {
