@@ -19,23 +19,28 @@ export default async function DashboardPage() {
   if (!session?.user?.id) return null;
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const bots = await prisma.bot.findMany({
-    where: { userId: ownerId },
-    include: {
-      _count: { select: { chunks: true, chats: true, leads: true } },
-      sources: { take: 3 },
-    },
-    orderBy: { createdAt: "desc" },
-  });
 
-  const planUsage = await getPlanUsage(session.user.id);
+  const [bots, planUsage] = await Promise.all([
+    prisma.bot.findMany({
+      where: { userId: ownerId },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        _count: { select: { chunks: true, chats: true, leads: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    getPlanUsage(session.user.id),
+  ]);
+
   const canCreateBot = planUsage ? planUsage.usedBots < planUsage.totalBots : true;
-  const canViewLeads = planUsage
-    ? (await import("@/lib/plans-config")).canViewLeads(planUsage.planName)
-    : false;
-  const canViewAnalytics = planUsage
-    ? (await import("@/lib/plans-config")).canViewAnalytics(planUsage.planName)
-    : false;
+  const { canViewLeads, canViewAnalytics } = planUsage
+    ? await import("@/lib/plans-config").then((m) => ({
+        canViewLeads: m.canViewLeads(planUsage.planName),
+        canViewAnalytics: m.canViewAnalytics(planUsage.planName),
+      }))
+    : { canViewLeads: false, canViewAnalytics: false };
 
   const totals = bots.reduce(
     (acc, b) => ({

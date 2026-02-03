@@ -18,7 +18,7 @@ interface Chat {
   visitorEmail: string | null;
   pageUrl: string | null;
   createdAt: string;
-  messages: { role: string; content: string; createdAt: string }[];
+  messages: { id: string; role: string; content: string; createdAt: string }[];
 }
 
 export default function ChatsPage() {
@@ -27,14 +27,28 @@ export default function ChatsPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Chat | null>(null);
+  const [selectedFull, setSelectedFull] = useState<Chat | null>(null);
 
   useEffect(() => {
-    const q = search ? `?search=${encodeURIComponent(search)}` : "";
-    fetch(`/api/bots/${botId}/chats${q}`)
+    const q = new URLSearchParams();
+    if (search) q.set("search", search);
+    q.set("limit", "50");
+    fetch(`/api/bots/${botId}/chats?${q}`)
       .then((r) => r.json())
-      .then(setChats)
+      .then((data: { chats: Chat[] }) => setChats(data.chats ?? []))
       .catch(console.error);
   }, [botId, search]);
+
+  useEffect(() => {
+    if (!selected) {
+      setSelectedFull(null);
+      return;
+    }
+    fetch(`/api/bots/${botId}/chats/${selected.id}`)
+      .then((r) => r.json())
+      .then((data: Chat) => setSelectedFull(data))
+      .catch(() => setSelectedFull(selected));
+  }, [botId, selected?.id]);
 
   return (
     <div className="px-4 py-4 sm:px-6 md:px-8">
@@ -56,12 +70,15 @@ export default function ChatsPage() {
           variant="outline"
           size="sm"
           onClick={async () => {
-            const q = search ? `?search=${encodeURIComponent(search)}&limit=500` : "?limit=500";
-            const r = await fetch(`/api/bots/${botId}/chats${q}`);
-            const data: Chat[] = await r.json();
+            const params = new URLSearchParams();
+            if (search) params.set("search", search);
+            params.set("limit", "500");
+            const r = await fetch(`/api/bots/${botId}/chats?${params}`);
+            const data: { chats: Chat[] } = await r.json();
+            const chatsList = data.chats ?? [];
             const rows: string[] = [
               "Date,Visitor Email,Page URL,Role,Message",
-              ...data.flatMap((c) =>
+              ...chatsList.flatMap((c) =>
                 c.messages.map((m) =>
                   [
                     new Date(c.createdAt).toISOString(),
@@ -141,9 +158,11 @@ export default function ChatsPage() {
             <CardContent>
               {!selected ? (
                 <p className="text-sm text-gray-500">Select a conversation</p>
+              ) : !selectedFull ? (
+                <p className="text-sm text-gray-500">Loading…</p>
               ) : (
                 <div className="space-y-4">
-                  {selected.messages.map((msg, i) => (
+                  {selectedFull.messages.map((msg, i) => (
                     <div
                       key={i}
                       className={`rounded-lg p-3 ${

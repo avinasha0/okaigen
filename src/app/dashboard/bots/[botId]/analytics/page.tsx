@@ -67,8 +67,23 @@ export default function AnalyticsPage() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-gray-500">Loading analytics...</div>
+      <div className="px-4 py-4 sm:px-6 md:px-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="h-8 w-40 animate-pulse rounded-lg bg-zinc-200" />
+          <div className="h-10 w-32 animate-pulse rounded-lg bg-zinc-100" />
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 bg-white p-5">
+              <div className="h-4 w-24 animate-pulse rounded bg-zinc-100" />
+              <div className="mt-2 h-9 w-16 animate-pulse rounded bg-zinc-200" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6">
+          <div className="h-5 w-32 animate-pulse rounded bg-zinc-200" />
+          <div className="mt-4 h-32 animate-pulse rounded bg-zinc-100" />
+        </div>
       </div>
     );
   }

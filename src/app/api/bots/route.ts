@@ -33,15 +33,20 @@ export async function GET() {
   const ownerId = await getEffectiveOwnerId(session.user.id);
   const bots = await prisma.bot.findMany({
     where: { userId: ownerId },
-    include: {
-      _count: {
-        select: { chunks: true, sources: true },
-      },
+    select: {
+      id: true,
+      name: true,
+      publicKey: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: { select: { chunks: true, sources: true } },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(bots);
+  const res = NextResponse.json(bots);
+  res.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=10");
+  return res;
 }
 
 export async function POST(req: Request) {

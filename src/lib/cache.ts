@@ -52,6 +52,9 @@ export const responseCache = new SimpleCache<{ response: string; sources: string
 // Bot cache: Cache bot lookups (15 minutes)
 export const botCache = new SimpleCache<any>(900000);
 
+// Chat history cache: Cache recent message history by chatId (5 min) to speed up follow-up messages
+export const chatHistoryCache = new SimpleCache<{ role: "user" | "assistant"; content: string }[]>(300000);
+
 /**
  * Generate cache key from text (normalized)
  */

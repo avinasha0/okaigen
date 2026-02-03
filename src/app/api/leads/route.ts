@@ -73,8 +73,8 @@ export async function POST(req: Request) {
   return NextResponse.json({ id: lead.id });
 }
 
-/** GET all leads for the current user's bots (auth required). Starter (Free) plan: returns empty (leads still captured, not visible). */
-export async function GET(_req: Request) {
+/** GET leads for the current user's bots (auth required). Paginated. Starter plan: returns empty. */
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -85,7 +85,7 @@ export async function GET(_req: Request) {
   const { getEffectiveOwnerId } = await import("@/lib/team");
   const planUsage = await getPlanUsage(session.user.id);
   if (!planUsage || !canViewLeads(planUsage.planName)) {
-    return NextResponse.json([]);
+    return NextResponse.json({ leads: [], total: 0, page: 1, limit: 50, totalPages: 0 });
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
@@ -96,15 +96,44 @@ export async function GET(_req: Request) {
   const botIds = bots.map((b) => b.id);
   const botMap = Object.fromEntries(bots.map((b) => [b.id, b.name]));
 
-  const leads = await prisma.lead.findMany({
-    where: { botId: { in: botIds } },
-    orderBy: { createdAt: "desc" },
-  });
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const limit = Math.min(Math.max(1, parseInt(searchParams.get("limit") || "50", 10)), 100);
+  const skip = (page - 1) * limit;
+
+  const [leads, total] = await Promise.all([
+    prisma.lead.findMany({
+      where: { botId: { in: botIds } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip,
+      select: {
+        id: true,
+        botId: true,
+        name: true,
+        email: true,
+        phone: true,
+        message: true,
+        pageUrl: true,
+        status: true,
+        createdAt: true,
+      },
+    }),
+    prisma.lead.count({ where: { botId: { in: botIds } } }),
+  ]);
 
   const leadsWithBot = leads.map((l) => ({
     ...l,
     botName: botMap[l.botId] ?? "Unknown",
   }));
 
-  return NextResponse.json(leadsWithBot);
+  const res = NextResponse.json({
+    leads: leadsWithBot,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  });
+  res.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=10");
+  return res;
 }

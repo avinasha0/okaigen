@@ -32,9 +32,9 @@ export default function LeadsPage() {
   const [filterBot, setFilterBot] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/leads")
+    fetch("/api/leads?limit=100")
       .then((r) => r.json())
-      .then(setLeads)
+      .then((data: { leads: Lead[] }) => setLeads(data.leads ?? []))
       .catch(console.error);
   }, []);
 
@@ -57,7 +57,7 @@ export default function LeadsPage() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      fetch("/api/leads").then((r) => r.json()).then(setLeads).catch(console.error);
+      fetch("/api/leads?limit=100").then((r) => r.json()).then((data: { leads: Lead[] }) => setLeads(data.leads ?? [])).catch(console.error);
       console.error("Failed to update lead status:", res.status, err);
     }
   }

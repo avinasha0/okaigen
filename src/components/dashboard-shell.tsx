@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -47,13 +47,13 @@ function DashboardShellInner({
     }
   }, [profileOpen]);
 
-  const handleBotsClick = (e: React.MouseEvent) => {
+  const handleBotsClick = useCallback((e: React.MouseEvent) => {
     setSidebarOpen(false);
     if (pathname === "/dashboard") {
       e.preventDefault();
       document.getElementById("bots")?.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, [pathname]);
 
   return (
     <div className="flex min-h-screen bg-zinc-50">

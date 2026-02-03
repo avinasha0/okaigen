@@ -34,12 +34,12 @@ export async function retrieveContext(
 ): Promise<RAGContext> {
   const queryEmbedding = await generateEmbedding(query);
 
-  // Optimization: Only select needed fields and chunks with embeddings
-  // This reduces memory usage and network transfer
+  // Optimization: Limit chunks to avoid loading entire KB into memory (cap 500)
+  const CHUNK_LIMIT = 500;
   const chunks = await prisma.chunk.findMany({
-    where: { 
+    where: {
       botId,
-      embedding: { isNot: null }, // Only chunks with embeddings
+      embedding: { isNot: null },
     },
     select: {
       id: true,
@@ -51,6 +51,8 @@ export async function retrieveContext(
         },
       },
     },
+    take: CHUNK_LIMIT,
+    orderBy: { createdAt: "desc" }, // Prefer recent chunks when over limit
   });
 
   console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", totalChunks=${chunks.length}`);

@@ -104,7 +104,7 @@ export async function GET(
     chunkCount: s._count,
   }));
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     totalChats,
     totalLeads,
     dailyUsage: Object.entries(dailyMap)
@@ -113,4 +113,6 @@ export async function GET(
     topQuestions: topQ,
     sourcesUsed,
   });
+  res.headers.set("Cache-Control", "private, max-age=60, stale-while-revalidate=30");
+  return res;
 }

@@ -163,6 +163,7 @@ model Chat {
   @@index([botId])
   @@index([visitorId])
   @@index([createdAt])
+  @@index([botId, createdAt])
 }
 
 model ChatMessage {
@@ -195,6 +196,7 @@ model Lead {
   @@index([botId])
   @@index([email])
   @@index([status])
+  @@index([botId, createdAt])
 }
 
 model UsageLog {

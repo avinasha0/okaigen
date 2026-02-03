@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { ChatWidget } from "@/components/chat-widget";
 import { Footer } from "@/components/footer";
+import { ChatWidgetLazy } from "@/components/chat-widget-lazy";
 
 export default function LandingPage() {
   const demoBotKey = process.env.NEXT_PUBLIC_DEMO_BOT_ID || "";
@@ -9,8 +9,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
       <ResponsiveNav />
-      {/* Only render widget when demo bot is configured; avoids empty key and no-op script */}
-      {demoBotKey ? <ChatWidget botKey={demoBotKey} /> : null}
+      <ChatWidgetLazy botKey={demoBotKey} />
 
       <main id="main-content">
         {/* Hero - Two column layout inspired by SiteGPT */}

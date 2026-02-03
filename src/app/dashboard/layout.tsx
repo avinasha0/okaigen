@@ -18,11 +18,11 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  // Require email verification for email/password users (not OAuth)
   if (session.user.hasPassword && !session.user.emailVerified) {
     redirect("/verify-email");
   }
 
+  // getPlanUsage is cached 60s via unstable_cache — fast on repeat navigations
   const planUsage = session.user.id ? await getPlanUsage(session.user.id) : null;
   const showEmailVerifyBanner = session.user.email && !session.user.emailVerified;
 

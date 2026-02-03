@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getBotForUser } from "@/lib/team";
 
+const CACHE_MAX_AGE = 30; // 30s for list data
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ botId: string }> }
@@ -22,7 +24,9 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || "";
   const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
+  const cursor = searchParams.get("cursor") || undefined;
 
+  // List chats with projection: only last message per chat for preview; cursor-based pagination
   const chats = await prisma.chat.findMany({
     where: {
       botId,
@@ -36,14 +40,34 @@ export async function GET(
           }
         : {}),
     },
-    include: {
+    select: {
+      id: true,
+      visitorId: true,
+      visitorEmail: true,
+      visitorName: true,
+      pageUrl: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: { select: { messages: true } },
       messages: {
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { id: true, role: true, content: true, createdAt: true },
       },
     },
     orderBy: { createdAt: "desc" },
-    take: limit,
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
 
-  return NextResponse.json(chats);
+  const hasMore = chats.length > limit;
+  const list = hasMore ? chats.slice(0, limit) : chats;
+  const nextCursor = hasMore ? list[list.length - 1]?.id : null;
+
+  const res = NextResponse.json({
+    chats: list,
+    nextCursor,
+  });
+  res.headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=10`);
+  return res;
 }
