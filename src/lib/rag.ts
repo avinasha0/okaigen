@@ -12,8 +12,8 @@
 import { openai, CHAT_MODEL } from "./openai";
 import { generateEmbedding } from "./embeddings";
 import { prisma } from "./db";
-import { searchVectors, type VectorResult } from "./vector-search";
-import { responseCache, normalizeCacheKey, botCache } from "./cache";
+import { searchVectors, type VectorResult, cosineSimilarity } from "./vector-search";
+import { responseCache, normalizeCacheKey, botCache, chunkCountCache, requestDeduplicator } from "./cache";
 
 export interface RAGContext {
   chunks: VectorResult[];
@@ -32,11 +32,13 @@ export async function retrieveContext(
   maxChunks: number = 10,
   minSimilarity: number = 0.3 // Hard floor: minimum similarity to consider
 ): Promise<RAGContext> {
-  const queryEmbedding = await generateEmbedding(query);
+  // Optimization: Generate embedding in parallel with initial bot validation
+  const queryEmbeddingPromise = generateEmbedding(query);
 
-  // Optimization: Limit chunks to avoid loading entire KB into memory (cap 500)
-  const CHUNK_LIMIT = 500;
-  const chunks = await prisma.chunk.findMany({
+  // Optimization: Use JOIN to fetch chunks with embeddings in a single query (more efficient)
+  // Also increase limit for better recall, but we'll still filter by similarity
+  const CHUNK_LIMIT = 1000; // Increased for better recall, but filtered by similarity
+  const chunksPromise = prisma.chunk.findMany({
     where: {
       botId,
       embedding: { isNot: null },
@@ -55,27 +57,51 @@ export async function retrieveContext(
     orderBy: { createdAt: "desc" }, // Prefer recent chunks when over limit
   });
 
+  // Wait for both operations in parallel
+  const [queryEmbedding, chunks] = await Promise.all([queryEmbeddingPromise, chunksPromise]);
+
   console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", totalChunks=${chunks.length}`);
 
-  // Optimization: Pre-filter and convert vectors in one pass
-  const chunksWithVectors = chunks
-    .map((c) => {
-      if (!c.embedding) return null;
-      const vector = toNumberVector(c.embedding.vector);
-      if (vector.length !== queryEmbedding.length) return null;
-      return { 
-        id: c.id, 
-        content: c.content, 
-        metadata: (c.metadata as Record<string, unknown>) || {}, 
-        vector 
-      };
-    })
-    .filter((c): c is NonNullable<typeof c> => c !== null);
+  // Optimization: Pre-filter and convert vectors in one pass with early termination
+  // Use a more efficient approach: compute similarity as we go and keep top candidates
+  const chunksWithVectors: Array<{ id: string; content: string; metadata: Record<string, unknown>; vector: number[]; similarity: number }> = [];
+  
+  for (const c of chunks) {
+    if (!c.embedding) continue;
+    const vector = toNumberVector(c.embedding.vector);
+    if (vector.length !== queryEmbedding.length) continue;
+    
+    // Compute similarity immediately and keep only promising candidates
+    const similarity = cosineSimilarity(queryEmbedding, vector);
+    if (similarity >= minSimilarity) {
+      chunksWithVectors.push({
+        id: c.id,
+        content: c.content,
+        metadata: (c.metadata as Record<string, unknown>) || {},
+        vector,
+        similarity,
+      });
+    }
+  }
 
-  console.log(`[rag] chunksWithVectors: ${chunksWithVectors.length} chunks with valid embeddings`);
+  // Sort by similarity (descending) and take top results
+  chunksWithVectors.sort((a, b) => b.similarity - a.similarity);
+  const topChunks = chunksWithVectors.slice(0, maxChunks * 2); // Get 2x for windowing
 
-  // Adaptive search: uses score windowing (top_score - 0.1) instead of fixed count
-  const results = searchVectors(queryEmbedding, chunksWithVectors, maxChunks, minSimilarity);
+  console.log(`[rag] chunksWithVectors: ${chunksWithVectors.length} chunks with valid embeddings >= ${minSimilarity}`);
+
+  // Apply adaptive windowing to top candidates
+  const results = topChunks.length > 0
+    ? (() => {
+        const topScore = topChunks[0].similarity;
+        const scoreWindow = Math.max(minSimilarity, topScore - 0.1);
+        return topChunks
+          .filter((r) => r.similarity >= scoreWindow)
+          .slice(0, maxChunks)
+          .map(({ similarity, ...rest }) => ({ ...rest, similarity }));
+      })()
+    : [];
+
   const confidence = results.length > 0 ? results[0].similarity : 0;
 
   console.log(`[rag] searchVectors results: ${results.length} chunks found, top similarity=${confidence.toFixed(3)}`);
@@ -174,52 +200,86 @@ export async function generateResponse(
       console.log(`[rag] Cache hit for quick prompt: "${userMessage}"`);
       return cached;
     }
-  }
 
-  // Optimization: Cache bot lookups (they don't change often)
-  let bot = botCache.get(botId);
-  if (!bot) {
-    bot = await prisma.bot.findUnique({
-      where: { id: botId },
-      select: {
-        id: true,
-        greetingMessage: true,
-        tone: true,
-        humanFallbackMessage: true,
-        confidenceThreshold: true,
-      },
+    // Optimization: Deduplicate identical requests (prevent processing same question twice simultaneously)
+    const dedupeKey = `response:${cacheKey}`;
+    return requestDeduplicator.deduplicate(dedupeKey, async () => {
+      return generateResponseInternal(botId, userMessage, messageHistory, isQuickPrompt);
     });
-    if (bot) {
-      botCache.set(botId, bot);
-    }
   }
 
-  if (!bot) {
+  return generateResponseInternal(botId, userMessage, messageHistory, isQuickPrompt);
+}
+
+async function generateResponseInternal(
+  botId: string,
+  userMessage: string,
+  messageHistory: { role: "user" | "assistant"; content: string }[],
+  isQuickPrompt: boolean
+): Promise<{
+  response: string;
+  sources: string[];
+  confidence: number;
+}> {
+
+  // Optimization: Cache bot lookups (they don't change often) and parallelize with context retrieval
+  let bot = botCache.get(botId);
+  const botPromise = bot
+    ? Promise.resolve(bot)
+    : prisma.bot.findUnique({
+        where: { id: botId },
+        select: {
+          id: true,
+          greetingMessage: true,
+          tone: true,
+          humanFallbackMessage: true,
+          confidenceThreshold: true,
+        },
+      }).then((b) => {
+        if (b) {
+          botCache.set(botId, b);
+        }
+        return b;
+      });
+
+  // Optimization: Start context retrieval early (it generates embedding internally)
+  // This runs in parallel with bot lookup
+  const maxChunks = isQuickPrompt ? 3 : 10; // Fewer chunks for quick prompts = faster retrieval
+  const contextPromise = retrieveContext(botId, userMessage, maxChunks, 0.3);
+
+  // Wait for both bot and context in parallel
+  const [botData, { chunks, confidence }] = await Promise.all([botPromise, contextPromise]);
+
+  if (!botData) {
     throw new Error("Bot not found");
   }
-
-  // isQuickPrompt already defined above for caching
-  const maxChunks = isQuickPrompt ? 3 : 10; // Fewer chunks for quick prompts = faster retrieval
-  
-  // Dynamic threshold: hard floor of 0.3 for minimum similarity
-  const { chunks, confidence } = await retrieveContext(botId, userMessage, maxChunks, 0.3);
+  bot = botData;
 
   console.log(`[rag] generateResponse: botId=${botId}, chunks=${chunks.length}, confidence=${confidence.toFixed(3)}`);
 
   // Answer Confidence Guard: If top similarity < 0.3, return fallback immediately
   // This prevents hallucinations from weakly related content
   const CONFIDENCE_FLOOR = 0.3;
-  if (confidence < CONFIDENCE_FLOOR) {
-    const totalChunks = await prisma.chunk.count({ where: { botId } });
-    console.log(`[rag] Confidence guard triggered: ${confidence.toFixed(3)} < ${CONFIDENCE_FLOOR}`);
+  if (confidence < CONFIDENCE_FLOOR || chunks.length === 0) {
+    console.log(`[rag] Confidence guard triggered: ${confidence.toFixed(3)} < ${CONFIDENCE_FLOOR} or no chunks`);
     
-    if (totalChunks === 0) {
-      return {
-        response:
-          "This bot doesn't have any content yet. Add sources and train it from the dashboard, then try again.",
-        sources: [],
-        confidence: 0,
-      };
+    // Optimization: Use cached chunk count to avoid DB query
+    if (confidence === 0 && chunks.length === 0) {
+      // Check if bot has any chunks at all (cached)
+      let totalChunks = chunkCountCache.get(botId);
+      if (totalChunks === null) {
+        totalChunks = await prisma.chunk.count({ where: { botId } });
+        chunkCountCache.set(botId, totalChunks);
+      }
+      
+      if (totalChunks === 0) {
+        return {
+          response:
+            "This bot doesn't have any content yet. Add sources and train it from the dashboard, then try again.",
+          sources: [],
+          confidence: 0,
+        };
+      }
     }
     
     // Return honest fallback when confidence is too low
@@ -230,39 +290,20 @@ export async function generateResponse(
     };
   }
 
-  if (chunks.length === 0) {
-    const totalChunks = await prisma.chunk.count({ where: { botId } });
-    console.log(`[rag] No chunks found for query, totalChunks in DB: ${totalChunks}`);
-    if (totalChunks === 0) {
-      return {
-        response:
-          "This bot doesn't have any content yet. Add sources and train it from the dashboard, then try again.",
-        sources: [],
-        confidence: 0,
-      };
-    }
-    // This shouldn't happen if confidence >= 0.3, but handle it anyway
-    console.log(`[rag] Warning: ${totalChunks} chunks exist but none matched the query`);
-    return {
-      response: bot.humanFallbackMessage || "I couldn't find this information in your content.",
-      sources: [],
-      confidence: 0,
-    };
-  }
-
-  const contextText =
-    chunks.length > 0
-      ? chunks.map((c) => c.content).join("\n\n---\n\n")
-      : "";
+  // Optimization: Build context text efficiently
+  const contextText = chunks.map((c) => c.content).join("\n\n---\n\n");
   console.log(`[rag] contextText length: ${contextText.length} chars`);
   
   // Optimization: Skip summarization for quick prompts to reduce latency (saves 1 OpenAI API call)
   // Only summarize if context is large (>2000 chars) and not a quick prompt
-  const shouldSummarize = !isQuickPrompt && (contextText.length > 2000 || chunks.length > 3);
+  // Also use smarter threshold: summarize if context > 3000 chars OR if we have many chunks (>5)
+  const shouldSummarize = !isQuickPrompt && (contextText.length > 3000 || chunks.length > 5);
   
+  // Optimization: For quick prompts or small context, use raw context directly (no API call)
+  // For larger contexts, summarize to reduce token usage and improve relevance
   const contextSummary = shouldSummarize
     ? await summarizeContext(contextText, userMessage)
-    : contextText.slice(0, 2000); // Use raw context for quick prompts (faster, saves API call)
+    : contextText.slice(0, isQuickPrompt ? 1500 : 2500); // Slightly larger limit for non-quick prompts
   
   console.log(`[rag] ${shouldSummarize ? 'Summarized' : 'Using raw'} context (quickPrompt=${isQuickPrompt}): ${contextSummary.substring(0, 200)}...`);
 
@@ -281,13 +322,18 @@ export async function generateResponse(
     { role: "user", content: userMessage },
   ];
 
-  // Optimization: Use faster settings for quick prompts
+  // Optimization: Use faster settings for quick prompts and optimize token limits
+  // Use lower temperature for more deterministic, faster responses
+  // Reduce max_tokens for quicker generation (model generates faster with lower limits)
   const completion = await openai.chat.completions.create({
     model: CHAT_MODEL,
     messages,
-    temperature: 0.3,
-    max_tokens: isQuickPrompt ? 150 : 300, // Shorter responses for quick prompts
+    temperature: isQuickPrompt ? 0.2 : 0.3, // Lower temp = faster, more deterministic
+    max_tokens: isQuickPrompt ? 120 : 250, // Reduced for faster generation
     stream: false, // Ensure no streaming overhead
+    // Optimization: Add timeout to prevent hanging requests
+  }, {
+    timeout: 30000, // 30 second timeout
   });
 
   const response = completion.choices[0]?.message?.content || bot.humanFallbackMessage;

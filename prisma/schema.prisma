@@ -132,6 +132,7 @@ model Chunk {
 
   @@index([botId])
   @@index([sourceId])
+  @@index([botId, createdAt]) // Optimization: Composite index for efficient chunk retrieval by botId and createdAt
 }
 
 model Embedding {

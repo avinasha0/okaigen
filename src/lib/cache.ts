@@ -55,6 +55,30 @@ export const botCache = new SimpleCache<any>(900000);
 // Chat history cache: Cache recent message history by chatId (5 min) to speed up follow-up messages
 export const chatHistoryCache = new SimpleCache<{ role: "user" | "assistant"; content: string }[]>(300000);
 
+// Chunk count cache: Cache chunk counts per bot (10 min) to avoid repeated count queries
+export const chunkCountCache = new SimpleCache<number>(600000);
+
+// Request deduplication: Track in-flight requests to prevent duplicate processing
+class RequestDeduplicator {
+  private inFlight = new Map<string, Promise<any>>();
+
+  async deduplicate<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const existing = this.inFlight.get(key);
+    if (existing) {
+      return existing as Promise<T>;
+    }
+
+    const promise = fn().finally(() => {
+      this.inFlight.delete(key);
+    });
+
+    this.inFlight.set(key, promise);
+    return promise;
+  }
+}
+
+export const requestDeduplicator = new RequestDeduplicator();
+
 /**
  * Generate cache key from text (normalized)
  */

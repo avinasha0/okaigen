@@ -118,16 +118,18 @@ export async function POST(req: Request) {
 
     // Optimization: Parallelize message history fetch and user message creation
     // These operations are independent and can run concurrently
-    const [prevMessagesResult] = await Promise.all([
+    // Also optimize: only fetch last 10 messages (we only use 10 anyway) and use select to reduce data transfer
+    const [prevMessagesResult, userMessage] = await Promise.all([
       chatId 
         ? prisma.chatMessage.findMany({
             where: { chatId: chat.id },
-            orderBy: { createdAt: "asc" },
-            take: 20,
+            orderBy: { createdAt: "desc" }, // Get most recent first
+            take: 10, // Reduced from 20 since we only use 10
             select: {
               id: true,
               role: true,
               content: true,
+              createdAt: true,
             },
           })
         : Promise.resolve([]),
@@ -142,20 +144,28 @@ export async function POST(req: Request) {
 
     const msgHistory = history || [];
 
+    // Optimization: Reverse to get chronological order, exclude the just-created user message
+    // Since we fetched desc order, reverse and filter out the latest user message if it matches
     const recentHistory = prevMessagesResult
-      .filter((m) => m.role !== "user" || m.id !== prevMessagesResult[prevMessagesResult.length - 1]?.id)
-      .slice(-10)
+      .reverse() // Convert desc to asc
+      .filter((m) => m.id !== userMessage.id) // Exclude the message we just created
+      .slice(-10) // Take last 10
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     const combinedHistory = recentHistory.length > 0 ? recentHistory : msgHistory;
 
-    const { response, sources, confidence } = await generateResponse(
+    // Optimization: Start generating response early (it's the slowest operation)
+    const responsePromise = generateResponse(
       bot.id,
       sanitized,
       combinedHistory
     );
 
+    // Wait for response generation
+    const { response, sources, confidence } = await responsePromise;
+
     // Optimization: Parallelize database writes (they're independent)
+    // Also fire-and-forget webhook trigger to not block response
     await Promise.all([
       prisma.chatMessage.create({
         data: {

@@ -9,9 +9,12 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     return cached;
   }
 
+  // Optimization: Add timeout and error handling for faster failure
   const response = await openai.embeddings.create({
     model: EMBEDDING_MODEL,
     input: text.slice(0, 8000), // API limit
+  }, {
+    timeout: 20000, // 20 second timeout
   });
   
   const embedding = response.data[0].embedding;
