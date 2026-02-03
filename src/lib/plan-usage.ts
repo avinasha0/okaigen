@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "./db";
 
 const START_OF_TODAY = () => {
@@ -18,8 +19,7 @@ export type PlanUsage = {
   totalTeamMembers: number;
 };
 
-/** Get plan and usage for the effective account (owner). Members see owner's plan/usage. */
-export async function getPlanUsage(userId: string): Promise<PlanUsage | null> {
+async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
   const ownerId = await getEffectiveOwnerId(userId);
 
   let userPlan = await prisma.userPlan.findUnique({
@@ -74,4 +74,13 @@ export async function getPlanUsage(userId: string): Promise<PlanUsage | null> {
     usedTeamMembers,
     totalTeamMembers,
   };
+}
+
+/** Get plan and usage for the effective account (owner). Cached 60s to speed up dashboard navigation. */
+export function getPlanUsage(userId: string): Promise<PlanUsage | null> {
+  return unstable_cache(
+    (id: string) => getPlanUsageUncached(id),
+    ["plan-usage", userId],
+    { revalidate: 60 }
+  )(userId);
 }

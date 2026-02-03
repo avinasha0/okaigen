@@ -20,7 +20,7 @@ export function ResponsiveNav() {
       <div className="mx-auto flex h-16 min-w-0 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center justify-start" aria-label="SiteBotGPT home">
           <span className="relative flex h-14 min-h-[56px] w-[200px] overflow-hidden bg-transparent sm:h-14 sm:min-h-[56px] sm:w-[200px] md:h-16 md:min-h-[64px] md:w-[260px] lg:w-[360px]">
-            <Image src="/sitebotgpt_logob.png" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 200px, (max-width: 768px) 200px, (max-width: 1024px) 260px, 360px" priority unoptimized />
+            <Image src="/sitebotgpt_logob.png" alt="SiteBotGPT" fill className="object-contain object-left" sizes="(max-width: 640px) 200px, (max-width: 768px) 200px, (max-width: 1024px) 260px, 360px" priority />
           </span>
         </Link>
 

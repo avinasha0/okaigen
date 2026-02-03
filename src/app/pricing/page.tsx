@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
-import { CelebrationConfetti } from "@/components/celebration-confetti";
 import { ResponsiveNav } from "@/components/responsive-nav";
 import { PLANS } from "@/lib/plans";
+
+const CelebrationConfetti = dynamic(
+  () => import("@/components/celebration-confetti").then((m) => ({ default: m.CelebrationConfetti })),
+  { ssr: false }
+);
 
 const FAQ = [
   {

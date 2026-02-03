@@ -71,7 +71,7 @@ function DashboardShellInner({
         </button>
         <Link href="/dashboard" className="flex h-14 min-w-0 flex-1 items-center" aria-label="SiteBotGPT dashboard">
           <span className="relative flex h-8 w-full max-w-[150px] shrink-0 overflow-hidden bg-transparent">
-            <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="150px" priority unoptimized />
+            <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="150px" priority />
           </span>
         </Link>
         <div className="relative shrink-0" ref={profileRefMobile}>
@@ -116,7 +116,7 @@ function DashboardShellInner({
         <div className="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 px-3 md:h-12 md:px-4">
           <Link href="/dashboard" className="flex h-10 w-full items-center md:h-12" aria-label="SiteBotGPT dashboard">
             <span className="relative flex h-8 w-full shrink-0 overflow-hidden bg-transparent md:h-10 md:max-w-[130px]">
-              <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="130px" priority unoptimized />
+              <Image src="/sitebotgpt_logowhite1.jpg" alt="SiteBotGPT" fill className="object-contain object-left" sizes="130px" priority />
             </span>
           </Link>
           <button
