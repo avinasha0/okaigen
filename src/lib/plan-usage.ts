@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { generateId } from "./utils";
 
 const START_OF_TODAY = () => {
   const d = new Date();
@@ -64,7 +65,7 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
       // Assign Starter plan to user
       try {
         userPlan = await prisma.userplan.create({
-          data: { userId: ownerId, planId: starterPlan.id },
+          data: { id: generateId(), userId: ownerId, planId: starterPlan.id },
           include: { plan: true },
         });
         console.log(`Assigned Starter plan to user ${ownerId}`);

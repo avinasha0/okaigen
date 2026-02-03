@@ -25,6 +25,7 @@ export async function assignPlanToUser(
   await prisma.userplan.upsert({
     where: { userId },
     create: {
+      id: generateId(),
       userId,
       planId: plan.id,
       currentPeriodEnd: options.currentPeriodEnd ?? null,
@@ -54,6 +55,7 @@ export async function downgradeUserToStarter(userId: string) {
   await prisma.userplan.upsert({
     where: { userId },
     create: {
+      id: generateId(),
       userId,
       planId: starterPlan.id,
       stripeSubscriptionId: null,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
+import { generateId } from "@/lib/utils";
 
 /** Stripe webhook: do not parse body as JSON so we can verify signature with raw body. */
 export async function POST(request: Request) {
@@ -126,6 +127,7 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
   await prisma.userplan.upsert({
     where: { userId },
     create: {
+      id: generateId(),
       userId,
       planId: plan.id,
       stripeSubscriptionId: sub.id,
@@ -150,6 +152,7 @@ async function downgradeUserToStarter(userId: string) {
   await prisma.userplan.upsert({
     where: { userId },
     create: {
+      id: generateId(),
       userId,
       planId: starterPlan.id,
       stripeSubscriptionId: null,
