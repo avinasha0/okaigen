@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PLAN_NAMES, getPlanLimitsForDb, type PlanName } from "../src/lib/plans-config";
+import { generateId } from "../src/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -72,7 +73,12 @@ async function main() {
       console.log(`Plan ${name} updated`);
     } else {
       await prisma.plan.create({
-        data: { name, ...planData },
+        data: { 
+          id: generateId(),
+          name, 
+          ...planData,
+          updatedAt: new Date(),
+        },
       });
       console.log(`Plan ${name} created`);
     }
