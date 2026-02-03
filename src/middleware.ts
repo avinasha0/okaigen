@@ -10,6 +10,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url",
 };
 
+// Content Security Policy for reCAPTCHA
+const cspHeader = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
+  "frame-src 'self' https://www.google.com https://www.recaptcha.net",
+  "style-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com",
+  "connect-src 'self' https://www.google.com https://www.recaptcha.net",
+  "img-src 'self' data: https: blob:",
+  "font-src 'self' data:",
+].join("; ");
+
 function hasSession(req: NextRequest): boolean {
   const cookie = req.cookies.get("authjs.session-token") ?? req.cookies.get("__Secure-authjs.session-token") ?? req.cookies.get("next-auth.session-token") ?? req.cookies.get("__Secure-next-auth.session-token");
   return !!cookie?.value;
@@ -17,36 +28,47 @@ function hasSession(req: NextRequest): boolean {
 
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  const response = NextResponse.next();
+
+  // Add CSP header for reCAPTCHA support
+  response.headers.set("Content-Security-Policy", cspHeader);
 
   // Handle OPTIONS for CORS routes
   if (path.startsWith("/api/chat") || path.startsWith("/api/embed") || path.startsWith("/api/leads")) {
     if (req.method === "OPTIONS") {
-      return new NextResponse(null, { status: 204, headers: corsHeaders });
+      const res = new NextResponse(null, { status: 204, headers: corsHeaders });
+      res.headers.set("Content-Security-Policy", cspHeader);
+      return res;
     }
-    const res = NextResponse.next();
-    Object.entries(corsHeaders).forEach(([k, v]) => res.headers.set(k, v));
-    return res;
+    Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+    return response;
   }
 
   // Ensure OPTIONS requests for API routes pass through
   if (path.startsWith("/api/") && req.method === "OPTIONS") {
-    return new NextResponse(null, { status: 204 });
+    const res = new NextResponse(null, { status: 204 });
+    res.headers.set("Content-Security-Policy", cspHeader);
+    return res;
   }
 
   const isPublic =
     publicPaths.includes(path) ||
     publicPrefixes.some((p) => path.startsWith(p));
 
-  if (isPublic) return NextResponse.next();
+  if (isPublic) return response;
 
   if (!hasSession(req) && path.startsWith("/api/")) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const res = Response.json({ error: "Unauthorized" }, { status: 401 });
+    res.headers.set("Content-Security-Policy", cspHeader);
+    return res;
   }
   if (!hasSession(req)) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const res = NextResponse.redirect(new URL("/login", req.url));
+    res.headers.set("Content-Security-Policy", cspHeader);
+    return res;
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
