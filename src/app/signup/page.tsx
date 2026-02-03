@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { ReCaptcha } from "@/components/recaptcha";
+import { ReCaptcha, isRecaptchaEnabled } from "@/components/recaptcha";
 
 function SignupForm() {
   const router = useRouter();
@@ -19,6 +19,7 @@ function SignupForm() {
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [recaptchaReset, setRecaptchaReset] = useState<(() => void) | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +45,10 @@ function SignupForm() {
       setError("You must agree to the Terms of Service and Privacy Policy");
       return;
     }
+    if (isRecaptchaEnabled && !recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -59,6 +64,8 @@ function SignupForm() {
       });
       const data = await res.json();
       if (!res.ok) {
+        setRecaptchaToken(null);
+        recaptchaReset?.();
         setError(data.error || "Registration failed");
         setLoading(false);
         return;
@@ -76,6 +83,8 @@ function SignupForm() {
       router.push(callbackUrl);
       router.refresh();
     } catch {
+      setRecaptchaToken(null);
+      recaptchaReset?.();
       setError("Something went wrong");
       setLoading(false);
     }
@@ -220,7 +229,7 @@ function SignupForm() {
                 </Label>
               </div>
               <div className="flex justify-center">
-                <ReCaptcha onChange={setRecaptchaToken} />
+                <ReCaptcha onChange={setRecaptchaToken} onReset={setRecaptchaReset} />
               </div>
               <Button
                 type="submit"
