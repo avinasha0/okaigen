@@ -8,7 +8,7 @@ datasource db {
 }
 
 model account {
-  id                String  @id
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -27,7 +27,7 @@ model account {
 }
 
 model accountmember {
-  id                                      String   @id
+  id                                      String   @id @default(cuid())
   accountOwnerId                          String
   memberUserId                            String
   role                                    String   @default("member")
@@ -41,7 +41,7 @@ model accountmember {
 }
 
 model apikey {
-  id         String    @id
+  id         String    @id @default(cuid())
   userId     String
   name       String    @db.VarChar(255)
   keyPrefix  String    @db.VarChar(20)
@@ -55,7 +55,7 @@ model apikey {
 }
 
 model bot {
-  id                   String     @id
+  id                   String     @id @default(cuid())
   name                 String
   userId               String
   greetingMessage      String     @default("Hi! How can I help you today?") @db.VarChar(500)
@@ -80,7 +80,7 @@ model bot {
 }
 
 model chat {
-  id           String        @id
+  id           String        @id @default(cuid())
   botId        String
   visitorId    String?
   visitorEmail String?
@@ -98,7 +98,7 @@ model chat {
 }
 
 model chatmessage {
-  id        String   @id
+  id        String   @id @default(cuid())
   chatId    String
   role      String
   content   String   @db.LongText
@@ -110,7 +110,7 @@ model chatmessage {
 }
 
 model chunk {
-  id         String     @id
+  id         String     @id @default(cuid())
   botId      String
   sourceId   String
   content    String     @db.LongText
@@ -126,7 +126,7 @@ model chunk {
 }
 
 model contactsubmission {
-  id        String   @id
+  id        String   @id @default(cuid())
   name      String   @db.VarChar(255)
   email     String   @db.VarChar(255)
   subject   String   @db.VarChar(500)
@@ -139,7 +139,7 @@ model contactsubmission {
 }
 
 model embedding {
-  id        String   @id
+  id        String   @id @default(cuid())
   chunkId   String   @unique(map: "Embedding_chunkId_key")
   botId     String
   vector    String   @db.LongText
@@ -150,7 +150,7 @@ model embedding {
 }
 
 model lead {
-  id        String   @id
+  id        String   @id @default(cuid())
   botId     String
   name      String?
   email     String
@@ -168,7 +168,7 @@ model lead {
 }
 
 model plan {
-  id                    String     @id
+  id                    String     @id @default(cuid())
   name                  String
   dailyLimit            Int        @default(100)
   botLimit              Int        @default(3)
@@ -188,7 +188,7 @@ model plan {
 }
 
 model session {
-  id           String   @id
+  id           String   @id @default(cuid())
   sessionToken String   @unique(map: "Session_sessionToken_key")
   userId       String
   expires      DateTime
@@ -198,7 +198,7 @@ model session {
 }
 
 model source {
-  id              String    @id
+  id              String    @id @default(cuid())
   botId           String
   type            String
   url             String?   @db.Text
@@ -218,7 +218,7 @@ model source {
 }
 
 model teaminvitation {
-  id             String   @id
+  id             String   @id @default(cuid())
   accountOwnerId String
   email          String
   role           String   @default("member")
@@ -232,7 +232,7 @@ model teaminvitation {
 }
 
 model usagelog {
-  id        String   @id
+  id        String   @id @default(cuid())
   botId     String
   type      String
   count     Int      @default(1)
@@ -246,7 +246,7 @@ model usagelog {
 }
 
 model user {
-  id                                               String           @id
+  id                                               String           @id @default(cuid())
   email                                            String           @unique(map: "User_email_key")
   emailVerified                                    DateTime?
   name                                             String?
@@ -269,7 +269,7 @@ model user {
 }
 
 model userplan {
-  id                     String    @id
+  id                     String    @id @default(cuid())
   userId                 String    @unique(map: "UserPlan_userId_key")
   planId                 String
   startsAt               DateTime  @default(now())
@@ -296,7 +296,7 @@ model verificationtoken {
 }
 
 model webhook {
-  id          String   @id
+  id          String   @id @default(cuid())
   userId      String
   url         String   @db.Text
   secret      String   @db.VarChar(64)
