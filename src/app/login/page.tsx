@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,6 +19,11 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
+
+  // Prefetch dashboard so redirect after login is faster
+  useEffect(() => {
+    router.prefetch(callbackUrl);
+  }, [callbackUrl, router]);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -50,7 +55,7 @@ function LoginForm() {
         setLoading(false);
         return;
       }
-      router.push(callbackUrl);
+      router.replace(callbackUrl);
       router.refresh();
     } catch {
       setError("Something went wrong");

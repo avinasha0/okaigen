@@ -30,6 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          select: { id: true, email: true, name: true, image: true, emailVerified: true, password: true },
         });
 
         if (!user?.password) return null;
@@ -46,6 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image,
           emailVerified: user.emailVerified,
+          hasPassword: true,
         };
       },
     }),
@@ -63,13 +65,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        const u = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { emailVerified: true, password: true },
-        });
-        token.emailVerified = u?.emailVerified?.toISOString() ?? null;
-        // Track if user has password (email/password auth) vs OAuth
-        token.hasPassword = !!u?.password;
+        const u = user as { emailVerified?: Date | null; hasPassword?: boolean };
+        if (account?.provider === "credentials") {
+          token.emailVerified = u.emailVerified?.toISOString() ?? null;
+          token.hasPassword = true;
+        } else {
+          token.emailVerified = u.emailVerified?.toISOString() ?? new Date().toISOString();
+          token.hasPassword = false;
+        }
       }
       return token;
     },
