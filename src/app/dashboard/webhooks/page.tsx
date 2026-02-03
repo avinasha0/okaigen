@@ -7,8 +7,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,8 +57,7 @@ export default function WebhooksPage() {
       const res = await fetch("/api/webhooks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim(), events, description: description.trim() || undefined }),
-      });
+        body: JSON.stringify({ url: url.trim(), events, description: description.trim() || undefined })});
       const data = await res.json();
       if (!res.ok) {
         alert(data.error ?? "Failed to create webhook");

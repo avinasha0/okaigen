@@ -3,8 +3,7 @@ import { generateWithAI } from "@/lib/ai-generate";
 import { z } from "zod";
 
 const schema = z.object({
-  conversations: z.string().min(1, "Conversation data is required"),
-});
+  conversations: z.string().min(1, "Conversation data is required")});
 
 export async function POST(req: Request) {
   try {

@@ -12,8 +12,7 @@ export function BillingPortalButton() {
     setError(null);
     try {
       const res = await fetch("/api/stripe/create-portal-session", {
-        method: "POST",
-      });
+        method: "POST"});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Something went wrong");

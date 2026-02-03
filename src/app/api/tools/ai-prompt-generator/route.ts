@@ -5,16 +5,14 @@ import { z } from "zod";
 const schema = z.object({
   topic: z.string().min(1, "Topic is required"),
   purpose: z.string().optional(),
-  framework: z.enum(["APE", "RACE", "CREATE", "SPARK", "general"]).optional().default("general"),
-});
+  framework: z.enum(["APE", "RACE", "CREATE", "SPARK", "general"]).optional().default("general")});
 
 const FRAMEWORKS: Record<string, string> = {
   APE: "Action-Result-Purpose: Start with the desired action, state the expected result, then the purpose.",
   RACE: "Role-Action-Context-Expectation: Define your role, the action, context, and expected output.",
   CREATE: "Context-Request-Examples-Adaptations-Tone-Expand: Comprehensive prompt structure.",
   SPARK: "Situation-Problem-Aspiration-Result-Kudos: Story-driven prompt framework.",
-  general: "Clear, specific instructions that any AI can follow effectively.",
-};
+  general: "Clear, specific instructions that any AI can follow effectively."};
 
 export async function POST(req: Request) {
   try {

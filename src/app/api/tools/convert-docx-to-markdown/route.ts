@@ -28,7 +28,7 @@ function extractTextFromDocxXml(xml: string): string {
     for (const m of matches) parts.push(unescape(m[1] || ""));
     lines.push(parts.join(""));
   }
-  return lines.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
+  return lines.join("\n\n").replace(/\n{3}/g, "\n\n").trim();
 }
 
 async function fallbackExtractText(buffer: Buffer): Promise<string> {
@@ -51,8 +51,7 @@ export async function POST(req: Request) {
     const ext = file.name.toLowerCase();
     if (!ext.endsWith(".docx") && !ext.endsWith(".doc")) {
       return NextResponse.json({
-        error: "Please upload a Word document (.doc or .docx).",
-      }, { status: 400 });
+        error: "Please upload a Word document (.doc or .docx)."}, { status: 400 });
     }
 
     if (file.size > MAX_SIZE) {
@@ -69,20 +68,17 @@ export async function POST(req: Request) {
         const markdown = textToMarkdown(body || "");
         return NextResponse.json({
           markdown,
-          filename: file.name.replace(/\.doc$/i, "") + ".md",
-        });
+          filename: file.name.replace(/\.doc$/i, "") + ".md"});
       } catch (docErr) {
         console.error("[convert-docx-to-markdown] .doc parse error:", docErr);
         return NextResponse.json({
-          error: "Could not read this .doc file. Try opening it in Word and saving as .docx, then upload again.",
-        }, { status: 400 });
+          error: "Could not read this .doc file. Try opening it in Word and saving as .docx, then upload again."}, { status: 400 });
       }
     }
 
     if (!isDocxFormat(buffer)) {
       return NextResponse.json({
-        error: "Could not recognize this file as a Word document. Please ensure it's a valid .docx file.",
-      }, { status: 400 });
+        error: "Could not recognize this file as a Word document. Please ensure it's a valid .docx file."}, { status: 400 });
     }
 
     let html: string;
@@ -97,12 +93,10 @@ export async function POST(req: Request) {
           const markdown = textToMarkdown(plainText);
           return NextResponse.json({
             markdown,
-            filename: file.name.replace(/\.docx$/i, "") + ".md",
-          });
+            filename: file.name.replace(/\.docx$/i, "") + ".md"});
         } catch (fallbackErr) {
           return NextResponse.json({
-            error: "Could not parse this DOCX. The file may be corrupted or in an unsupported format. Try re-saving it as .docx in Word or Google Docs.",
-          }, { status: 400 });
+            error: "Could not parse this DOCX. The file may be corrupted or in an unsupported format. Try re-saving it as .docx in Word or Google Docs."}, { status: 400 });
         }
       }
       throw mammothErr;
@@ -113,8 +107,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       markdown,
-      filename: file.name.replace(/\.docx$/i, "") + ".md",
-    });
+      filename: file.name.replace(/\.docx$/i, "") + ".md"});
   } catch (err) {
     console.error("[convert-docx-to-markdown]", err);
     return NextResponse.json(

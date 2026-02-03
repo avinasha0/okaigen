@@ -9,8 +9,7 @@ import { generateId } from "@/lib/utils";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url",
-};
+  "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url"};
 
 function jsonWithCors(body: object, init?: ResponseInit) {
   const res = NextResponse.json(body, init);
@@ -57,22 +56,19 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      bot = await prisma.bot.findFirst({
+      bot = await prisma.Bot.findFirst({
         where: {
           userId: ownerId,
-          ...(requestedBotId.startsWith("atlas_") ? { publicKey: requestedBotId } : { id: requestedBotId }),
-        },
-        include: { user: true },
-      }) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
+          ...(requestedBotId.startsWith("atlas_") ? { publicKey: requestedBotId } : { id: requestedBotId })},
+        include: { user: true }}) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
     } else {
       const botKey = widgetBotKey || bodyBotId;
       if (botKey) {
-        bot = await prisma.bot.findFirst({
+        bot = await prisma.Bot.findFirst({
           where: botKey.startsWith("atlas_")
             ? { publicKey: botKey }
             : { id: botKey },
-          include: { user: true },
-        }) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
+          include: { user: true }}) as { id: string; userId: string; leadCaptureTrigger: string; confidenceThreshold: number } | null;
       }
     }
 
@@ -90,8 +86,7 @@ export async function POST(req: Request) {
           error: "Daily message limit reached. Please upgrade your plan to continue.", 
           quotaExceeded: true,
           usedMessages: planUsage.usedMessages,
-          totalMessages: planUsage.totalMessages,
-        },
+          totalMessages: planUsage.totalMessages},
         { status: 402 }
       );
     }
@@ -103,21 +98,16 @@ export async function POST(req: Request) {
 
     let chat;
     if (chatId) {
-      chat = await prisma.chat.findFirst({
-        where: { id: chatId, botId: bot.id },
-      });
+      chat = await prisma.Chat.findFirst({
+        where: { id: chatId, botId: bot.id }});
     }
 
     if (!chat) {
-      chat = await prisma.chat.create({
-        data: {
-          id: generateId(),
-          botId: bot.id,
+      chat = await prisma.Chat.create({
+        data: {botId: bot.id,
           visitorId: req.headers.get("x-visitor-id") || undefined,
           pageUrl: req.headers.get("x-page-url") || undefined,
-          updatedAt: new Date(),
-        },
-      });
+          updatedAt: new Date()}});
     }
 
     // Optimization: Parallelize message history fetch and user message creation
@@ -125,7 +115,7 @@ export async function POST(req: Request) {
     // Also optimize: only fetch last 10 messages (we only use 10 anyway) and use select to reduce data transfer
     const [prevMessagesResult, userMessage] = await Promise.all([
       chatId 
-        ? prisma.chatmessage.findMany({
+        ? prisma.ChatMessage.findMany({
             where: { chatId: chat.id },
             orderBy: { createdAt: "desc" }, // Get most recent first
             take: 10, // Reduced from 20 since we only use 10
@@ -133,18 +123,12 @@ export async function POST(req: Request) {
               id: true,
               role: true,
               content: true,
-              createdAt: true,
-            },
-          })
+              createdAt: true}})
         : Promise.resolve([]),
-      prisma.chatmessage.create({
-        data: {
-          id: generateId(),
-          chatId: chat.id,
+      prisma.ChatMessage.create({
+        data: {chatId: chat.id,
           role: "user",
-          content: sanitized,
-        },
-      }),
+          content: sanitized}}),
     ]);
 
     const msgHistory = history || [];
@@ -191,18 +175,13 @@ export async function POST(req: Request) {
             
             // Save to database
             await Promise.all([
-              prisma.chatmessage.create({
-                data: {
-                  id: generateId(),
-                  chatId: chat.id,
+              prisma.ChatMessage.create({
+                data: {chatId: chat.id,
                   role: "assistant",
                   content: fullResponse,
-                  sources: sources.length ? JSON.stringify(sources) : null,
-                },
-              }),
-              prisma.usagelog.create({
-                data: { id: generateId(), botId: bot.id, type: "message", count: 1 },
-              }),
+                  sources: sources.length ? JSON.stringify(sources) : null}}),
+              prisma.UsageLog.create({
+                data: {botId: bot.id, type: "message", count: 1 }}),
             ]);
 
             // Trigger webhooks (fire-and-forget)
@@ -213,8 +192,7 @@ export async function POST(req: Request) {
               userMessage: sanitized,
               assistantResponse: fullResponse,
               sources: sources.length ? sources : undefined,
-              confidence,
-            }).catch(() => {});
+              confidence}).catch(() => {});
 
             const shouldCaptureLead =
               bot.leadCaptureTrigger === "always" ||
@@ -234,17 +212,14 @@ export async function POST(req: Request) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Streaming failed" })}\n\n`));
             controller.close();
           }
-        },
-      });
+        }});
 
       return new Response(stream, {
         headers: {
           ...CORS_HEADERS,
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-        },
-      });
+          "Connection": "keep-alive"}});
     }
 
     // Non-streaming response (original behavior)
@@ -257,18 +232,13 @@ export async function POST(req: Request) {
     const { response, sources, confidence } = await responsePromise;
 
     await Promise.all([
-      prisma.chatmessage.create({
-        data: {
-          id: generateId(),
-          chatId: chat.id,
+      prisma.ChatMessage.create({
+        data: {chatId: chat.id,
           role: "assistant",
           content: response,
-          sources: sources.length ? JSON.stringify(sources) : null,
-        },
-      }),
-      prisma.usagelog.create({
-        data: { botId: bot.id, type: "message", count: 1 },
-      }),
+          sources: sources.length ? JSON.stringify(sources) : null}}),
+      prisma.UsageLog.create({
+        data: { botId: bot.id, type: "message", count: 1 }}),
     ]);
 
     const { triggerWebhooks } = await import("@/lib/webhooks");
@@ -278,8 +248,7 @@ export async function POST(req: Request) {
       userMessage: sanitized,
       assistantResponse: response,
       sources: sources.length ? sources : undefined,
-      confidence,
-    }).catch(() => {});
+      confidence}).catch(() => {});
 
     const shouldCaptureLead =
       bot.leadCaptureTrigger === "always" ||
@@ -290,8 +259,7 @@ export async function POST(req: Request) {
       sources,
       chatId: chat.id,
       confidence,
-      shouldCaptureLead,
-    });
+      shouldCaptureLead});
   } catch (error: unknown) {
     console.error("Chat API error:", error);
     let message = "Failed to process message";

@@ -5,8 +5,7 @@ export const metadata: Metadata = createMetadata({
   title: "Try AI Chatbot Demo | Live Chat with SiteBotGPT",
   description: "Try our AI chatbot demo live. Ask questions about SiteBotGPT, features, pricing & embedding. No signup. See how it works in seconds.",
   path: "/demo",
-  keywords: ["AI chatbot demo", "chatbot demo", "try chatbot", "live chatbot"],
-});
+  keywords: ["AI chatbot demo", "chatbot demo", "try chatbot", "live chatbot"]});
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return children;

@@ -37,8 +37,7 @@ export function CelebrationConfetti() {
     delay: randomBetween(0, 0.8),
     duration: randomBetween(2, 3.5),
     shape: Math.random() > 0.5 ? "circle" : "square",
-    tx: randomBetween(-80, 80),
-  }));
+    tx: randomBetween(-80, 80)}));
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[9998]" aria-hidden>
@@ -54,8 +53,7 @@ export function CelebrationConfetti() {
             background: p.color,
             borderRadius: p.shape === "circle" ? "50%" : "2px",
             animation: `confetti-fly ${p.duration}s ease-out ${p.delay}s forwards`,
-            "--confetti-tx": `${p.tx}px`,
-          } as React.CSSProperties}
+            "--confetti-tx": `${p.tx}px`} as React.CSSProperties}
         />
       ))}
     </div>

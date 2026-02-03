@@ -5,8 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-  recaptchaToken: z.string().nullable().optional(),
-});
+  recaptchaToken: z.string().nullable().optional()});
 
 /**
  * Custom login API route with reCAPTCHA verification
@@ -32,10 +31,9 @@ export async function POST(req: Request) {
       const { prisma } = await import("@/lib/db");
       const bcrypt = await import("bcryptjs");
       
-      user = await prisma.user.findUnique({
+      user = await prisma.User.findUnique({
         where: { email },
-        select: { id: true, email: true, password: true },
-      });
+        select: { id: true, email: true, password: true }});
 
       if (!user?.password) {
         return NextResponse.json(
@@ -58,8 +56,7 @@ export async function POST(req: Request) {
           error: "Database connection error",
           ...(process.env.NODE_ENV === "development" && dbError instanceof Error
             ? { details: dbError.message }
-            : {}),
-        },
+            : {})},
         { status: 500 }
       );
     }
@@ -85,8 +82,7 @@ export async function POST(req: Request) {
         // Include error details in development
         ...(process.env.NODE_ENV === "development" && error instanceof Error
           ? { details: error.message }
-          : {}),
-      },
+          : {})},
       { status: 500 }
     );
   }

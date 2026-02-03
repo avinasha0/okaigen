@@ -59,5 +59,5 @@ export function textToMarkdown(text: string): string {
     i++;
   }
 
-  return result.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return result.join("\n").replace(/\n{3}/g, "\n\n").trim();
 }

@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { PLAN_NAMES, getPlanLimitsForDb, type PlanName } from "../src/lib/plans-config";
-import { generateId } from "../src/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -8,40 +7,34 @@ const PRICES: Record<PlanName, number> = {
   Starter: 0,
   Growth: 49,
   Scale: 149,
-  Enterprise: 999,
-};
+  Enterprise: 999};
 
 async function main() {
-  const existingFree = await prisma.plan.findFirst({ where: { name: "Free" } });
+  const existingFree = await prisma.Plan.findFirst({ where: { name: "Free" } });
   if (existingFree) {
-    await prisma.plan.update({
+    await prisma.Plan.update({
       where: { id: existingFree.id },
-      data: { name: "Starter", dailyLimit: 10, botLimit: 1 },
-    });
+      data: { name: "Starter", dailyLimit: 10, botLimit: 1 }});
     console.log("Migrated plan Free → Starter");
   }
 
-  const existingPro = await prisma.plan.findFirst({ where: { name: "Pro" } });
+  const existingPro = await prisma.Plan.findFirst({ where: { name: "Pro" } });
   if (existingPro) {
-    await prisma.plan.update({
+    await prisma.Plan.update({
       where: { id: existingPro.id },
-      data: { name: "Growth", dailyLimit: 70, botLimit: 3 },
-    });
+      data: { name: "Growth", dailyLimit: 70, botLimit: 3 }});
     console.log("Migrated plan Pro → Growth");
   }
 
   const stripePriceIds: Record<string, { monthly?: string; yearly?: string }> = {
     Growth: { monthly: process.env.STRIPE_PRICE_GROWTH_MONTHLY, yearly: process.env.STRIPE_PRICE_GROWTH_YEARLY },
-    Scale: { monthly: process.env.STRIPE_PRICE_SCALE_MONTHLY, yearly: process.env.STRIPE_PRICE_SCALE_YEARLY },
-  };
+    Scale: { monthly: process.env.STRIPE_PRICE_SCALE_MONTHLY, yearly: process.env.STRIPE_PRICE_SCALE_YEARLY }};
   const razorpayPlanIds: Record<string, { monthly?: string; yearly?: string }> = {
     Growth: { monthly: process.env.RAZORPAY_PLAN_GROWTH_MONTHLY, yearly: process.env.RAZORPAY_PLAN_GROWTH_YEARLY },
-    Scale: { monthly: process.env.RAZORPAY_PLAN_SCALE_MONTHLY, yearly: process.env.RAZORPAY_PLAN_SCALE_YEARLY },
-  };
+    Scale: { monthly: process.env.RAZORPAY_PLAN_SCALE_MONTHLY, yearly: process.env.RAZORPAY_PLAN_SCALE_YEARLY }};
   const paypalPlanIds: Record<string, { monthly?: string; yearly?: string }> = {
     Growth: { monthly: process.env.PAYPAL_PLAN_GROWTH_MONTHLY, yearly: process.env.PAYPAL_PLAN_GROWTH_YEARLY },
-    Scale: { monthly: process.env.PAYPAL_PLAN_SCALE_MONTHLY, yearly: process.env.PAYPAL_PLAN_SCALE_YEARLY },
-  };
+    Scale: { monthly: process.env.PAYPAL_PLAN_SCALE_MONTHLY, yearly: process.env.PAYPAL_PLAN_SCALE_YEARLY }};
 
   for (const name of PLAN_NAMES) {
     const limits = getPlanLimitsForDb(name);
@@ -50,7 +43,7 @@ async function main() {
     const razorpayIds = razorpayPlanIds[name as keyof typeof razorpayPlanIds];
     const paypalIds = paypalPlanIds[name as keyof typeof paypalPlanIds];
 
-    const existing = await prisma.plan.findFirst({ where: { name } });
+    const existing = await prisma.Plan.findFirst({ where: { name } });
     const planData = {
       dailyLimit: limits.dailyLimit,
       botLimit: limits.botLimit,
@@ -63,23 +56,17 @@ async function main() {
       razorpayPlanIdYearly: razorpayIds?.yearly || null,
       paypalPlanIdMonthly: paypalIds?.monthly || null,
       paypalPlanIdYearly: paypalIds?.yearly || null,
-      isActive: true,
-    };
+      isActive: true};
     if (existing) {
-      await prisma.plan.update({
+      await prisma.Plan.update({
         where: { id: existing.id },
-        data: planData,
-      });
+        data: planData});
       console.log(`Plan ${name} updated`);
     } else {
-      await prisma.plan.create({
-        data: { 
-          id: generateId(),
-          name, 
+      await prisma.Plan.create({
+        data: {name, 
           ...planData,
-          updatedAt: new Date(),
-        },
-      });
+          updatedAt: new Date()}});
       console.log(`Plan ${name} created`);
     }
   }

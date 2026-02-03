@@ -7,8 +7,7 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const LEAD_STATUSES = ["new", "contacted", "qualified", "converted", "lost"] as const;
@@ -44,8 +43,7 @@ export default function LeadsPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ status }),
-    });
+      body: JSON.stringify({ status })});
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       fetch(`/api/bots/${botId}/leads`).then((r) => r.json()).then(setLeads).catch(console.error);

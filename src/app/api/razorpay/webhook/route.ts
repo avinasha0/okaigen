@@ -49,15 +49,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
-      const plan = await prisma.plan.findFirst({
+      const plan = await prisma.Plan.findFirst({
         where: {
           isActive: true,
           OR: [
             { razorpayPlanIdMonthly: planId },
             { razorpayPlanIdYearly: planId },
-          ],
-        },
-      });
+          ]}});
       if (!plan) {
         console.warn("Razorpay webhook: no plan for plan_id", planId);
         return NextResponse.json({ received: true });
@@ -69,8 +67,7 @@ export async function POST(request: Request) {
 
       await assignPlanToUser(userId, plan.name, {
         currentPeriodEnd,
-        razorpaySubscriptionId: subscriptionId,
-      });
+        razorpaySubscriptionId: subscriptionId});
     } else if (event === "subscription.cancelled" || event === "subscription.completed" || event === "subscription.expired") {
       const subEntity =
         payload.payload?.subscription?.entity ??

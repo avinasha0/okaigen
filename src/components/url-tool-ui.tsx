@@ -35,8 +35,7 @@ export function UrlToolUI({ apiPath, title = "Website URL", placeholder = "https
       const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+        body: JSON.stringify(body)});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
       setResult(data.result || data.xml || JSON.stringify(data));

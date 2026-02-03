@@ -4,8 +4,7 @@ import { z } from "zod";
 
 const schema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
-  framework: z.enum(["APE", "RACE", "CREATE", "SPARK", "general"]).optional().default("general"),
-});
+  framework: z.enum(["APE", "RACE", "CREATE", "SPARK", "general"]).optional().default("general")});
 
 export async function POST(req: Request) {
   try {

@@ -4,8 +4,7 @@ import { z } from "zod";
 
 const schema = z.object({
   email: z.string().min(1, "Email content is required"),
-  tone: z.enum(["professional", "friendly", "formal", "concise"]).optional().default("professional"),
-});
+  tone: z.enum(["professional", "friendly", "formal", "concise"]).optional().default("professional")});
 
 export async function POST(req: Request) {
   try {

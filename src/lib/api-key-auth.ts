@@ -23,8 +23,7 @@ export async function getOwnerIdFromApiKey(req: Request): Promise<string | null>
   const hash = hashApiKey(key);
   const apiKey = await prisma.apiKey.findFirst({
     where: { keyHash: hash },
-    select: { userId: true, id: true },
-  });
+    select: { userId: true, id: true }});
   if (!apiKey) return null;
 
   const planUsage = await getPlanUsage(apiKey.userId);
@@ -33,8 +32,7 @@ export async function getOwnerIdFromApiKey(req: Request): Promise<string | null>
 
   await prisma.apiKey.update({
     where: { id: apiKey.id },
-    data: { lastUsedAt: new Date() },
-  }).catch(() => {});
+    data: { lastUsedAt: new Date() }}).catch(() => {});
 
   return apiKey.userId;
 }

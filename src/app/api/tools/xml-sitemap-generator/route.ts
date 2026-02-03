@@ -4,8 +4,7 @@ import * as cheerio from "cheerio";
 
 const schema = z.object({
   url: z.string().min(1, "URL is required"),
-  maxPages: z.number().min(1).max(500).optional().default(50),
-});
+  maxPages: z.number().min(1).max(500).optional().default(50)});
 
 export async function POST(req: Request) {
   try {
@@ -34,8 +33,7 @@ export async function POST(req: Request) {
       try {
         const res = await fetch(url, {
           headers: { "User-Agent": "Mozilla/5.0 (compatible; SitemapGenerator/1.0)" },
-          signal: AbortSignal.timeout(8000),
-        });
+          signal: AbortSignal.timeout(8000)});
         if (!res.ok) continue;
         const $ = cheerio.load(await res.text());
         $("a[href]").each((_, el) => {
@@ -61,8 +59,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       result: "```xml\n" + xml + "\n```",
       xml,
-      urlCount: urls.length,
-    });
+      urlCount: urls.length});
   } catch (err) {
     console.error("[xml-sitemap-generator]", err);
     return NextResponse.json({ error: err instanceof Error ? err.message : "Failed" }, { status: 500 });

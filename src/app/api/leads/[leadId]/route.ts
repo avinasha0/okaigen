@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const statusSchema = z.object({
-  status: z.enum(["new", "contacted", "qualified", "converted", "lost"]),
-});
+  status: z.enum(["new", "contacted", "qualified", "converted", "lost"])});
 
 /** PATCH: Update lead status */
 export async function PATCH(
@@ -25,10 +24,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const lead = await prisma.lead.findUnique({
+    const lead = await prisma.Lead.findUnique({
       where: { id: leadId },
-      include: { bot: { select: { userId: true } } },
-    });
+      include: { bot: { select: { userId: true } } }});
 
     if (!lead || !lead.bot || lead.bot.userId !== session.user.id) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
@@ -38,9 +36,8 @@ export async function PATCH(
     await prisma.$executeRaw`
       UPDATE Lead SET status = ${status} WHERE id = ${leadId}
     `;
-    const updated = await prisma.lead.findUniqueOrThrow({
-      where: { id: leadId },
-    });
+    const updated = await prisma.Lead.findUniqueOrThrow({
+      where: { id: leadId }});
 
     return NextResponse.json(updated);
   } catch (err) {

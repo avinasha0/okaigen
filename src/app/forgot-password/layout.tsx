@@ -5,8 +5,7 @@ export const metadata: Metadata = createMetadata({
   title: "Forgot Password",
   description: "Reset your SiteBotGPT account password.",
   path: "/forgot-password",
-  noIndex: true,
-});
+  noIndex: true});
 
 export default function ForgotPasswordLayout({ children }: { children: React.ReactNode }) {
   return children;

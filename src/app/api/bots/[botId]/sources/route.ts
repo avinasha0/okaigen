@@ -41,22 +41,17 @@ export async function POST(
     
     console.log(`[sources] Creating URL source: botId=${botId}, url=${normalizedUrl}, title=${title}`);
     
-    const source = await prisma.source.create({
-      data: {
-        id: generateId(),
-        botId,
+    const source = await prisma.Source.create({
+      data: {botId,
         type: "url",
         url: normalizedUrl,
         title,
         status: "pending",
-        updatedAt: now,
-      },
-    });
+        updatedAt: now}});
     
     console.log(`[sources] URL source created: sourceId=${source.id}`);
     return NextResponse.json({
-      sources: [{ id: source.id, title: source.title }],
-    });
+      sources: [{ id: source.id, title: source.title }]});
   }
 
   const formData = await req.formData();
@@ -107,17 +102,13 @@ export async function POST(
     const documentUrl = `${baseUrl}/uploads/${botId}/${safeName}`;
     const now = new Date();
 
-    const source = await prisma.source.create({
-      data: {
-        id: generateId(),
-        botId,
+    const source = await prisma.Source.create({
+      data: {botId,
         type: "document",
         documentUrl,
         title: file.name,
         status: "pending",
-        updatedAt: now,
-      },
-    });
+        updatedAt: now}});
 
     created.push({ id: source.id, title: file.name });
   }

@@ -201,18 +201,15 @@ export default function DemoPage() {
                 {
                   title: "Trained on our site",
                   desc: "The bot answers from our actual content, not generic knowledge.",
-                  icon: "📚",
-                },
+                  icon: "📚"},
                 {
                   title: "Instant responses",
                   desc: "No waiting. Answers stream in as soon as you hit send.",
-                  icon: "⚡",
-                },
+                  icon: "⚡"},
                 {
                   title: "Your content, your way",
                   desc: "Add your website or docs. Your bot, your brand.",
-                  icon: "✨",
-                },
+                  icon: "✨"},
               ].map((f) => (
                 <div
                   key={f.title}

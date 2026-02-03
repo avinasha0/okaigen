@@ -7,8 +7,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { SettingsProfileForm } from "@/components/settings-profile-form";
 import { SettingsPasswordForm } from "@/components/settings-password-form";
 import { BillingPortalButton } from "@/components/billing-portal-button";
@@ -18,10 +17,9 @@ export default async function SettingsPage() {
   const session = await auth();
   const planUsage = session?.user?.id ? await getPlanUsage(session.user.id) : null;
   const userRecord = session?.user?.id
-    ? await prisma.user.findUnique({
+    ? await prisma.User.findUnique({
         where: { id: session.user.id },
-        select: { password: true },
-      })
+        select: { password: true }})
     : null;
   const hasPassword = !!userRecord?.password;
 

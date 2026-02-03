@@ -4,8 +4,7 @@ import { z } from "zod";
 
 const schema = z.object({
   question: z.string().min(1, "Question is required"),
-  context: z.string().optional(),
-});
+  context: z.string().optional()});
 
 export async function POST(req: Request) {
   try {

@@ -10,10 +10,7 @@ export const prisma =
     // Optimization: Connection pool settings for better performance
     datasources: {
       db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  });
+        url: process.env.DATABASE_URL}}});
 
 // Optimization: Enable connection pooling hints via query engine
 // Prisma automatically handles connection pooling, but we can optimize queries

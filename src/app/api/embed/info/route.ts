@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url",
-};
+  "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url"};
 
 function jsonWithCors(body: object, init?: ResponseInit) {
   const res = NextResponse.json(body, init);
@@ -21,12 +20,11 @@ export async function GET(req: Request) {
     return jsonWithCors({ error: "botId required" }, { status: 400 });
   }
 
-  const bot = await prisma.bot.findFirst({
+  const bot = await prisma.Bot.findFirst({
     where: botId.startsWith("atlas_")
       ? { publicKey: botId }
       : { id: botId },
-    select: { greetingMessage: true, quickPrompts: true, removeBranding: true },
-  });
+    select: { greetingMessage: true, quickPrompts: true, removeBranding: true }});
 
   if (!bot) {
     return jsonWithCors({ error: "Bot not found" }, { status: 404 });
@@ -52,6 +50,5 @@ export async function GET(req: Request) {
   return jsonWithCors({
     greeting: bot.greetingMessage,
     quickPrompts: prompts,
-    hideBranding: bot.removeBranding === true,
-  });
+    hideBranding: bot.removeBranding === true});
 }

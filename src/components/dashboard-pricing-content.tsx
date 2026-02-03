@@ -8,8 +8,7 @@ import { CheckoutButton } from "@/components/checkout-button";
 export function DashboardPricingContent({
   currentPlanName,
   success,
-  canceled,
-}: {
+  canceled}: {
   currentPlanName: string | null;
   success?: boolean;
   canceled?: boolean;

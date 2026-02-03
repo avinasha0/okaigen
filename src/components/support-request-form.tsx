@@ -9,8 +9,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 
 function generateTicketNumber(): string {
   const date = new Date();
@@ -55,9 +54,7 @@ export function SupportRequestForm() {
           name: (name && name.trim()) || "Support User",
           email: email.trim(),
           subject: `${subject} [${ticketNumber}]`,
-          message: `Ticket: ${ticketNumber}\n\n${(message.trim() || "No additional message.").slice(0, 10000)}`,
-        }),
-      });
+          message: `Ticket: ${ticketNumber}\n\n${(message.trim() || "No additional message.").slice(0, 10000)}`})});
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Please try again.");

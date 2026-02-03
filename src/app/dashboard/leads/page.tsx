@@ -6,8 +6,7 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePlan } from "@/contexts/plan-context";
 
@@ -53,8 +52,7 @@ export default function LeadsPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ status }),
-    });
+      body: JSON.stringify({ status })});
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       fetch("/api/leads?limit=100").then((r) => r.json()).then((data: { leads: Lead[] }) => setLeads(data.leads ?? [])).catch(console.error);

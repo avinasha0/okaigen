@@ -22,8 +22,7 @@ export async function POST(req: Request) {
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; SiteBotGPT/1.0)" },
       redirect: "follow",
-      signal: AbortSignal.timeout(15000),
-    });
+      signal: AbortSignal.timeout(15000)});
 
     if (!res.ok) {
       return NextResponse.json({ error: `Failed to fetch Notion page: ${res.status}. Ensure the page is published to the web.` }, { status: 400 });
@@ -41,8 +40,7 @@ export async function POST(req: Request) {
 
     const title = $("title").text() || "Notion Page";
     return NextResponse.json({
-      markdown: `# ${title}\n\nSource: ${url}\n\n---\n\n${markdown}`,
-    });
+      markdown: `# ${title}\n\nSource: ${url}\n\n---\n\n${markdown}`});
   } catch (err) {
     console.error("[convert-notion-to-markdown]", err);
     return NextResponse.json(

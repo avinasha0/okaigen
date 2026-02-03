@@ -7,8 +7,7 @@ import { z } from "zod";
 const schema = z.object({
   token: z.string().min(1, "Reset link is invalid or expired"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  recaptchaToken: z.string().nullable().optional(),
-});
+  recaptchaToken: z.string().nullable().optional()});
 
 export async function POST(req: Request) {
   try {
@@ -18,13 +17,11 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const record = await prisma.verificationtoken.findFirst({
+    const record = await prisma.VerificationToken.findFirst({
       where: {
         identifier: { startsWith: "password-reset:" },
         token,
-        expires: { gt: new Date() },
-      },
-    });
+        expires: { gt: new Date() }}});
 
     if (!record) {
       return NextResponse.json(
@@ -34,9 +31,8 @@ export async function POST(req: Request) {
     }
 
     const email = record.identifier.replace(/^password-reset:/, "");
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.User.findUnique({
+      where: { email }});
 
     if (!user) {
       return NextResponse.json(
@@ -47,13 +43,11 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     await prisma.$transaction([
-      prisma.user.update({
+      prisma.User.update({
         where: { id: user.id },
-        data: { password: hashedPassword },
-      }),
-      prisma.verificationtoken.deleteMany({
-        where: { identifier: record.identifier },
-      }),
+        data: { password: hashedPassword }}),
+      prisma.VerificationToken.deleteMany({
+        where: { identifier: record.identifier }}),
     ]);
 
     return NextResponse.json({ success: true });

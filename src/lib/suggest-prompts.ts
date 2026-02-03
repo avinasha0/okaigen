@@ -5,12 +5,11 @@ import { openai, CHAT_MODEL } from "./openai";
 export async function suggestQuickPromptsFromContent(
   botId: string
 ): Promise<string[]> {
-  const chunks = await prisma.chunk.findMany({
+  const chunks = await prisma.Chunk.findMany({
     where: { botId },
     select: { content: true },
     take: 20,
-    orderBy: { createdAt: "asc" },
-  });
+    orderBy: { createdAt: "asc" }});
 
   if (chunks.length === 0) {
     return [
@@ -32,16 +31,13 @@ export async function suggestQuickPromptsFromContent(
       {
         role: "system",
         content:
-          "You generate 4-6 short questions that visitors would ask about this content. Each question should be 3-8 words. Output a JSON array of strings only, e.g. [\"Question 1\", \"Question 2\"]. No other text.",
-      },
+          "You generate 4-6 short questions that visitors would ask about this content. Each question should be 3-8 words. Output a JSON array of strings only, e.g. [\"Question 1\", \"Question 2\"]. No other text."},
       {
         role: "user",
-        content: `Based on this content, generate 4-6 questions visitors might ask:\n\n${sample}`,
-      },
+        content: `Based on this content, generate 4-6 questions visitors might ask:\n\n${sample}`},
     ],
     temperature: 0.5,
-    max_tokens: 300,
-  });
+    max_tokens: 300});
 
   const text = completion.choices[0]?.message?.content?.trim();
   if (!text) return getDefaults();

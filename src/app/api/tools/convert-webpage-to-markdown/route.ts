@@ -17,8 +17,7 @@ export async function POST(req: Request) {
 
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; SiteBotGPT/1.0)" },
-      signal: AbortSignal.timeout(15000),
-    });
+      signal: AbortSignal.timeout(15000)});
 
     if (!res.ok) {
       return NextResponse.json({ error: `Failed to fetch: ${res.status}` }, { status: 400 });
@@ -36,8 +35,7 @@ export async function POST(req: Request) {
 
     const title = $("title").text() || parsed.hostname;
     return NextResponse.json({
-      markdown: `# ${title}\n\nSource: ${url}\n\n---\n\n${markdown}`,
-    });
+      markdown: `# ${title}\n\nSource: ${url}\n\n---\n\n${markdown}`});
   } catch (err) {
     console.error("[convert-webpage-to-markdown]", err);
     return NextResponse.json(

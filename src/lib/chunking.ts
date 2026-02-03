@@ -2,8 +2,7 @@ import {
   estimateTokenCount,
   TARGET_CHUNK_TOKENS,
   MIN_CHUNK_TOKENS,
-  MAX_CHUNK_TOKENS,
-} from "./tokenizer";
+  MAX_CHUNK_TOKENS} from "./tokenizer";
 
 export interface ChunkMetadata {
   sourceUrl?: string;
@@ -46,8 +45,7 @@ export function chunkText(
       chunks.push({
         content: currentChunk.trim(),
         metadata,
-        tokenCount: currentTokens,
-      });
+        tokenCount: currentTokens});
       currentChunk = sentence + " ";
       currentTokens = sentenceTokens;
     } else {
@@ -60,8 +58,7 @@ export function chunkText(
     chunks.push({
       content: currentChunk.trim(),
       metadata,
-      tokenCount: currentTokens,
-    });
+      tokenCount: currentTokens});
   }
 
   return chunks;

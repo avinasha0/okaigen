@@ -13,8 +13,7 @@ export async function parsePdf(buffer: Buffer, documentName: string): Promise<Pa
     await parser.destroy();
     return {
       content: textResult.text,
-      metadata: { documentName },
-    };
+      metadata: { documentName }};
   } catch (e) {
     await parser.destroy();
     throw e;
@@ -25,15 +24,13 @@ export async function parseDocx(buffer: Buffer, documentName: string): Promise<P
   const result = await mammoth.extractRawText({ buffer });
   return {
     content: result.value,
-    metadata: { documentName },
-  };
+    metadata: { documentName }};
 }
 
 export async function parseText(content: string, documentName: string): Promise<ParsedDocument> {
   return {
     content,
-    metadata: { documentName },
-  };
+    metadata: { documentName }};
 }
 
 export async function parseDocument(

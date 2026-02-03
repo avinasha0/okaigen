@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model account {
+model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
@@ -20,27 +20,27 @@ model account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
 
   @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
   @@index([userId], map: "Account_userId_fkey")
 }
 
-model accountmember {
+model AccountMember {
   id                                      String   @id @default(cuid())
   accountOwnerId                          String
   memberUserId                            String
   role                                    String   @default("member")
   createdAt                               DateTime @default(now())
-  user_accountmember_accountOwnerIdTouser user     @relation("accountmember_accountOwnerIdTouser", fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "AccountMember_accountOwnerId_fkey")
-  user_accountmember_memberUserIdTouser   user     @relation("accountmember_memberUserIdTouser", fields: [memberUserId], references: [id], onDelete: Cascade, map: "AccountMember_memberUserId_fkey")
+  user_accountmember_accountOwnerIdTouser User     @relation("accountmember_accountOwnerIdTouser", fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "AccountMember_accountOwnerId_fkey")
+  user_accountmember_memberUserIdTouser   User     @relation("accountmember_memberUserIdTouser", fields: [memberUserId], references: [id], onDelete: Cascade, map: "AccountMember_memberUserId_fkey")
 
   @@unique([accountOwnerId, memberUserId], map: "AccountMember_accountOwnerId_memberUserId_key")
   @@index([accountOwnerId], map: "AccountMember_accountOwnerId_idx")
   @@index([memberUserId], map: "AccountMember_memberUserId_idx")
 }
 
-model apikey {
+model ApiKey {
   id         String    @id @default(cuid())
   userId     String
   name       String    @db.VarChar(255)
@@ -48,13 +48,13 @@ model apikey {
   keyHash    String    @db.VarChar(64)
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
-  user       user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "ApiKey_userId_fkey")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "ApiKey_userId_fkey")
 
   @@index([keyHash], map: "ApiKey_keyHash_idx")
   @@index([userId], map: "ApiKey_userId_idx")
 }
 
-model bot {
+model Bot {
   id                   String     @id @default(cuid())
   name                 String
   userId               String
@@ -68,18 +68,18 @@ model bot {
   updatedAt            DateTime
   quickPrompts         String?    @db.Text
   removeBranding       Boolean    @default(false)
-  user                 user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Bot_userId_fkey")
-  chat                 chat[]
-  chunk                chunk[]
-  lead                 lead[]
-  source               source[]
-  usagelog             usagelog[]
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Bot_userId_fkey")
+  chat                 Chat[]
+  chunk                Chunk[]
+  lead                 Lead[]
+  source               Source[]
+  usagelog             UsageLog[]
 
   @@index([publicKey], map: "Bot_publicKey_idx")
   @@index([userId], map: "Bot_userId_idx")
 }
 
-model chat {
+model Chat {
   id           String        @id @default(cuid())
   botId        String
   visitorId    String?
@@ -89,27 +89,27 @@ model chat {
   metadata     String?       @db.LongText
   createdAt    DateTime      @default(now())
   updatedAt    DateTime
-  bot          bot           @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chat_botId_fkey")
-  chatmessage  chatmessage[]
+  bot          Bot           @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chat_botId_fkey")
+  chatmessage  ChatMessage[]
 
   @@index([botId], map: "Chat_botId_idx")
   @@index([createdAt], map: "Chat_createdAt_idx")
   @@index([visitorId], map: "Chat_visitorId_idx")
 }
 
-model chatmessage {
+model ChatMessage {
   id        String   @id @default(cuid())
   chatId    String
   role      String
   content   String   @db.LongText
   sources   String?  @db.LongText
   createdAt DateTime @default(now())
-  chat      chat     @relation(fields: [chatId], references: [id], onDelete: Cascade, map: "ChatMessage_chatId_fkey")
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade, map: "ChatMessage_chatId_fkey")
 
   @@index([chatId], map: "ChatMessage_chatId_idx")
 }
 
-model chunk {
+model Chunk {
   id         String     @id @default(cuid())
   botId      String
   sourceId   String
@@ -117,15 +117,15 @@ model chunk {
   metadata   String?    @db.LongText
   tokenCount Int        @default(0)
   createdAt  DateTime   @default(now())
-  bot        bot        @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chunk_botId_fkey")
-  source     source     @relation(fields: [sourceId], references: [id], onDelete: Cascade, map: "Chunk_sourceId_fkey")
-  embedding  embedding?
+  bot        Bot        @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Chunk_botId_fkey")
+  source     Source     @relation(fields: [sourceId], references: [id], onDelete: Cascade, map: "Chunk_sourceId_fkey")
+  embedding  Embedding?
 
   @@index([botId], map: "Chunk_botId_idx")
   @@index([sourceId], map: "Chunk_sourceId_idx")
 }
 
-model contactsubmission {
+model ContactSubmission {
   id        String   @id @default(cuid())
   name      String   @db.VarChar(255)
   email     String   @db.VarChar(255)
@@ -138,18 +138,18 @@ model contactsubmission {
   @@index([status], map: "ContactSubmission_status_idx")
 }
 
-model embedding {
+model Embedding {
   id        String   @id @default(cuid())
   chunkId   String   @unique(map: "Embedding_chunkId_key")
   botId     String
   vector    String   @db.LongText
   createdAt DateTime @default(now())
-  chunk     chunk    @relation(fields: [chunkId], references: [id], onDelete: Cascade, map: "Embedding_chunkId_fkey")
+  chunk     Chunk    @relation(fields: [chunkId], references: [id], onDelete: Cascade, map: "Embedding_chunkId_fkey")
 
   @@index([botId], map: "Embedding_botId_idx")
 }
 
-model lead {
+model Lead {
   id        String   @id @default(cuid())
   botId     String
   name      String?
@@ -160,14 +160,14 @@ model lead {
   createdAt DateTime @default(now())
   phone     String?
   status    String   @default("new")
-  bot       bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Lead_botId_fkey")
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Lead_botId_fkey")
 
   @@index([botId], map: "Lead_botId_idx")
   @@index([email], map: "Lead_email_idx")
   @@index([status], map: "Lead_status_idx")
 }
 
-model plan {
+model Plan {
   id                    String     @id @default(cuid())
   name                  String
   dailyLimit            Int        @default(100)
@@ -184,20 +184,22 @@ model plan {
   razorpayPlanIdYearly  String?
   stripePriceIdMonthly  String?
   stripePriceIdYearly   String?
-  userplan              userplan[]
+  userplan              UserPlan[]
+
+  @@index([name], map: "Plan_name_idx")
 }
 
-model session {
+model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique(map: "Session_sessionToken_key")
   userId       String
   expires      DateTime
-  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
 
   @@index([userId], map: "Session_userId_fkey")
 }
 
-model source {
+model Source {
   id              String    @id @default(cuid())
   botId           String
   type            String
@@ -210,14 +212,14 @@ model source {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime
   lastRefreshedAt DateTime?
-  chunk           chunk[]
-  bot             bot       @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Source_botId_fkey")
+  chunk           Chunk[]
+  bot             Bot       @relation(fields: [botId], references: [id], onDelete: Cascade, map: "Source_botId_fkey")
 
   @@index([botId], map: "Source_botId_idx")
   @@index([status], map: "Source_status_idx")
 }
 
-model teaminvitation {
+model TeamInvitation {
   id             String   @id @default(cuid())
   accountOwnerId String
   email          String
@@ -225,27 +227,27 @@ model teaminvitation {
   token          String   @unique(map: "TeamInvitation_token_key")
   expiresAt      DateTime
   createdAt      DateTime @default(now())
-  user           user     @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "TeamInvitation_accountOwnerId_fkey")
+  user           User     @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade, map: "TeamInvitation_accountOwnerId_fkey")
 
   @@index([accountOwnerId], map: "TeamInvitation_accountOwnerId_idx")
   @@index([token], map: "TeamInvitation_token_idx")
 }
 
-model usagelog {
+model UsageLog {
   id        String   @id @default(cuid())
   botId     String
   type      String
   count     Int      @default(1)
   metadata  String?  @db.LongText
   createdAt DateTime @default(now())
-  bot       bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "UsageLog_botId_fkey")
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade, map: "UsageLog_botId_fkey")
 
   @@index([botId, createdAt], map: "UsageLog_botId_createdAt_idx")
   @@index([botId], map: "UsageLog_botId_idx")
   @@index([createdAt], map: "UsageLog_createdAt_idx")
 }
 
-model user {
+model User {
   id                                               String           @id @default(cuid())
   email                                            String           @unique(map: "User_email_key")
   emailVerified                                    DateTime?
@@ -257,18 +259,18 @@ model user {
   removeBrandingAddOn                              Boolean          @default(false)
   termsAcceptedAt                                  DateTime?
   stripeCustomerId                                 String?          @unique(map: "User_stripeCustomerId_key")
-  account                                          account[]
-  accountmember_accountmember_accountOwnerIdTouser accountmember[]  @relation("accountmember_accountOwnerIdTouser")
-  accountmember_accountmember_memberUserIdTouser   accountmember[]  @relation("accountmember_memberUserIdTouser")
-  apikey                                           apikey[]
-  bot                                              bot[]
-  session                                          session[]
-  teaminvitation                                   teaminvitation[]
-  userplan                                         userplan?
-  webhook                                          webhook[]
+  account                                          Account[]
+  accountmember_accountmember_accountOwnerIdTouser AccountMember[]  @relation("accountmember_accountOwnerIdTouser")
+  accountmember_accountmember_memberUserIdTouser   AccountMember[]  @relation("accountmember_memberUserIdTouser")
+  apikey                                           ApiKey[]
+  bot                                              Bot[]
+  session                                          Session[]
+  teaminvitation                                   TeamInvitation[]
+  userplan                                         UserPlan?
+  webhook                                          Webhook[]
 }
 
-model userplan {
+model UserPlan {
   id                     String    @id @default(cuid())
   userId                 String    @unique(map: "UserPlan_userId_key")
   planId                 String
@@ -280,14 +282,15 @@ model userplan {
   razorpaySubscriptionId String?
   stripePriceId          String?
   stripeSubscriptionId   String?
-  plan                   plan      @relation(fields: [planId], references: [id], onDelete: Cascade, map: "UserPlan_planId_fkey")
-  user                   user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserPlan_userId_fkey")
+  plan                   Plan      @relation(fields: [planId], references: [id], onDelete: Cascade, map: "UserPlan_planId_fkey")
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserPlan_userId_fkey")
 
   @@index([planId], map: "UserPlan_planId_fkey")
   @@index([userId], map: "UserPlan_userId_idx")
 }
 
-model verificationtoken {
+model VerificationToken {
+  id         String   @id @default(cuid())
   identifier String
   token      String   @unique(map: "VerificationToken_token_key")
   expires    DateTime
@@ -295,7 +298,7 @@ model verificationtoken {
   @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
 }
 
-model webhook {
+model Webhook {
   id          String   @id @default(cuid())
   userId      String
   url         String   @db.Text
@@ -303,7 +306,7 @@ model webhook {
   events      String   @db.VarChar(255)
   description String?  @db.VarChar(500)
   createdAt   DateTime @default(now())
-  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Webhook_userId_fkey")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Webhook_userId_fkey")
 
   @@index([userId], map: "Webhook_userId_idx")
 }

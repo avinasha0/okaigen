@@ -3,8 +3,7 @@ import { z } from "zod";
 
 const schema = z.object({
   url: z.string().url().optional(),
-  xml: z.string().optional(),
-}).refine((d) => !!d.url || !!d.xml, { message: "Provide sitemap URL or paste XML" });
+  xml: z.string().optional()}).refine((d) => !!d.url || !!d.xml, { message: "Provide sitemap URL or paste XML" });
 
 export async function POST(req: Request) {
   try {
@@ -18,8 +17,7 @@ export async function POST(req: Request) {
     if (parsed.data.url) {
       const res = await fetch(parsed.data.url.trim(), {
         headers: { "User-Agent": "Mozilla/5.0 (compatible; SitemapValidator/1.0)" },
-        signal: AbortSignal.timeout(10000),
-      });
+        signal: AbortSignal.timeout(10000)});
       if (!res.ok) throw new Error("Failed to fetch: " + res.status);
       xml = await res.text();
     } else {

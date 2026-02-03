@@ -2,15 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  url: z.string().min(1, "Sitemap URL is required"),
-});
+  url: z.string().min(1, "Sitemap URL is required")});
 
 async function fetchSitemap(url: string): Promise<string> {
   const full = url.startsWith("http") ? url : `https://${url}`;
   const res = await fetch(full, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; SitemapExtractor/1.0)" },
-    signal: AbortSignal.timeout(15000),
-  });
+    signal: AbortSignal.timeout(15000)});
   if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
   return res.text();
 }
@@ -68,8 +66,7 @@ export async function POST(req: Request) {
       const text = unique.join("\n");
       return NextResponse.json({
         result: `# Extracted URLs (from sitemap index)\n\nTotal: ${unique.length}\n\n\`\`\`\n${text}\n\`\`\``,
-        urls: unique,
-      });
+        urls: unique});
     }
 
     const urls = extractUrls(xml);
@@ -77,8 +74,7 @@ export async function POST(req: Request) {
     const text = unique.join("\n");
     return NextResponse.json({
       result: `# Extracted URLs\n\nTotal: ${unique.length}\n\n\`\`\`\n${text}\n\`\`\``,
-      urls: unique,
-    });
+      urls: unique});
   } catch (err) {
     console.error("[sitemap-url-extractor]", err);
     return NextResponse.json(

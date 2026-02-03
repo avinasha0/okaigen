@@ -6,8 +6,7 @@ import { useState } from "react";
 export function BrandingToggle({
   botId,
   initialRemoveBranding,
-  hasAddOn,
-}: {
+  hasAddOn}: {
   botId: string;
   initialRemoveBranding: boolean;
   hasAddOn: boolean;
@@ -21,8 +20,7 @@ export function BrandingToggle({
       const res = await fetch(`/api/bots/${botId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ removeBranding: checked }),
-      });
+        body: JSON.stringify({ removeBranding: checked })});
       if (res.ok) {
         setRemoveBranding(checked);
       } else {

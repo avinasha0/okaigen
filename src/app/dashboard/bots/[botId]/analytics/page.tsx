@@ -8,8 +8,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePlan } from "@/contexts/plan-context";
 
@@ -139,8 +138,7 @@ export default function AnalyticsPage() {
                 className="flex-1 rounded-t bg-gray-200 transition-colors hover:bg-gray-300"
                 style={{
                   height: `${(d.count / maxCount) * 100}%`,
-                  minHeight: d.count > 0 ? "4px" : "0",
-                }}
+                  minHeight: d.count > 0 ? "4px" : "0"}}
                 title={`${d.date}: ${d.count}`}
               />
             ))}

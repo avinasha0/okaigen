@@ -61,8 +61,7 @@ export function AIGeneratorTool({ apiPath, buttonLabel = "Generate", fields }: A
       const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        body: JSON.stringify(payload)});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
       setResult(data.result || "");

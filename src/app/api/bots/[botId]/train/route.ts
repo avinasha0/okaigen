@@ -92,10 +92,9 @@ export async function POST(
       console.log("[train] Resolved botId:", resolvedBotId, "for user:", session.user.id);
     }
 
-    const botWithSources = await prisma.bot.findUnique({
+    const botWithSources = await prisma.Bot.findUnique({
       where: { id: resolvedBotId },
-      include: { source: true },
-    });
+      include: { source: true }});
     if (!botWithSources) {
       console.error("[train] Bot not found in DB. resolvedBotId=", resolvedBotId);
       return NextResponse.json({ error: "Bot not found" }, { status: 404 });
@@ -110,10 +109,9 @@ export async function POST(
     if (pendingSources.length === 0) {
       const failedSources = bot.source.filter((s) => s.status === "failed");
       if (failedSources.length > 0) {
-        await prisma.source.updateMany({
+        await prisma.Source.updateMany({
           where: { id: { in: failedSources.map((s) => s.id) } },
-          data: { status: "pending", error: null },
-        });
+          data: { status: "pending", error: null }});
         pendingSources = failedSources;
       } else {
         return NextResponse.json(
@@ -130,10 +128,9 @@ export async function POST(
     const runTraining = async () => {
     for (const source of pendingSources) {
     try {
-      await prisma.source.update({
+      await prisma.Source.update({
         where: { id: source.id },
-        data: { status: "processing" },
-      });
+        data: { status: "processing" }});
 
       if (source.type === "url" && source.url) {
         const url = source.url.startsWith("http")
@@ -175,30 +172,21 @@ export async function POST(
           trainEmit?.({ type: "page", url: page.url, title: page.title, status: "in_progress", considered: pages.length, completed: completedCount, inProgress: 1, pending: pages.length - completedCount - 1 });
           const textChunks = chunkText(page.content, {
             sourceUrl: page.url,
-            pageTitle: page.title,
-          });
+            pageTitle: page.title});
 
           for (const tc of textChunks) {
-            const chunk = await prisma.chunk.create({
-              data: {
-                id: generateId(),
-                botId: resolvedBotId,
+            const chunk = await prisma.Chunk.create({
+              data: {botId: resolvedBotId,
                 sourceId: source.id,
                 content: tc.content,
                 metadata: tc.metadata ? JSON.stringify(tc.metadata) : null,
-                tokenCount: tc.tokenCount,
-              },
-            });
+                tokenCount: tc.tokenCount}});
 
             const [embedding] = await generateEmbeddings([tc.content]);
-            await prisma.embedding.create({
-              data: {
-                id: generateId(),
-                chunkId: chunk.id,
+            await prisma.Embedding.create({
+              data: {chunkId: chunk.id,
                 botId: resolvedBotId,
-                vector: JSON.stringify(embedding),
-              },
-            });
+                vector: JSON.stringify(embedding)}});
             totalChunks++;
           }
           completedCount++;
@@ -219,54 +207,39 @@ export async function POST(
         );
 
         const textChunks = chunkText(parsed.content, {
-          documentName: parsed.metadata.documentName,
-        });
+          documentName: parsed.metadata.documentName});
 
         for (const tc of textChunks) {
-          const chunk = await prisma.chunk.create({
-            data: {
-              id: generateId(),
-              botId: resolvedBotId,
+          const chunk = await prisma.Chunk.create({
+            data: {botId: resolvedBotId,
               sourceId: source.id,
               content: tc.content,
               metadata: tc.metadata ? JSON.stringify(tc.metadata) : null,
-              tokenCount: estimateTokenCount(tc.content),
-            },
-          });
+              tokenCount: estimateTokenCount(tc.content)}});
 
           const [embedding] = await generateEmbeddings([tc.content]);
-          await prisma.embedding.create({
-            data: {
-              id: generateId(),
-              chunkId: chunk.id,
+          await prisma.Embedding.create({
+            data: {chunkId: chunk.id,
               botId: resolvedBotId,
-              vector: JSON.stringify(embedding),
-            },
-          });
+              vector: JSON.stringify(embedding)}});
           totalChunks++;
         }
         totalPages = 1;
         trainEmit?.({ type: "page", url: source.documentUrl, title: source.title || "document", status: "completed", considered: 1, completed: 1, inProgress: 0, pending: 0 });
       }
 
-      await prisma.source.update({
+      await prisma.Source.update({
         where: { id: source.id },
         data: {
           status: "completed",
           pageCount: totalPages,
           error: null,
-          lastRefreshedAt: new Date(),
-        },
-      });
+          lastRefreshedAt: new Date()}});
 
-      await prisma.usagelog.create({
-        data: {
-          id: generateId(),
-          botId: resolvedBotId,
+      await prisma.UsageLog.create({
+        data: {botId: resolvedBotId,
           type: "embed",
-          count: totalChunks,
-        },
-      });
+          count: totalChunks}});
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       const errorStack = error instanceof Error ? error.stack : undefined;
@@ -278,13 +251,11 @@ export async function POST(
         console.error("[train] PDF parsing error detected. This may be a serverless environment compatibility issue.");
       }
       try {
-        await prisma.source.update({
+        await prisma.Source.update({
           where: { id: source.id },
           data: {
             status: "failed",
-            error: errorMsg,
-          },
-        });
+            error: errorMsg}});
       } catch (dbError) {
         console.error("[train] Failed to update source status in DB:", dbError);
       }
@@ -307,17 +278,15 @@ export async function POST(
             trainEmit({ type: "init", message: "Starting training..." });
             const result = await runTraining();
             if (result.totalChunks > 0) {
-              const currentBot = await prisma.bot.findUnique({
+              const currentBot = await prisma.Bot.findUnique({
                 where: { id: resolvedBotId },
-                select: { quickPrompts: true },
-              });
+                select: { quickPrompts: true }});
               if (!currentBot?.quickPrompts) {
                 try {
                   const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
-                  await prisma.bot.update({
+                  await prisma.Bot.update({
                     where: { id: resolvedBotId },
-                    data: { quickPrompts: JSON.stringify(prompts) },
-                  });
+                    data: { quickPrompts: JSON.stringify(prompts) }});
                 } catch {
                   /* ignore */
                 }
@@ -330,11 +299,9 @@ export async function POST(
           } finally {
             controller.close();
           }
-        },
-      });
+        }});
       return new Response(stream, {
-        headers: { "Content-Type": "application/x-ndjson" },
-      });
+        headers: { "Content-Type": "application/x-ndjson" }});
     }
 
     let result: { totalChunks: number; totalPages: number };
@@ -350,17 +317,15 @@ export async function POST(
 
     // Auto-generate quick prompts from content if bot has none
     if (result.totalChunks > 0) {
-      const currentBot = await prisma.bot.findUnique({
+      const currentBot = await prisma.Bot.findUnique({
         where: { id: resolvedBotId },
-        select: { quickPrompts: true },
-      });
+        select: { quickPrompts: true }});
       if (!currentBot?.quickPrompts) {
         try {
           const prompts = await suggestQuickPromptsFromContent(resolvedBotId);
-          await prisma.bot.update({
+          await prisma.Bot.update({
             where: { id: resolvedBotId },
-            data: { quickPrompts: JSON.stringify(prompts) },
-          });
+            data: { quickPrompts: JSON.stringify(prompts) }});
         } catch {
           // ignore; defaults will be used
         }
@@ -370,8 +335,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       chunksCreated: result.totalChunks,
-      pagesIndexed: result.totalPages,
-    });
+      pagesIndexed: result.totalPages});
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
@@ -382,8 +346,7 @@ export async function POST(
     return NextResponse.json(
       {
         error: "Training failed",
-        detail: errorMsg,
-      },
+        detail: errorMsg},
       { status: 500 }
     );
   }
@@ -466,9 +429,7 @@ async function crawlWebsite(
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://sitebotgpt.com)",
-        },
-      });
+          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://sitebotgpt.com)"}});
       clearTimeout(timeout);
 
       if (!response.ok || !response.headers.get("content-type")?.includes("text/html")) {
@@ -483,8 +444,7 @@ async function crawlWebsite(
         results.push({
           url: scraped.url,
           title: scraped.title,
-          content: scraped.content,
-        });
+          content: scraped.content});
       }
 
       for (const link of scraped.links) {

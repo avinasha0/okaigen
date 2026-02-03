@@ -32,9 +32,7 @@ export function SettingsPasswordForm({ hasPassword }: { hasPassword: boolean }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currentPassword,
-          newPassword,
-        }),
-      });
+          newPassword})});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Failed to change password");

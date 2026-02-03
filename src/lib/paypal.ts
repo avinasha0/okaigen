@@ -11,10 +11,8 @@ export async function getPayPalAccessToken(): Promise<string | null> {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${auth}`,
-    },
-    body: "grant_type=client_credentials",
-  });
+      Authorization: `Basic ${auth}`},
+    body: "grant_type=client_credentials"});
   if (!res.ok) return null;
   const data = (await res.json()) as { access_token?: string };
   return data.access_token ?? null;

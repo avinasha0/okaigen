@@ -39,9 +39,7 @@ export default function ContactPage() {
           email,
           subject,
           message,
-          recaptchaToken,
-        }),
-      });
+          recaptchaToken})});
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Please try again.");

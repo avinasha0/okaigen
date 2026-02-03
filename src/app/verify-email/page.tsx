@@ -17,8 +17,7 @@ function VerifyEmailForm() {
     try {
       const res = await fetch("/api/auth/resend-verification", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
       const data = await res.json();
       if (res.ok) {
         setMessage({ type: "success", text: "Verification email sent! Check your inbox." });

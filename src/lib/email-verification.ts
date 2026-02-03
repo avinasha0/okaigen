@@ -38,8 +38,7 @@ export function requireEmailVerificationForApi(session: { user?: { hasPassword?:
     return NextResponse.json(
       {
         error: "Email verification required",
-        message: "Please verify your email before using this feature. Check your inbox for the verification link.",
-      },
+        message: "Please verify your email before using this feature. Check your inbox for the verification link."},
       { status: 403 }
     );
   }

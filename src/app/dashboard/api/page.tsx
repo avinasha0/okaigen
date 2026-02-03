@@ -7,8 +7,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,8 +51,7 @@ export default function ApiKeysPage() {
       const res = await fetch("/api/api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName.trim() }),
-      });
+        body: JSON.stringify({ name: newName.trim() })});
       const data = await res.json();
       if (!res.ok) {
         alert(data.error ?? "Failed to create API key");

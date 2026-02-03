@@ -10,8 +10,7 @@ const contactSchema = z.object({
   email: z.string().email("Invalid email address"),
   subject: z.string().min(1, "Subject is required").max(500),
   message: z.string().min(10, "Message must be at least 10 characters").max(10000),
-  recaptchaToken: z.string().nullable().optional(),
-});
+  recaptchaToken: z.string().nullable().optional()});
 
 /** Where contact form submissions are emailed (CONTACT_EMAIL or EMAIL_FROM). */
 function getContactToEmail(): string | null {
@@ -57,9 +56,8 @@ export async function POST(req: Request) {
 
     console.log(`[contact] Creating contact submission: email=${email}, subject=${subject}`);
     
-    await prisma.contactsubmission.create({
-      data: { name, email, subject, message },
-    });
+    await prisma.contactSubmission.create({
+      data: { name, email, subject, message }});
     
     console.log(`[contact] Contact submission created successfully`);
 
@@ -70,8 +68,7 @@ export async function POST(req: Request) {
         to: toEmail,
         subject: `[Contact] ${subject}`,
         text: `New contact form submission\n\nFrom: ${name} <${email}>\nSubject: ${subject}\n\nMessage:\n${message}`,
-        replyTo: email,
-      });
+        replyTo: email});
     }
 
     return NextResponse.json({ success: true });

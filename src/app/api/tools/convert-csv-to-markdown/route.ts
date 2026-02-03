@@ -64,8 +64,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       markdown,
-      filename: file.name.replace(/\.csv$/i, "") + ".md",
-    });
+      filename: file.name.replace(/\.csv$/i, "") + ".md"});
   } catch (err) {
     console.error("[convert-csv-to-markdown]", err);
     return NextResponse.json(

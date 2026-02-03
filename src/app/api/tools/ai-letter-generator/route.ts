@@ -5,8 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   type: z.enum(["cover", "thank-you", "formal", "resignation", "reference", "custom"]),
   context: z.string().min(1, "Context/details are required"),
-  recipient: z.string().optional(),
-});
+  recipient: z.string().optional()});
 
 export async function POST(req: Request) {
   try {
@@ -22,8 +21,7 @@ export async function POST(req: Request) {
       formal: "formal business letter",
       resignation: "resignation letter",
       reference: "reference or recommendation letter",
-      custom: "professional letter",
-    };
+      custom: "professional letter"};
     const userContent = recipient ? `Context: ${context}\n\nRecipient: ${recipient}` : `Context: ${context}`;
     const systemPrompt = `You are an expert at writing professional letters. Generate a ${typeDesc[type]} based on the user's context. Use proper formatting (date, greeting, body, closing, signature block). Output only the letter.`;
     const letter = await generateWithAI(systemPrompt, userContent, { maxTokens: 1500 });

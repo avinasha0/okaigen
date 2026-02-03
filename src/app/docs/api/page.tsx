@@ -137,14 +137,11 @@ export default function ApiDocsPage() {
   method: "POST",
   headers: {
     "Authorization": "Bearer sk_live_YOUR_API_KEY",
-    "Content-Type": "application/json",
-  },
+    "Content-Type": "application/json"},
   body: JSON.stringify({
     botId: "YOUR_BOT_ID",
     message: "What are your opening hours?",
-    chatId: "optional-existing-chat-id",
-  }),
-});
+    chatId: "optional-existing-chat-id"})});
 const data = await res.json();
 console.log(data.response);`}
             </pre>

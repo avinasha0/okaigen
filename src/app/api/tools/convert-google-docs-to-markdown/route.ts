@@ -27,13 +27,11 @@ export async function POST(req: Request) {
     const res = await fetch(exportUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; SiteBotGPT/1.0)" },
       redirect: "follow",
-      signal: AbortSignal.timeout(15000),
-    });
+      signal: AbortSignal.timeout(15000)});
 
     if (!res.ok) {
       return NextResponse.json({
-        error: `Failed to export document (${res.status}). Ensure the document is shared so anyone with the link can view.`,
-      }, { status: 400 });
+        error: `Failed to export document (${res.status}). Ensure the document is shared so anyone with the link can view.`}, { status: 400 });
     }
 
     const html = await res.text();
@@ -41,8 +39,7 @@ export async function POST(req: Request) {
     const markdown = turndown.turndown(html);
 
     return NextResponse.json({
-      markdown: `# Google Doc\n\nSource: ${url}\n\n---\n\n${markdown}`,
-    });
+      markdown: `# Google Doc\n\nSource: ${url}\n\n---\n\n${markdown}`});
   } catch (err) {
     console.error("[convert-google-docs-to-markdown]", err);
     return NextResponse.json(

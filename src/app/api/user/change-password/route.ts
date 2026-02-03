@@ -6,8 +6,7 @@ import { z } from "zod";
 
 const schema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(8, "New password must be at least 8 characters"),
-});
+  newPassword: z.string().min(8, "New password must be at least 8 characters")});
 
 export async function POST(req: Request) {
   try {
@@ -16,10 +15,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: session.user.id },
-      select: { password: true },
-    });
+      select: { password: true }});
 
     if (!user?.password) {
       return NextResponse.json(
@@ -40,10 +38,9 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: session.user.id },
-      data: { password: hashedPassword },
-    });
+      data: { password: hashedPassword }});
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -18,8 +18,7 @@ const createSchema = z.object({
           ? v
           : `https://${v}`
         : undefined
-    ),
-});
+    )});
 
 export async function GET() {
   const session = await auth();
@@ -31,7 +30,7 @@ export async function GET() {
   if (emailCheck) return emailCheck;
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const bots = await prisma.bot.findMany({
+  const bots = await prisma.Bot.findMany({
     where: { userId: ownerId },
     select: {
       id: true,
@@ -39,10 +38,8 @@ export async function GET() {
       publicKey: true,
       createdAt: true,
       updatedAt: true,
-      _count: { select: { chunk: true, source: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      _count: { select: { chunk: true, source: true } }},
+    orderBy: { createdAt: "desc" }});
 
   const res = NextResponse.json(bots);
   res.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=10");
@@ -66,8 +63,7 @@ export async function POST(req: Request) {
         error: `Bot limit reached (${planUsage.totalBots} bots). Please upgrade your plan to create more bots.`,
         quotaExceeded: true,
         usedBots: planUsage.usedBots,
-        totalBots: planUsage.totalBots,
-      },
+        totalBots: planUsage.totalBots},
       { status: 402 }
     );
   }
@@ -77,15 +73,11 @@ export async function POST(req: Request) {
     const { name, websiteUrl } = createSchema.parse(body);
 
     const now = new Date();
-    const bot = await prisma.bot.create({
-      data: {
-        id: generateId(),
-        name,
+    const bot = await prisma.Bot.create({
+      data: {name,
         userId: ownerId,
         publicKey: generateBotPublicKey(),
-        updatedAt: now,
-      },
-    });
+        updatedAt: now}});
 
     if (websiteUrl) {
       try {
@@ -103,17 +95,13 @@ export async function POST(req: Request) {
           urlTitle = normalizedUrl;
         }
         
-        await prisma.source.create({
-          data: {
-            id: generateId(),
-            botId: bot.id,
+        await prisma.Source.create({
+          data: {botId: bot.id,
             type: "url",
             url: normalizedUrl,
             title: urlTitle,
             status: "pending",
-            updatedAt: now,
-          },
-        });
+            updatedAt: now}});
       } catch (sourceError) {
         // Log source creation error but don't fail bot creation
         console.error("Failed to create source for bot:", sourceError);
@@ -121,13 +109,11 @@ export async function POST(req: Request) {
       }
     }
 
-    const fullBot = await prisma.bot.findUnique({
+    const fullBot = await prisma.Bot.findUnique({
       where: { id: bot.id },
       include: {
         source: true,
-        _count: { select: { chunk: true } },
-      },
-    });
+        _count: { select: { chunk: true } }}});
 
     return NextResponse.json(fullBot);
   } catch (error) {

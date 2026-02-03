@@ -45,9 +45,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const plan = await prisma.plan.findFirst({
-    where: { name: planName, isActive: true },
-  });
+  const plan = await prisma.Plan.findFirst({
+    where: { name: planName, isActive: true }});
   if (!plan) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
@@ -59,17 +58,15 @@ export async function POST(request: Request) {
   if (!priceId) {
     return NextResponse.json(
       {
-        error: `Checkout for ${planName} (${interval}) is not set up. Add Stripe Price IDs in Dashboard and run db:seed.`,
-      },
+        error: `Checkout for ${planName} (${interval}) is not set up. Add Stripe Price IDs in Dashboard and run db:seed.`},
       { status: 503 }
     );
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const user = await prisma.user.findUnique({
+  const user = await prisma.User.findUnique({
     where: { id: ownerId },
-    select: { stripeCustomerId: true, email: true, name: true },
-  });
+    select: { stripeCustomerId: true, email: true, name: true }});
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -93,10 +90,8 @@ export async function POST(request: Request) {
     client_reference_id: ownerId,
     subscription_data: {
       metadata: { userId: ownerId, planName },
-      trial_period_days: undefined,
-    },
-    allow_promotion_codes: true,
-  };
+      trial_period_days: undefined},
+    allow_promotion_codes: true};
 
   if (user.stripeCustomerId) {
     sessionParams.customer = user.stripeCustomerId;
@@ -109,8 +104,7 @@ export async function POST(request: Request) {
     const checkoutSession = await stripe.checkout.sessions.create(sessionParams);
     return NextResponse.json({
       url: checkoutSession.url,
-      sessionId: checkoutSession.id,
-    });
+      sessionId: checkoutSession.id});
   } catch (e) {
     console.error("Stripe checkout error:", e);
     return NextResponse.json(

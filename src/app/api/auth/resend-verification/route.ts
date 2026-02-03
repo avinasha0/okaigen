@@ -25,10 +25,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: session.user.id },
-      select: { email: true, emailVerified: true },
-    });
+      select: { email: true, emailVerified: true }});
 
     if (!user) {
       return NextResponse.json(
@@ -45,26 +44,22 @@ export async function POST(req: Request) {
     }
 
     // Delete old verification tokens
-    await prisma.verificationtoken.deleteMany({
+    await prisma.VerificationToken.deleteMany({
       where: {
-        identifier: `email-verification:${session.user.id}`,
-      },
-    });
+        identifier: `email-verification:${session.user.id}`}});
 
     // Create new verification token
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const verifyExpires = new Date(Date.now() + VERIFY_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
     const identifier = `email-verification:${session.user.id}`;
-    await prisma.verificationtoken.create({
-      data: { identifier, token: verifyToken, expires: verifyExpires },
-    });
+    await prisma.VerificationToken.create({
+      data: { identifier, token: verifyToken, expires: verifyExpires }});
 
     const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${encodeURIComponent(verifyToken)}`;
     await sendEmail({
       to: user.email,
       subject: "Verify your SiteBotGPT email",
-      text: `Please verify your email by clicking this link (valid for ${VERIFY_EXPIRY_DAYS} days):\n\n${verifyUrl}\n\nIf you didn't request this, you can ignore this email.`,
-    });
+      text: `Please verify your email by clicking this link (valid for ${VERIFY_EXPIRY_DAYS} days):\n\n${verifyUrl}\n\nIf you didn't request this, you can ignore this email.`});
 
     return NextResponse.json({ success: true });
   } catch (error) {

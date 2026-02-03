@@ -13,24 +13,20 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 
 export default async function BotDetailPage({
-  params,
-}: {
+  params}: {
   params: Promise<{ botId: string }>;
 }) {
   const session = await auth();
   const { botId } = await params;
   const ownerId = session?.user?.id ? await getEffectiveOwnerId(session.user.id) : "";
-  const bot = await prisma.bot.findFirst({
+  const bot = await prisma.Bot.findFirst({
     where: { id: botId, userId: ownerId },
     include: {
       source: true,
-      _count: { select: { chunk: true, chat: true, lead: true } },
-    },
-  });
+      _count: { select: { chunk: true, chat: true, lead: true } }}});
 
   if (!bot) notFound();
 
@@ -38,17 +34,15 @@ export default async function BotDetailPage({
   let publicKey = bot.publicKey;
   if (!publicKey) {
     publicKey = generateBotPublicKey();
-    await prisma.bot.update({
+    await prisma.Bot.update({
       where: { id: bot.id },
-      data: { publicKey },
-    });
+      data: { publicKey }});
   }
 
   const owner = session?.user?.id
-    ? await prisma.user.findUnique({
+    ? await prisma.User.findUnique({
         where: { id: ownerId },
-        select: { removeBrandingAddOn: true },
-      })
+        select: { removeBrandingAddOn: true }})
     : null;
   const hasRemoveBrandingAddOn = owner?.removeBrandingAddOn ?? false;
 

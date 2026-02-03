@@ -4,8 +4,7 @@ import { z } from "zod";
 
 const schema = z.object({
   topic: z.string().min(1, "Topic is required"),
-  count: z.number().min(3).max(15).optional().default(5),
-});
+  count: z.number().min(3).max(15).optional().default(5)});
 
 export async function POST(req: Request) {
   try {

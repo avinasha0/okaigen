@@ -23,7 +23,7 @@ function extractFromDocxXml(xml: string): string {
     for (const m of matches) parts.push(unescape(m[1] || ""));
     lines.push(parts.join(""));
   }
-  return lines.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
+  return lines.join("\n\n").replace(/\n{3}/g, "\n\n").trim();
 }
 
 async function extractDocx(buffer: Buffer): Promise<string> {

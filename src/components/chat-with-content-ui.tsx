@@ -17,8 +17,7 @@ export function ChatWithContentUI({
   variant,
   contentLabel = "Content",
   contentPlaceholder = "Paste your text here...",
-  accept = ".pdf,.doc,.docx,.txt",
-}: ChatWithContentUIProps) {
+  accept = ".pdf,.doc,.docx,.txt"}: ChatWithContentUIProps) {
   const [content, setContent] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -68,8 +67,7 @@ export function ChatWithContentUI({
         const res = await fetch(apiPath, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+          body: JSON.stringify(payload)});
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed");
         setAnswer(data.answer || "");

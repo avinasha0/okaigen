@@ -5,8 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   description: z.string().min(1, "Product description is required"),
   industry: z.string().optional(),
-  count: z.number().min(3).max(15).optional().default(5),
-});
+  count: z.number().min(3).max(15).optional().default(5)});
 
 export async function POST(req: Request) {
   try {

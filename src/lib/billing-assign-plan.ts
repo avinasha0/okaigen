@@ -14,61 +14,53 @@ export async function assignPlanToUser(
     paypalSubscriptionId?: string | null;
   } = {}
 ) {
-  const plan = await prisma.plan.findFirst({
-    where: { name: planName, isActive: true },
-  });
+  const plan = await prisma.Plan.findFirst({
+    where: { name: planName, isActive: true }});
   if (!plan) {
     console.warn("assignPlanToUser: plan not found", planName);
     return;
   }
 
-  await prisma.userplan.upsert({
+  await prisma.UserPlan.upsert({
     where: { userId },
     create: {
-      id: generateId(),
+
       userId,
       planId: plan.id,
       currentPeriodEnd: options.currentPeriodEnd ?? null,
       stripeSubscriptionId: options.stripeSubscriptionId ?? null,
       razorpaySubscriptionId: options.razorpaySubscriptionId ?? null,
-      paypalSubscriptionId: options.paypalSubscriptionId ?? null,
-    },
+      paypalSubscriptionId: options.paypalSubscriptionId ?? null},
     update: {
       planId: plan.id,
       currentPeriodEnd: options.currentPeriodEnd ?? undefined,
       stripeSubscriptionId: options.stripeSubscriptionId ?? undefined,
       razorpaySubscriptionId: options.razorpaySubscriptionId ?? undefined,
-      paypalSubscriptionId: options.paypalSubscriptionId ?? undefined,
-    },
-  });
+      paypalSubscriptionId: options.paypalSubscriptionId ?? undefined}});
 }
 
 /**
  * Downgrade user to Starter (e.g. after subscription cancelled).
  */
 export async function downgradeUserToStarter(userId: string) {
-  const starterPlan = await prisma.plan.findFirst({
-    where: { name: "Starter", isActive: true },
-  });
+  const starterPlan = await prisma.Plan.findFirst({
+    where: { name: "Starter", isActive: true }});
   if (!starterPlan) return;
 
-  await prisma.userplan.upsert({
+  await prisma.UserPlan.upsert({
     where: { userId },
     create: {
-      id: generateId(),
+
       userId,
       planId: starterPlan.id,
       stripeSubscriptionId: null,
       razorpaySubscriptionId: null,
       paypalSubscriptionId: null,
-      currentPeriodEnd: null,
-    },
+      currentPeriodEnd: null},
     update: {
       planId: starterPlan.id,
       stripeSubscriptionId: null,
       razorpaySubscriptionId: null,
       paypalSubscriptionId: null,
-      currentPeriodEnd: null,
-    },
-  });
+      currentPeriodEnd: null}});
 }

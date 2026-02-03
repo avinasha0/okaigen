@@ -15,11 +15,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const keys = await prisma.apikey.findMany({
+  const keys = await prisma.ApiKey.findMany({
     where: { userId: ownerId },
     select: { id: true, name: true, keyPrefix: true, lastUsedAt: true, createdAt: true },
-    orderBy: { createdAt: "desc" },
-  });
+    orderBy: { createdAt: "desc" }});
   return NextResponse.json({ keys });
 }
 
@@ -48,10 +47,9 @@ export async function POST(req: Request) {
   }
 
   const { rawKey, prefix, hash } = generateApiKey();
-  const key = await prisma.apikey.create({
-    data: { id: generateId(), userId: ownerId, name: parsed.data.name, keyPrefix: prefix, keyHash: hash },
-    select: { id: true, name: true, keyPrefix: true, createdAt: true },
-  });
+  const key = await prisma.ApiKey.create({
+    data: {userId: ownerId, name: parsed.data.name, keyPrefix: prefix, keyHash: hash },
+    select: { id: true, name: true, keyPrefix: true, createdAt: true }});
   return NextResponse.json({
     key: { id: key.id, name: key.name, keyPrefix: key.keyPrefix, createdAt: key.createdAt },
     secret: rawKey, // Returned only once; never stored in DB or returned again (GET returns prefix only).

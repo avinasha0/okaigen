@@ -18,10 +18,8 @@ async function verifyPayPalWebhook(
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization: `Basic ${Buffer.from(
         `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`
-      ).toString("base64")}`,
-    },
-    body: "grant_type=client_credentials",
-  });
+      ).toString("base64")}`},
+    body: "grant_type=client_credentials"});
   if (!tokenRes.ok) return false;
   const tokenData = (await tokenRes.json()) as { access_token?: string };
   const token = tokenData.access_token;
@@ -31,8 +29,7 @@ async function verifyPayPalWebhook(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`},
     body: JSON.stringify({
       auth_algo: headers["paypal-auth-algo"] ?? "",
       cert_url: headers["paypal-cert-url"] ?? "",
@@ -40,9 +37,7 @@ async function verifyPayPalWebhook(
       transmission_sig: headers["paypal-transmission-sig"] ?? "",
       transmission_time: headers["paypal-transmission-time"] ?? "",
       webhook_id: PAYPAL_WEBHOOK_ID,
-      webhook_event: JSON.parse(body),
-    }),
-  });
+      webhook_event: JSON.parse(body)})});
   if (!verifyRes.ok) return false;
   const verifyData = (await verifyRes.json()) as { verification_status?: string };
   return verifyData.verification_status === "SUCCESS";
@@ -59,8 +54,7 @@ export async function POST(request: Request) {
     "paypal-cert-url": request.headers.get("paypal-cert-url"),
     "paypal-transmission-id": request.headers.get("paypal-transmission-id"),
     "paypal-transmission-sig": request.headers.get("paypal-transmission-sig"),
-    "paypal-transmission-time": request.headers.get("paypal-transmission-time"),
-  };
+    "paypal-transmission-time": request.headers.get("paypal-transmission-time")};
 
   const valid = await verifyPayPalWebhook(rawBody, headers);
   if (!valid) {
@@ -86,15 +80,13 @@ export async function POST(request: Request) {
           return NextResponse.json({ received: true });
         }
 
-        const plan = await prisma.plan.findFirst({
+        const plan = await prisma.Plan.findFirst({
           where: {
             isActive: true,
             OR: [
               { paypalPlanIdMonthly: planId },
               { paypalPlanIdYearly: planId },
-            ],
-          },
-        });
+            ]}});
         if (!plan) {
           console.warn("PayPal webhook: no plan for plan_id", planId);
           return NextResponse.json({ received: true });
@@ -107,8 +99,7 @@ export async function POST(request: Request) {
 
         await assignPlanToUser(customId, plan.name, {
           currentPeriodEnd,
-          paypalSubscriptionId: resource.id,
-        });
+          paypalSubscriptionId: resource.id});
     } else if (eventType === "BILLING.SUBSCRIPTION.CANCELLED" || eventType === "BILLING.SUBSCRIPTION.EXPIRED" || eventType === "BILLING.SUBSCRIPTION.SUSPENDED") {
       const customId = resource?.custom_id;
       if (customId) {

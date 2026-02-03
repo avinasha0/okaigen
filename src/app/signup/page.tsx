@@ -55,9 +55,7 @@ function SignupForm() {
           password,
           name: name || undefined,
           acceptTerms: true,
-          recaptchaToken,
-        }),
-      });
+          recaptchaToken})});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Registration failed");
@@ -67,8 +65,7 @@ function SignupForm() {
       const signInRes = await signIn("credentials", {
         email: trimmedEmail,
         password,
-        redirect: false,
-      });
+        redirect: false});
       if (signInRes?.error) {
         router.push(callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login");
         return;

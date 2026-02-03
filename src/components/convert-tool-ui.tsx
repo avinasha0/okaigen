@@ -32,8 +32,7 @@ export function ConvertToolUI({
       }
     } catch {}
     return "converted.md";
-  },
-}: ConvertToolUIProps) {
+  }}: ConvertToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [textInput, setTextInput] = useState("");
   const [markdown, setMarkdown] = useState("");
@@ -66,17 +65,14 @@ export function ConvertToolUI({
             url: textInput.trim(),
             notion: textInput.trim(),
             googleDoc: textInput.trim(),
-            webpage: textInput.trim(),
-          }),
-        });
+            webpage: textInput.trim()})});
       } else if ((inputType === "paste" || inputType === "html" || inputType === "fileOrPaste") && textInput.trim()) {
         res = await fetch(apiPath, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             inputType === "html" ? { html: textInput, content: textInput } : { text: textInput, content: textInput, paste: textInput }
-          ),
-        });
+          )});
       } else {
         setError("Please provide input first");
         setLoading(false);

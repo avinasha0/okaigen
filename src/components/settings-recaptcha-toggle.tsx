@@ -36,8 +36,7 @@ export function SettingsRecaptchaToggle() {
       const res = await fetch("/api/admin/recaptcha-toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled: !enabled }),
-      });
+        body: JSON.stringify({ enabled: !enabled })});
 
       if (!res.ok) {
         const data = await res.json();

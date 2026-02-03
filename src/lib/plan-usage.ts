@@ -29,10 +29,9 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
 
     let userPlan;
     try {
-      userPlan = await prisma.userplan.findUnique({
+      userPlan = await prisma.UserPlan.findUnique({
         where: { userId: ownerId },
-        include: { plan: true },
-      });
+        include: { plan: true }});
     } catch (dbError: unknown) {
       console.error("Failed to get user plan:", dbError);
       return null;
@@ -40,15 +39,14 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
 
     if (!userPlan) {
       // Ensure Starter plan exists - create if missing
-      let starterPlan = await prisma.plan.findFirst({
-        where: { name: "Starter", isActive: true },
-      });
+      let starterPlan = await prisma.Plan.findFirst({
+        where: { name: "Starter", isActive: true }});
 
       if (!starterPlan) {
         // Create Starter plan if it doesn't exist
         const { getPlanLimitsForDb } = await import("./plans-config");
         const limits = getPlanLimitsForDb("Starter");
-        starterPlan = await prisma.plan.create({
+        starterPlan = await prisma.Plan.create({
           data: {
             name: "Starter",
             dailyLimit: limits.dailyLimit,
@@ -56,26 +54,22 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
             storageLimit: limits.storageLimit,
             teamMemberLimit: limits.teamMemberLimit,
             price: 0,
-            isActive: true,
-          },
-        });
+            isActive: true}});
         console.log("Created missing Starter plan");
       }
 
       // Assign Starter plan to user
       try {
-        userPlan = await prisma.userplan.create({
-          data: { id: generateId(), userId: ownerId, planId: starterPlan.id },
-          include: { plan: true },
-        });
+        userPlan = await prisma.UserPlan.create({
+          data: {userId: ownerId, planId: starterPlan.id },
+          include: { plan: true }});
         console.log(`Assigned Starter plan to user ${ownerId}`);
       } catch (createError: unknown) {
         // If create fails (e.g., race condition), try to fetch again
         if (createError instanceof Error && createError.message.includes("Unique constraint")) {
-          userPlan = await prisma.userplan.findUnique({
+          userPlan = await prisma.UserPlan.findUnique({
             where: { userId: ownerId },
-            include: { plan: true },
-          });
+            include: { plan: true }});
         }
         if (!userPlan) {
           console.error("Failed to create user plan:", createError);
@@ -94,10 +88,9 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
     
     let botIds: Array<{ id: string }>;
     try {
-      botIds = await prisma.bot.findMany({
+      botIds = await prisma.Bot.findMany({
         where: { userId: ownerId },
-        select: { id: true },
-      });
+        select: { id: true }});
     } catch (dbError: unknown) {
       console.error("Failed to get bots:", dbError);
       botIds = [];
@@ -107,14 +100,12 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
     const startOfToday = START_OF_TODAY();
     let messagesResult;
     try {
-      messagesResult = await prisma.usagelog.aggregate({
+      messagesResult = await prisma.UsageLog.aggregate({
         where: {
           botId: { in: botIdList },
           type: "message",
-          createdAt: { gte: startOfToday },
-        },
-        _sum: { count: true },
-      });
+          createdAt: { gte: startOfToday }},
+        _sum: { count: true }});
     } catch (dbError: unknown) {
       console.error("Failed to get usage logs:", dbError);
       messagesResult = { _sum: { count: null } };
@@ -125,9 +116,8 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
 
     let memberCount = 0;
     try {
-      memberCount = await prisma.accountmember.count({
-        where: { accountOwnerId: ownerId },
-      });
+      memberCount = await prisma.AccountMember.count({
+        where: { accountOwnerId: ownerId }});
     } catch (dbError: unknown) {
       console.error("Failed to get team member count:", dbError);
       memberCount = 0;
@@ -143,8 +133,7 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
       usedBots,
       totalBots: plan.botLimit,
       usedTeamMembers,
-      totalTeamMembers,
-    };
+      totalTeamMembers};
   } catch (error: unknown) {
     console.error("getPlanUsage error:", error);
     // Log the full error for debugging

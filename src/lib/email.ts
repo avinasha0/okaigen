@@ -25,8 +25,7 @@ export async function sendEmail(options: {
       to: options.to,
       replyTo: options.replyTo,
       subject: options.subject,
-      text: options.text,
-    });
+      text: options.text});
     return true;
   } catch (e) {
     console.error("sendEmail error:", e);

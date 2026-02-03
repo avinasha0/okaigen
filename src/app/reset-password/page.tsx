@@ -44,9 +44,7 @@ function ResetPasswordForm() {
         body: JSON.stringify({ 
           token, 
           password,
-          recaptchaToken,
-        }),
-      });
+          recaptchaToken})});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Something went wrong");

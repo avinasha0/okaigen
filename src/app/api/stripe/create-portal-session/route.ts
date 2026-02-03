@@ -19,10 +19,9 @@ export async function POST() {
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const user = await prisma.user.findUnique({
+  const user = await prisma.User.findUnique({
     where: { id: ownerId },
-    select: { stripeCustomerId: true },
-  });
+    select: { stripeCustomerId: true }});
 
   if (!user?.stripeCustomerId) {
     return NextResponse.json(
@@ -44,11 +43,9 @@ export async function POST() {
   try {
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${appUrl}/dashboard/settings`,
-    });
+      return_url: `${appUrl}/dashboard/settings`});
     return NextResponse.json({
-      url: portalSession.url,
-    });
+      url: portalSession.url});
   } catch (e) {
     console.error("Stripe portal error:", e);
     return NextResponse.json(

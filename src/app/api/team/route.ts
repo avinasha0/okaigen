@@ -15,16 +15,14 @@ export async function GET() {
   const canManage = await isAccountOwner(session.user.id);
 
   const [members, invitations] = await Promise.all([
-    prisma.accountmember.findMany({
+    prisma.AccountMember.findMany({
       where: { accountOwnerId: ownerId },
       include: { user_accountmember_memberUserIdTouser: { select: { id: true, email: true, name: true } } },
-      orderBy: { createdAt: "asc" },
-    }),
+      orderBy: { createdAt: "asc" }}),
     canManage
-      ? prisma.teaminvitation.findMany({
+      ? prisma.TeamInvitation.findMany({
           where: { accountOwnerId: ownerId },
-          orderBy: { createdAt: "desc" },
-        })
+          orderBy: { createdAt: "desc" }})
       : [],
   ]);
 
@@ -39,19 +37,16 @@ export async function GET() {
       email: m.user_accountmember_memberUserIdTouser.email,
       name: m.user_accountmember_memberUserIdTouser.name,
       role: m.role,
-      joinedAt: m.createdAt,
-    })),
+      joinedAt: m.createdAt})),
     invitations: invitations.map((i) => ({
       id: i.id,
       email: i.email,
       role: i.role,
       expiresAt: i.expiresAt,
-      createdAt: i.createdAt,
-    })),
+      createdAt: i.createdAt})),
     canManage,
     usedTeamMembers,
     totalTeamMembers,
     canInvite,
-    currentUserId: session.user.id,
-  });
+    currentUserId: session.user.id});
 }

@@ -4,8 +4,7 @@ import * as cheerio from "cheerio";
 
 const schema = z.object({
   url: z.string().min(1, "URL is required"),
-  maxUrls: z.number().min(1).max(500).optional().default(100),
-});
+  maxUrls: z.number().min(1).max(500).optional().default(100)});
 
 export async function POST(req: Request) {
   try {
@@ -34,8 +33,7 @@ export async function POST(req: Request) {
       try {
         const res = await fetch(url, {
           headers: { "User-Agent": "Mozilla/5.0 (compatible; UrlExtractor/1.0)" },
-          signal: AbortSignal.timeout(8000),
-        });
+          signal: AbortSignal.timeout(8000)});
         if (!res.ok) continue;
         const html = await res.text();
         const $ = cheerio.load(html);
@@ -59,8 +57,7 @@ export async function POST(req: Request) {
     const text = sorted.join("\n");
     return NextResponse.json({
       result: `# Extracted URLs from ${domain}\n\nTotal: ${sorted.length}\n\n\`\`\`\n${text}\n\`\`\``,
-      urls: sorted,
-    });
+      urls: sorted});
   } catch (err) {
     console.error("[website-url-extractor]", err);
     return NextResponse.json(

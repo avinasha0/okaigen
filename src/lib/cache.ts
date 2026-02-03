@@ -30,8 +30,7 @@ class SimpleCache<T> {
   set(key: string, value: T, ttlMs?: number): void {
     this.cache.set(key, {
       value,
-      expiresAt: Date.now() + (ttlMs || this.ttl),
-    });
+      expiresAt: Date.now() + (ttlMs || this.ttl)});
   }
 
   clear(): void {

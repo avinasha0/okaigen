@@ -45,8 +45,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       markdown,
-      filename: file.name.replace(/\.rtf$/i, "") + ".md",
-    });
+      filename: file.name.replace(/\.rtf$/i, "") + ".md"});
   } catch (err) {
     console.error("[convert-rtf-to-markdown]", err);
     return NextResponse.json(

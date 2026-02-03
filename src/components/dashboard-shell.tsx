@@ -20,8 +20,7 @@ export type PlanUsage = {
 function DashboardShellInner({
   userEmail,
   planUsage,
-  children,
-}: {
+  children}: {
   userEmail: string | null | undefined;
   planUsage?: PlanUsage | null;
   children: React.ReactNode;
@@ -343,8 +342,7 @@ function DashboardShellInner({
 export function DashboardShell({
   userEmail,
   planUsage,
-  children,
-}: {
+  children}: {
   userEmail: string | null | undefined;
   planUsage?: PlanUsage | null;
   children: React.ReactNode;

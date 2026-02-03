@@ -9,15 +9,13 @@ import { SkipToMainContent } from "@/components/skip-to-main-content";
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
-});
+  variable: "--font-inter"});
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
   display: "swap",
-  variable: "--font-jakarta",
-});
+  variable: "--font-jakarta"});
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
 
@@ -25,26 +23,21 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
     default: "SiteBotGPT | AI Chatbot for Website & Customer Support",
-    template: "%s | SiteBotGPT",
-  },
+    template: "%s | SiteBotGPT"},
   description: "Train an AI chatbot on your website, docs & PDFs. Answer visitor questions 24/7. Forever free plan available. No code. Embed in minutes. AI support for your business.",
   keywords: ["AI chatbot", "website chatbot", "chatbot builder", "customer support chatbot", "AI support agent"],
   authors: [{ name: "SiteBotGPT", url: BASE_URL }],
   icons: {
     icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
+    apple: "/favicon.png"},
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "SiteBotGPT",
-  },
-  robots: { index: true, follow: true },
-};
+    siteName: "SiteBotGPT"},
+  robots: { index: true, follow: true }};
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+  children}: Readonly<{
   children: React.ReactNode;
 }>) {
   return (

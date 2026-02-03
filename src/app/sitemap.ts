@@ -66,6 +66,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${BASE}${path}`,
     lastModified: new Date(),
     changeFrequency: (path.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
-    priority: getPriority(path),
-  }));
+    priority: getPriority(path)}));
 }

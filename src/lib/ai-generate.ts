@@ -12,8 +12,7 @@ export async function generateWithAI(
       { role: "user", content: userContent },
     ],
     temperature: options?.temperature ?? 0.7,
-    max_tokens: options?.maxTokens ?? 1024,
-  });
+    max_tokens: options?.maxTokens ?? 1024});
   const text = completion.choices[0]?.message?.content?.trim();
   if (!text) throw new Error("No response generated");
   return text;

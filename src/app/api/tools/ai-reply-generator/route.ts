@@ -5,8 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   message: z.string().min(1, "Message is required"),
   tone: z.enum(["professional", "casual", "friendly", "formal"]).optional().default("friendly"),
-  context: z.string().optional(),
-});
+  context: z.string().optional()});
 
 export async function POST(req: Request) {
   try {

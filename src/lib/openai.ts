@@ -19,8 +19,7 @@ export const openai = {
   },
   get chat() {
     return getOpenAI().chat;
-  },
-} as OpenAI;
+  }} as OpenAI;
 
 export const EMBEDDING_MODEL = "text-embedding-3-small";
 export const CHAT_MODEL = "gpt-4o-mini";

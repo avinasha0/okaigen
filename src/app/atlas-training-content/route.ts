@@ -39,7 +39,5 @@ Works with: Any website, WordPress, React, help centers, API.
 
   return new NextResponse(content, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-    },
-  });
+      "Content-Type": "text/plain; charset=utf-8"}});
 }

@@ -36,8 +36,7 @@ export function searchVectors(
       chunkId: chunk.id,
       content: chunk.content,
       metadata: (chunk.metadata as Record<string, unknown>) || {},
-      similarity: cosineSimilarity(queryEmbedding, chunk.vector),
-    }))
+      similarity: cosineSimilarity(queryEmbedding, chunk.vector)}))
     .filter((r) => typeof r.similarity === "number" && !Number.isNaN(r.similarity) && r.similarity >= minSimilarity)
     .sort((a, b) => b.similarity - a.similarity);
 

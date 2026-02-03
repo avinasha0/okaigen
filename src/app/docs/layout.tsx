@@ -6,8 +6,7 @@ export const metadata: Metadata = createMetadata({
   description:
     "SiteBotGPT documentation: how to use the chat widget, dashboard, bots, sources, analytics, leads, API, webhooks, and free tools.",
   path: "/docs",
-  keywords: ["documentation", "help", "guide", "chatbot", "widget", "API"],
-});
+  keywords: ["documentation", "help", "guide", "chatbot", "widget", "API"]});
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return children;

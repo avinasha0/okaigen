@@ -28,8 +28,7 @@ function AcceptContent() {
       const res = await fetch("/api/team/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
+        body: JSON.stringify({ token })});
       const data = await res.json();
       if (res.ok) {
         setStatus("success");

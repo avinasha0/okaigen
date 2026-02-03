@@ -6,8 +6,7 @@ const schema = z.object({
   brand: z.string().optional(),
   industry: z.string().optional(),
   style: z.enum(["friendly", "professional", "playful", "tech"]).optional().default("friendly"),
-  count: z.number().min(3).max(15).optional().default(5),
-});
+  count: z.number().min(3).max(15).optional().default(5)});
 
 export async function POST(req: Request) {
   try {

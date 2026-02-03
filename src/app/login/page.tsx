@@ -72,9 +72,7 @@ function LoginForm() {
         body: JSON.stringify({
           email: trimmedEmail,
           password,
-          recaptchaToken,
-        }),
-      });
+          recaptchaToken})});
 
       const data = await res.json();
       
@@ -88,8 +86,7 @@ function LoginForm() {
       const signInRes = await signIn("credentials", {
         email: trimmedEmail,
         password,
-        redirect: false,
-      });
+        redirect: false});
       
       if (signInRes?.error) {
         setError("Sign in failed. Please try again.");

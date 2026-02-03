@@ -87,14 +87,12 @@ async function linkSubscriptionToUser(
   customerId: string,
   subscriptionId: string
 ) {
-  await prisma.user.update({
+  await prisma.User.update({
     where: { id: userId },
-    data: { stripeCustomerId: customerId },
-  });
+    data: { stripeCustomerId: customerId }});
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ["items.data.price"],
-  });
+    expand: ["items.data.price"]});
   await syncUserPlanFromSubscription(stripe, userId, subscription);
 }
 
@@ -107,15 +105,13 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
       : (sub.items.data[0]?.price as string);
   if (!priceId) return;
 
-  const plan = await prisma.plan.findFirst({
+  const plan = await prisma.Plan.findFirst({
     where: {
       isActive: true,
       OR: [
         { stripePriceIdMonthly: priceId },
         { stripePriceIdYearly: priceId },
-      ],
-    },
-  });
+      ]}});
   if (!plan) {
     console.warn("Stripe webhook: no plan found for price id", priceId);
     return;
@@ -124,46 +120,39 @@ async function syncUserPlanFromSubscription(stripe: Stripe, userId: string, sub:
   const periodEnd = (sub as { current_period_end?: number }).current_period_end;
   const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000) : null;
 
-  await prisma.userplan.upsert({
+  await prisma.UserPlan.upsert({
     where: { userId },
     create: {
-      id: generateId(),
+
       userId,
       planId: plan.id,
       stripeSubscriptionId: sub.id,
       stripePriceId: priceId,
-      currentPeriodEnd,
-    },
+      currentPeriodEnd},
     update: {
       planId: plan.id,
       stripeSubscriptionId: sub.id,
       stripePriceId: priceId,
-      currentPeriodEnd,
-    },
-  });
+      currentPeriodEnd}});
 }
 
 async function downgradeUserToStarter(userId: string) {
-  const starterPlan = await prisma.plan.findFirst({
-    where: { name: "Starter", isActive: true },
-  });
+  const starterPlan = await prisma.Plan.findFirst({
+    where: { name: "Starter", isActive: true }});
   if (!starterPlan) return;
 
-  await prisma.userplan.upsert({
+  await prisma.UserPlan.upsert({
     where: { userId },
     create: {
-      id: generateId(),
+
       userId,
       planId: starterPlan.id,
       stripeSubscriptionId: null,
       stripePriceId: null,
-      currentPeriodEnd: null,
-    },
+      currentPeriodEnd: null},
     update: {
       planId: starterPlan.id,
       stripeSubscriptionId: null,
       stripePriceId: null,
-      currentPeriodEnd: null,
-    },
-  });
+      currentPeriodEnd: null}});
 }

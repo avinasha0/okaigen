@@ -12,8 +12,7 @@ const updateSchema = z.object({
   leadCaptureTrigger: z.enum(["uncertain", "always", "never"]).optional(),
   humanFallbackMessage: z.string().optional(),
   quickPrompts: z.string().optional().nullable(),
-  removeBranding: z.boolean().optional(),
-});
+  removeBranding: z.boolean().optional()});
 
 export async function GET(
   _req: Request,
@@ -31,13 +30,11 @@ export async function GET(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  const fullBot = await prisma.bot.findUnique({
+  const fullBot = await prisma.Bot.findUnique({
     where: { id: bot.id },
     include: {
       source: true,
-      _count: { select: { chunk: true, chat: true, lead: true } },
-    },
-  });
+      _count: { select: { chunk: true, chat: true, lead: true } }}});
   return NextResponse.json(fullBot);
 }
 
@@ -63,10 +60,9 @@ export async function PATCH(
 
     if (data.removeBranding === true) {
       const ownerId = await getEffectiveOwnerId(session.user.id);
-      const owner = await prisma.user.findUnique({
+      const owner = await prisma.User.findUnique({
         where: { id: ownerId },
-        select: { removeBrandingAddOn: true },
-      });
+        select: { removeBrandingAddOn: true }});
       if (!owner?.removeBrandingAddOn) {
         return NextResponse.json(
           { error: "Remove SiteBotGPT branding add-on is required. Get this add-on from Pricing or Contact us." },
@@ -75,10 +71,9 @@ export async function PATCH(
       }
     }
 
-    const updated = await prisma.bot.update({
+    const updated = await prisma.Bot.update({
       where: { id: botId },
-      data,
-    });
+      data});
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -111,9 +106,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  await prisma.bot.delete({
-    where: { id: botId },
-  });
+  await prisma.Bot.delete({
+    where: { id: botId }});
 
   return NextResponse.json({ success: true });
 }

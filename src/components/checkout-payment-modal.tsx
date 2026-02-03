@@ -20,8 +20,7 @@ type CheckoutPaymentModalProps = {
 export function CheckoutPaymentModal({
   planName,
   interval,
-  onClose,
-}: CheckoutPaymentModalProps) {
+  onClose}: CheckoutPaymentModalProps) {
   const [loading, setLoading] = useState<Gateway | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,8 +33,7 @@ export function CheckoutPaymentModal({
       const res = await fetch(g.api, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planName, interval }),
-      });
+        body: JSON.stringify({ planName, interval })});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Checkout failed");

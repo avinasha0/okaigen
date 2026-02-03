@@ -17,8 +17,7 @@ const TOOL_CATEGORIES = [
       { href: "/tools/ai-blog-title-generator", title: "AI Blog Title Generator", description: "Generate catchy, SEO-friendly blog titles.", icon: "ai" },
       { href: "/tools/ai-chatbot-name-generator", title: "AI Chatbot Name Generator", description: "Find the perfect name for your AI assistant.", icon: "ai" },
       { href: "/tools/ai-saas-brand-name-generator", title: "AI SaaS Brand Name Generator", description: "Discover names for your SaaS product.", icon: "ai" },
-    ],
-  },
+    ]},
   {
     id: "chat",
     name: "AI Chat with Your Data",
@@ -29,8 +28,7 @@ const TOOL_CATEGORIES = [
       { href: "/tools/ai-chat-document", title: "AI Chat with Your Document & Data", description: "Upload or paste documents and chat with your data.", icon: "ai" },
       { href: "/tools/ai-chat-pdf", title: "AI Chat with Your PDF Document & Data", description: "Upload a PDF and ask questions about its content.", icon: "ai" },
       { href: "/tools/ai-chat-word", title: "AI Chat with Your Word Document & Data", description: "Upload a Word doc and get answers from it.", icon: "ai" },
-    ],
-  },
+    ]},
   {
     id: "seo",
     name: "SEO & Analytics",
@@ -45,8 +43,7 @@ const TOOL_CATEGORIES = [
       { href: "/tools/chatbot-roi-calculator", title: "Chatbot ROI Calculator", description: "Estimate savings from AI chatbot implementation.", icon: "seo" },
       { href: "/tools/email-signature-generator", title: "Email Signature Generator", description: "Create professional email signatures.", icon: "seo" },
       { href: "/tools/sourcesync", title: "SourceSync.ai", description: "Sync content sources for AI training.", icon: "seo" },
-    ],
-  },
+    ]},
   {
     id: "convert",
     name: "Convert to Markdown",
@@ -63,8 +60,7 @@ const TOOL_CATEGORIES = [
       { href: "/tools/convert-rtf-to-markdown", title: "Convert RTF to Markdown", description: "Convert RTF documents to Markdown.", icon: "rtf" },
       { href: "/tools/convert-paste-to-markdown", title: "Convert Paste to Markdown", description: "Paste any text and convert to clean Markdown.", icon: "paste" },
       { href: "/tools/convert-webpage-to-markdown", title: "Convert Webpage to Markdown", description: "Enter any webpage URL and convert to Markdown.", icon: "web" },
-    ],
-  },
+    ]},
 ];
 
 const TRUST_BADGES = [
@@ -87,8 +83,7 @@ function ToolIcon({ type }: { type: string }) {
     paste: <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />,
     web: <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />,
     ai: <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />,
-    seo: <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />,
-  };
+    seo: <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />};
   return (
     <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       {icons[type] ?? <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />}

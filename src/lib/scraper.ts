@@ -73,8 +73,7 @@ export function extractTextFromHtml(html: string, baseUrl: string): ScrapedPage 
     url: baseUrl,
     title,
     content: content || $("body").text().replace(/\s+/g, " ").trim(),
-    links: [...new Set(links)],
-  };
+    links: [...new Set(links)]};
 }
 
 export function isSameOrigin(url1: string, url2: string): boolean {

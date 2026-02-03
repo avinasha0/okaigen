@@ -53,8 +53,7 @@ const INSTRUCTIONS: Record<(typeof PLATFORMS)[number]["id"], string[]> = {
     "Scroll to the very bottom of the file.",
     "Paste the embed code before the last line.",
     "Save the file. The chat bubble will appear on your site.",
-  ],
-};
+  ]};
 
 function buildDownloadContent(platformId: string, embedCode: string): string {
   const label = PLATFORMS.find((p) => p.id === platformId)?.label || "Your site";

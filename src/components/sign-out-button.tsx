@@ -4,8 +4,7 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 export function SignOutButton({
-  className,
-}: {
+  className}: {
   className?: string;
 }) {
   return (

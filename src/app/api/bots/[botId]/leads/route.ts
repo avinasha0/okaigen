@@ -19,10 +19,9 @@ export async function GET(
     return NextResponse.json({ error: "Bot not found" }, { status: 404 });
   }
 
-  const leads = await prisma.lead.findMany({
+  const leads = await prisma.Lead.findMany({
     where: { botId },
-    orderBy: { createdAt: "desc" },
-  });
+    orderBy: { createdAt: "desc" }});
 
   return NextResponse.json(leads);
 }

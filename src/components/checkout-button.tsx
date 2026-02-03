@@ -21,8 +21,7 @@ export function CheckoutButton({
   currentPlanName,
   variant = "primary",
   children,
-  className = "",
-}: CheckoutButtonProps) {
+  className = ""}: CheckoutButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
   const isPaid = PAID_PLANS.includes(planName as PlanName);

@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function SettingsProfileForm({
-  initialName,
-}: {
+  initialName}: {
   initialName: string | null | undefined;
 }) {
   const router = useRouter();
@@ -26,8 +25,7 @@ export function SettingsProfileForm({
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() || null }),
-      });
+        body: JSON.stringify({ name: name.trim() || null })});
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Failed to update");

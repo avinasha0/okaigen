@@ -21,12 +21,10 @@ export async function triggerWebhooks(
   const planName = planUsage?.planName ?? "Starter";
   if (!hasWebhooks(planName)) return;
 
-  const webhooks = await prisma.webhook.findMany({
+  const webhooks = await prisma.Webhook.findMany({
     where: {
       userId: ownerId,
-      events: { contains: event },
-    },
-  });
+      events: { contains: event }}});
 
   const body = JSON.stringify({ event, ...payload });
   await Promise.allSettled(
@@ -38,11 +36,9 @@ export async function triggerWebhooks(
           headers: {
             "Content-Type": "application/json",
             "X-Webhook-Signature": `sha256=${signature}`,
-            "X-Webhook-Event": event,
-          },
+            "X-Webhook-Event": event},
           body,
-          signal: AbortSignal.timeout(10000),
-        });
+          signal: AbortSignal.timeout(10000)});
         if (!res.ok) {
           console.warn(`Webhook ${wh.id} ${wh.url} returned ${res.status}`);
         }

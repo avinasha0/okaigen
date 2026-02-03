@@ -7,8 +7,7 @@ import crypto from "crypto";
 
 const schema = z.object({
   email: z.string().email(),
-  recaptchaToken: z.string().nullable().optional(),
-});
+  recaptchaToken: z.string().nullable().optional()});
 
 const RESET_EXPIRY_HOURS = 1;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -21,9 +20,8 @@ export async function POST(req: Request) {
     // Verify reCAPTCHA (graceful fallback - never blocks)
     await verifyCaptcha(recaptchaToken || null, 0.5);
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
+    const user = await prisma.User.findUnique({
+      where: { email: email.toLowerCase().trim() }});
 
     // Always return success to avoid email enumeration
     if (!user || !user.password) {
@@ -34,19 +32,16 @@ export async function POST(req: Request) {
     const expires = new Date(Date.now() + RESET_EXPIRY_HOURS * 60 * 60 * 1000);
     const identifier = `password-reset:${user.email}`;
 
-    await prisma.verificationtoken.deleteMany({
-      where: { identifier },
-    });
-    await prisma.verificationtoken.create({
-      data: { identifier, token, expires },
-    });
+    await prisma.VerificationToken.deleteMany({
+      where: { identifier }});
+    await prisma.VerificationToken.create({
+      data: { identifier, token, expires }});
 
     const resetUrl = `${APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
     const sent = await sendEmail({
       to: user.email,
       subject: "Reset your SiteBotGPT password",
-      text: `You requested a password reset. Click the link below to set a new password (valid for ${RESET_EXPIRY_HOURS} hour):\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
-    });
+      text: `You requested a password reset. Click the link below to set a new password (valid for ${RESET_EXPIRY_HOURS} hour):\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`});
 
     if (!sent) {
       console.error("Forgot password: failed to send email");

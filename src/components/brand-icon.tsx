@@ -9,8 +9,7 @@ const sizeMap = {
   lg: "h-9 w-9",
   xl: "h-12 w-12",
   "2xl": "h-16 w-16",
-  "3xl": "h-20 w-20",
-};
+  "3xl": "h-20 w-20"};
 
 /** SiteBotGPT brand icon — bot head (visible face) + chat bubble. Polished for clarity at sm–3xl. */
 export function BrandIcon({ className = "", size = "md" }: BrandIconProps) {

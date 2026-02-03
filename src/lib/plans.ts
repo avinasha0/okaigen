@@ -18,8 +18,7 @@ export const PLANS = [
     cta: "Start free",
     href: "/login?callbackUrl=/dashboard/pricing",
     popular: false,
-    highlight: false,
-  },
+    highlight: false},
   {
     name: "Growth",
     monthlyPrice: 49,
@@ -40,8 +39,7 @@ export const PLANS = [
     cta: "Get started free",
     href: "/login?callbackUrl=/dashboard/pricing",
     popular: true,
-    highlight: true,
-  },
+    highlight: true},
   {
     name: "Scale",
     monthlyPrice: 149,
@@ -64,8 +62,7 @@ export const PLANS = [
     cta: "Get started free",
     href: "/login?callbackUrl=/dashboard/pricing",
     popular: false,
-    highlight: false,
-  },
+    highlight: false},
   {
     name: "Enterprise",
     monthlyPrice: null,
@@ -88,6 +85,5 @@ export const PLANS = [
     cta: "Contact us",
     href: "/contact?subject=About%20Enterprise%20Plan",
     popular: false,
-    highlight: false,
-  },
+    highlight: false},
 ] as const;

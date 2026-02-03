@@ -52,8 +52,7 @@ export const PLAN_CAPABILITIES: Record<PlanName, PlanCapabilities> = {
     webhooks: false,
     prioritySupport: false,
     pageLimit: 10,
-    refreshSchedule: "manual",
-  },
+    refreshSchedule: "manual"},
   Growth: {
     botLimit: 3,
     dailyMessageLimit: 70, // ~2,000/month
@@ -67,8 +66,7 @@ export const PLAN_CAPABILITIES: Record<PlanName, PlanCapabilities> = {
     webhooks: false,
     prioritySupport: false,
     pageLimit: 2000,
-    refreshSchedule: "manual",
-  },
+    refreshSchedule: "manual"},
   Scale: {
     botLimit: 10,
     dailyMessageLimit: 334, // ~10,000/month
@@ -82,8 +80,7 @@ export const PLAN_CAPABILITIES: Record<PlanName, PlanCapabilities> = {
     webhooks: true,
     prioritySupport: true,
     pageLimit: 20000,
-    refreshSchedule: "weekly",
-  },
+    refreshSchedule: "weekly"},
   Enterprise: {
     botLimit: 999,
     dailyMessageLimit: 100_000,
@@ -97,9 +94,7 @@ export const PLAN_CAPABILITIES: Record<PlanName, PlanCapabilities> = {
     webhooks: true,
     prioritySupport: true,
     pageLimit: 100_000,
-    refreshSchedule: "daily",
-  },
-};
+    refreshSchedule: "daily"}};
 
 function getCapabilities(planName: string): PlanCapabilities | null {
   if (PLAN_NAMES.includes(planName as PlanName)) {
@@ -182,6 +177,5 @@ export function getPlanLimitsForDb(planName: PlanName) {
     dailyLimit: c.dailyMessageLimit,
     botLimit: c.botLimit,
     storageLimit: c.storageLimitMB,
-    teamMemberLimit: c.teamMemberLimit,
-  };
+    teamMemberLimit: c.teamMemberLimit};
 }

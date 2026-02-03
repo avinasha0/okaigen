@@ -12,26 +12,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
-    signIn: "/login",
-  },
+    signIn: "/login"},
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!}),
     Credentials({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
+        password: { label: "Password", type: "password" }},
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.User.findUnique({
           where: { email: credentials.email as string },
-          select: { id: true, email: true, name: true, image: true, emailVerified: true, password: true },
-        });
+          select: { id: true, email: true, name: true, image: true, emailVerified: true, password: true }});
 
         if (!user?.password) return null;
 
@@ -47,18 +43,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image,
           emailVerified: user.emailVerified,
-          hasPassword: true,
-        };
-      },
-    }),
+          hasPassword: true};
+      }}),
   ],
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.id) {
-        await prisma.user.update({
+        await prisma.User.update({
           where: { id: user.id },
-          data: { emailVerified: new Date() },
-        });
+          data: { emailVerified: new Date() }});
       }
       return true;
     },
@@ -83,6 +76,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.hasPassword = token.hasPassword as boolean;
       }
       return session;
-    },
-  },
-});
+    }}});

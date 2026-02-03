@@ -8,8 +8,7 @@ import { z } from "zod";
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(["admin", "member"]).default("member"),
-});
+  role: z.enum(["admin", "member"]).default("member")});
 
 /** POST invite a team member by email. Owner only. */
 export async function POST(req: Request) {
@@ -41,34 +40,28 @@ export async function POST(req: Request) {
   const { email, role } = parsed.data;
   const normalizedEmail = email.trim().toLowerCase();
 
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prisma.User.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true },
-  });
+    select: { id: true }});
   if (existingUser && existingUser.id === session.user.id) {
     return NextResponse.json({ error: "You cannot invite yourself" }, { status: 400 });
   }
   if (existingUser) {
-    const alreadyMember = await prisma.accountmember.findUnique({
+    const alreadyMember = await prisma.AccountMember.findUnique({
       where: {
         accountOwnerId_memberUserId: {
           accountOwnerId: session.user.id,
-          memberUserId: existingUser.id,
-        },
-      },
-    });
+          memberUserId: existingUser.id}}});
     if (alreadyMember) {
       return NextResponse.json({ error: "This user is already a team member" }, { status: 400 });
     }
   }
 
-  const existingInvite = await prisma.teaminvitation.findFirst({
+  const existingInvite = await prisma.TeamInvitation.findFirst({
     where: {
       accountOwnerId: session.user.id,
       email: normalizedEmail,
-      expiresAt: { gt: new Date() },
-    },
-  });
+      expiresAt: { gt: new Date() }}});
   if (existingInvite) {
     return NextResponse.json({ error: "An invitation was already sent to this email" }, { status: 400 });
   }
@@ -76,15 +69,13 @@ export async function POST(req: Request) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-  await prisma.teaminvitation.create({
+  await prisma.TeamInvitation.create({
     data: {
       accountOwnerId: session.user.id,
       email: normalizedEmail,
       role,
       token,
-      expiresAt,
-    },
-  });
+      expiresAt}});
 
   const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const inviteLink = `${baseUrl}/dashboard/team/accept?token=${token}`;
@@ -93,6 +84,5 @@ export async function POST(req: Request) {
     success: true,
     inviteLink,
     expiresAt: expiresAt.toISOString(),
-    message: "Invitation created. Share the invite link with the team member.",
-  });
+    message: "Invitation created. Share the invite link with the team member."});
 }

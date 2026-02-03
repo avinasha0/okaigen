@@ -12,8 +12,7 @@ import {
   getRefreshSchedule as getRefreshScheduleConfig,
   hasApiAccess as hasApiAccessConfig,
   hasWebhooks as hasWebhooksConfig,
-  type RefreshSchedule,
-} from "@/lib/plans-config";
+  type RefreshSchedule} from "@/lib/plans-config";
 
 type PlanContextValue = {
   planUsage: PlanUsage | null | undefined;
@@ -38,13 +37,11 @@ const PlanContext = createContext<PlanContextValue>({
   canManualRefresh: false,
   refreshSchedule: "manual",
   hasApiAccess: false,
-  hasWebhooks: false,
-});
+  hasWebhooks: false});
 
 export function PlanProvider({
   planUsage,
-  children,
-}: {
+  children}: {
   planUsage: PlanUsage | null | undefined;
   children: ReactNode;
 }) {
@@ -62,8 +59,7 @@ export function PlanProvider({
         canManualRefresh: canManualRefreshConfig(planName),
         refreshSchedule: getRefreshScheduleConfig(planName),
         hasApiAccess: hasApiAccessConfig(planName),
-        hasWebhooks: hasWebhooksConfig(planName),
-      }}
+        hasWebhooks: hasWebhooksConfig(planName)}}
     >
       {children}
     </PlanContext.Provider>

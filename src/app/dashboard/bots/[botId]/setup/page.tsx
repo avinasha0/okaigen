@@ -9,8 +9,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import * as Progress from "@radix-ui/react-progress";
 import { usePlan } from "@/contexts/plan-context";
 
@@ -82,8 +81,7 @@ export default function BotSetupPage() {
       const res = await fetch(`/api/bots/${botId}/sources`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
+        body: JSON.stringify({ url })});
       if (!res.ok) throw new Error("Failed to add URL");
       const data = await res.json();
       setBot((prev) =>
@@ -96,10 +94,8 @@ export default function BotSetupPage() {
                   id: s.id,
                   type: "url",
                   title: s.title,
-                  status: "pending",
-                })),
-              ],
-            }
+                  status: "pending"})),
+              ]}
           : null
       );
       setNewUrl("");
@@ -121,8 +117,7 @@ export default function BotSetupPage() {
       }
       const res = await fetch(`/api/bots/${botId}/sources`, {
         method: "POST",
-        body: formData,
-      });
+        body: formData});
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       setBot((prev) =>
@@ -135,10 +130,8 @@ export default function BotSetupPage() {
                   id: s.id,
                   type: "document",
                   title: s.title,
-                  status: "pending",
-                })),
-              ],
-            }
+                  status: "pending"})),
+              ]}
           : null
       );
     } catch {
@@ -158,8 +151,7 @@ export default function BotSetupPage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stream: true }),
-      });
+        body: JSON.stringify({ stream: true })});
 
       const contentType = res.headers.get("content-type") ?? "";
       const isStream = contentType.includes("application/x-ndjson");
@@ -221,8 +213,7 @@ export default function BotSetupPage() {
                   completed: 0,
                   inProgress: 0,
                   pending: (event.considered ?? event.count ?? 0) - 0,
-                  pages: pageList.map((p) => ({ url: p.url, title: p.title, status: "pending" as const })),
-                }));
+                  pages: pageList.map((p) => ({ url: p.url, title: p.title, status: "pending" as const }))}));
                 setTrainingProgress(10);
               } else if (event.type === "page" && event.url != null) {
                 setTrainingStatus((prev) => {
@@ -235,8 +226,7 @@ export default function BotSetupPage() {
                     completed: event.completed ?? pages.filter((p) => p.status === "completed").length,
                     inProgress: event.inProgress ?? pages.filter((p) => p.status === "in_progress").length,
                     pending: event.pending ?? pages.filter((p) => p.status === "pending").length,
-                    pages,
-                  };
+                    pages};
                 });
                 const pct = event.considered ? (event.completed ?? 0) / event.considered : 0;
                 setTrainingProgress(10 + Math.round(pct * 80));
@@ -259,8 +249,7 @@ export default function BotSetupPage() {
             ? {
                 ...prev,
                 _count: { chunk: prev._count.chunk + chunksCreated },
-                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
-              }
+                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s))}
             : null
         );
         setTimeout(() => router.push(`/dashboard/bots/${botId}`), 1500);
@@ -272,8 +261,7 @@ export default function BotSetupPage() {
             ? {
                 ...prev,
                 _count: { chunk: prev._count.chunk + (data.chunksCreated || 0) },
-                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s)),
-              }
+                source: prev.source.map((s) => (s.status === "pending" ? { ...s, status: "completed" } : s))}
             : null
         );
         setTimeout(() => router.push(`/dashboard/bots/${botId}`), 1500);
@@ -405,8 +393,7 @@ export default function BotSetupPage() {
                                 const r = await fetch(`/api/bots/${botId}/sources/retrain`, {
                                   method: "POST",
                                   headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ sourceId: s.id }),
-                                });
+                                  body: JSON.stringify({ sourceId: s.id })});
                                 if (r.ok) {
                                   const data = await fetch(`/api/bots/${botId}`).then((x) => x.json());
                                   setBot(data);

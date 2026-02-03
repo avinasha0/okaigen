@@ -9,8 +9,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import { NewBotButton } from "@/components/new-bot-button";
 import { SupportRequestForm } from "@/components/support-request-form";
 
@@ -21,16 +20,14 @@ export default async function DashboardPage() {
   const ownerId = await getEffectiveOwnerId(session.user.id);
 
   const [bots, planUsage] = await Promise.all([
-    prisma.bot.findMany({
+    prisma.Bot.findMany({
       where: { userId: ownerId },
       select: {
         id: true,
         name: true,
         createdAt: true,
-        _count: { select: { chunk: true, chat: true, lead: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
+        _count: { select: { chunk: true, chat: true, lead: true } }},
+      orderBy: { createdAt: "desc" }}),
     getPlanUsage(session.user.id),
   ]);
 
@@ -38,8 +35,7 @@ export default async function DashboardPage() {
   const { canViewLeads, canViewAnalytics } = planUsage
     ? await import("@/lib/plans-config").then((m) => ({
         canViewLeads: m.canViewLeads(planUsage.planName),
-        canViewAnalytics: m.canViewAnalytics(planUsage.planName),
-      }))
+        canViewAnalytics: m.canViewAnalytics(planUsage.planName)}))
     : { canViewLeads: false, canViewAnalytics: false };
 
   const totals = bots.reduce(
@@ -47,8 +43,7 @@ export default async function DashboardPage() {
       bots: acc.bots + 1,
       chunks: acc.chunks + b._count.chunk,
       chats: acc.chats + b._count.chat,
-      leads: acc.leads + b._count.lead,
-    }),
+      leads: acc.leads + b._count.lead}),
     { bots: 0, chunks: 0, chats: 0, leads: 0 }
   );
 

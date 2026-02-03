@@ -2,16 +2,14 @@
 
 export function DemoSuggestedQuestions({
   botId,
-  questions,
-}: {
+  questions}: {
   botId: string;
   questions: string[];
 }) {
   function handleClick(text: string) {
     window.dispatchEvent(
       new CustomEvent("sitebotgpt-send", {
-        detail: { botId, text },
-      })
+        detail: { botId, text }})
     );
   }
 

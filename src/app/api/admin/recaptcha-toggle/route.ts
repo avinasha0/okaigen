@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const schema = z.object({
-  enabled: z.boolean(),
-});
+  enabled: z.boolean()});
 
 /**
  * Admin API route to toggle reCAPTCHA on/off

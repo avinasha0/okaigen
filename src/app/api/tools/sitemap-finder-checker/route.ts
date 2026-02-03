@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  url: z.string().min(1, "URL is required"),
-});
+  url: z.string().min(1, "URL is required")});
 
 export async function POST(req: Request) {
   try {
@@ -22,8 +21,7 @@ export async function POST(req: Request) {
     try {
       const robotsRes = await fetch(base + "/robots.txt", {
         headers: { "User-Agent": "Mozilla/5.0 (compatible; SitemapChecker/1.0)" },
-        signal: AbortSignal.timeout(8000),
-      });
+        signal: AbortSignal.timeout(8000)});
       if (robotsRes.ok) {
         const text = await robotsRes.text();
         for (const line of text.split(/\n/)) {
@@ -38,8 +36,7 @@ export async function POST(req: Request) {
       try {
         const r = await fetch(url, {
           headers: { "User-Agent": "Mozilla/5.0 (compatible; SitemapChecker/1.0)" },
-          signal: AbortSignal.timeout(6000),
-        });
+          signal: AbortSignal.timeout(6000)});
         sitemaps.push({ url, status: r.ok ? "OK" : String(r.status) });
       } catch {
         sitemaps.push({ url, status: "Failed" });

@@ -11,8 +11,7 @@ const leadSchema = z.object({
   email: z.string().email(),
   phone: z.string().optional(),
   message: z.string().optional(),
-  pageUrl: z.string().url().optional(),
-});
+  pageUrl: z.string().url().optional()});
 
 /** POST: Submit lead from chat widget (public) */
 export async function POST(req: Request) {
@@ -23,11 +22,10 @@ export async function POST(req: Request) {
   }
   const data = parsed.data;
 
-  const bot = await prisma.bot.findFirst({
+  const bot = await prisma.Bot.findFirst({
     where: data.botId.startsWith("atlas_")
       ? { publicKey: data.botId }
-      : { id: data.botId },
-  });
+      : { id: data.botId }});
   if (!bot) {
     return NextResponse.json(
       { error: "Bot not found. Use the embed code from Dashboard → your bot → Embed code." },
@@ -35,26 +33,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const lead = await prisma.lead.create({
-    data: {
-      id: generateId(),
-      botId: bot.id,
+  const lead = await prisma.Lead.create({
+    data: {botId: bot.id,
       name: data.name,
       email: data.email,
       phone: data.phone,
       message: data.message,
-      pageUrl: data.pageUrl,
-    },
-  });
+      pageUrl: data.pageUrl}});
 
   if (data.chatId && (data.name || data.email)) {
-    await prisma.chat.updateMany({
+    await prisma.Chat.updateMany({
       where: { id: data.chatId, botId: bot.id },
       data: {
         visitorName: data.name ?? undefined,
-        visitorEmail: data.email,
-      },
-    });
+        visitorEmail: data.email}});
   }
 
   const { triggerWebhooks } = await import("@/lib/webhooks");
@@ -68,9 +60,7 @@ export async function POST(req: Request) {
       message: lead.message,
       pageUrl: lead.pageUrl,
       status: lead.status,
-      createdAt: lead.createdAt,
-    },
-  }).catch(() => {});
+      createdAt: lead.createdAt}}).catch(() => {});
 
   return NextResponse.json({ id: lead.id });
 }
@@ -91,10 +81,9 @@ export async function GET(req: Request) {
   }
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
-  const bots = await prisma.bot.findMany({
+  const bots = await prisma.Bot.findMany({
     where: { userId: ownerId },
-    select: { id: true, name: true },
-  });
+    select: { id: true, name: true }});
   const botIds = bots.map((b) => b.id);
   const botMap = Object.fromEntries(bots.map((b) => [b.id, b.name]));
 
@@ -104,7 +93,7 @@ export async function GET(req: Request) {
   const skip = (page - 1) * limit;
 
   const [leads, total] = await Promise.all([
-    prisma.lead.findMany({
+    prisma.Lead.findMany({
       where: { botId: { in: botIds } },
       orderBy: { createdAt: "desc" },
       take: limit,
@@ -118,24 +107,20 @@ export async function GET(req: Request) {
         message: true,
         pageUrl: true,
         status: true,
-        createdAt: true,
-      },
-    }),
-    prisma.lead.count({ where: { botId: { in: botIds } } }),
+        createdAt: true}}),
+    prisma.Lead.count({ where: { botId: { in: botIds } } }),
   ]);
 
   const leadsWithBot = leads.map((l) => ({
     ...l,
-    botName: botMap[l.botId] ?? "Unknown",
-  }));
+    botName: botMap[l.botId] ?? "Unknown"}));
 
   const res = NextResponse.json({
     leads: leadsWithBot,
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit),
-  });
+    totalPages: Math.ceil(total / limit)});
   res.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=10");
   return res;
 }

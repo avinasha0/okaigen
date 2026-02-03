@@ -7,8 +7,7 @@ export function CopyButton({
   text,
   className,
   label = "Copy",
-  labelCopied = "Copied!",
-}: {
+  labelCopied = "Copied!"}: {
   text: string;
   className?: string;
   label?: string;

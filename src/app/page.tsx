@@ -463,20 +463,17 @@ export default function LandingPage() {
                   quote: "We got the bot dialled in—trained on our docs, tone matched to our brand. Support tickets dropped and visitors get answers instantly. Exactly what we needed.",
                   name: "Alex Chen",
                   role: "Head of Support",
-                  company: "B2B SaaS",
-                },
+                  company: "B2B SaaS"},
                 {
                   quote: "Our clients expect fast answers. SiteBotGPT handles the first line so we can focus on strategy and high-touch work. Setup took an afternoon.",
                   name: "Sam Rivera",
                   role: "Founder",
-                  company: "Digital Agency",
-                },
+                  company: "Digital Agency"},
                 {
                   quote: "Students get 24/7 help on our docs and FAQs. The bot knows our product—no more generic answers. Our support team loves it.",
                   name: "Jordan Lee",
                   role: "Customer Success",
-                  company: "EdTech",
-                },
+                  company: "EdTech"},
               ].map((t) => (
                 <blockquote
                   key={t.name}

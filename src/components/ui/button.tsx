@@ -13,20 +13,15 @@ const buttonVariants = cva(
         outline: "border border-slate-200 bg-white hover:bg-slate-50 focus-visible:ring-[#1a6aff]",
         secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 focus-visible:ring-[#1a6aff]",
         ghost: "hover:bg-slate-100 focus-visible:ring-[#1a6aff]",
-        link: "text-[#1a6aff] underline-offset-4 hover:text-[#0d5aeb] hover:underline",
-      },
+        link: "text-[#1a6aff] underline-offset-4 hover:text-[#0d5aeb] hover:underline"},
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-lg px-8",
-        icon: "h-10 w-10",
-      },
-    },
+        icon: "h-10 w-10"}},
     defaultVariants: {
       variant: "default",
-      size: "default",
-    },
-  }
+      size: "default"}}
 );
 
 export interface ButtonProps

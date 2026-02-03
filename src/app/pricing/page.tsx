@@ -14,52 +14,40 @@ const CelebrationConfetti = dynamic(
 const FAQ = [
   {
     q: "Can I try before I buy?",
-    a: "Yes. Start with the free Starter plan—no credit card required. You can upgrade anytime when you need more capacity.",
-  },
+    a: "Yes. Start with the free Starter plan—no credit card required. You can upgrade anytime when you need more capacity."},
   {
     q: "What content can I train the bot on?",
-    a: "You can train your bot on website URLs, sitemaps, and uploaded files (PDF, DOCX, TXT, MD). The more content you provide, the better the answers.",
-  },
+    a: "You can train your bot on website URLs, sitemaps, and uploaded files (PDF, DOCX, TXT, MD). The more content you provide, the better the answers."},
   {
     q: "How do I add the chatbot to my site?",
-    a: "Copy one embed script from your dashboard and paste it before the closing </body> tag. The chat bubble appears automatically. We also provide platform-specific guides for WordPress, Shopify, and more.",
-  },
+    a: "Copy one embed script from your dashboard and paste it before the closing </body> tag. The chat bubble appears automatically. We also provide platform-specific guides for WordPress, Shopify, and more."},
   {
     q: "Can I change plans later?",
-    a: "Yes. You can upgrade or downgrade at any time. Billing is prorated so you only pay for what you use.",
-  },
+    a: "Yes. You can upgrade or downgrade at any time. Billing is prorated so you only pay for what you use."},
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. Invoicing is available for Enterprise plans.",
-  },
+    a: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. Invoicing is available for Enterprise plans."},
   {
     q: "Do you offer refunds?",
-    a: "Yes. We offer a 30-day money-back guarantee on paid plans. If you're not satisfied, contact us for a full refund. See our Refund Policy for details.",
-  },
+    a: "Yes. We offer a 30-day money-back guarantee on paid plans. If you're not satisfied, contact us for a full refund. See our Refund Policy for details."},
   {
     q: "How many bots or websites can I use?",
-    a: "Starter includes 1 bot; Growth and Scale include multiple bots. Each plan lists the exact bot limit. Enterprise can have unlimited bots and dedicated support.",
-  },
+    a: "Starter includes 1 bot; Growth and Scale include multiple bots. Each plan lists the exact bot limit. Enterprise can have unlimited bots and dedicated support."},
   {
     q: "Is there API access?",
-    a: "API access is included on Growth, Scale, and Enterprise plans. Use it to send messages from your app, sync data, or build custom integrations.",
-  },
+    a: "API access is included on Growth, Scale, and Enterprise plans. Use it to send messages from your app, sync data, or build custom integrations."},
   {
     q: "Where is my data stored?",
-    a: "Your content and chat data are stored in secure, encrypted infrastructure. We do not train general AI models on your data. See our Privacy Policy for full details.",
-  },
+    a: "Your content and chat data are stored in secure, encrypted infrastructure. We do not train general AI models on your data. See our Privacy Policy for full details."},
   {
     q: "Can I remove \"Powered by\" branding?",
-    a: "Scale and Enterprise plans include white-label (no branding). On other plans, you can add the Remove Branding add-on for an extra fee.",
-  },
+    a: "Scale and Enterprise plans include white-label (no branding). On other plans, you can add the Remove Branding add-on for an extra fee."},
   {
     q: "What kind of support do I get?",
-    a: "All plans include email support and documentation. Growth and above get priority support; Enterprise includes dedicated success management and SLA.",
-  },
+    a: "All plans include email support and documentation. Growth and above get priority support; Enterprise includes dedicated success management and SLA."},
   {
     q: "Do you have an uptime SLA?",
-    a: "We aim for 99.9% uptime. Scale and Enterprise plans include a formal SLA. Check our status page for current availability.",
-  },
+    a: "We aim for 99.9% uptime. Scale and Enterprise plans include a formal SLA. Check our status page for current availability."},
 ];
 
 export default function PricingPage() {

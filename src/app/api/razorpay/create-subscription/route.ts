@@ -38,9 +38,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid interval. Use monthly or yearly." }, { status: 400 });
   }
 
-  const plan = await prisma.plan.findFirst({
-    where: { name: planName, isActive: true },
-  });
+  const plan = await prisma.Plan.findFirst({
+    where: { name: planName, isActive: true }});
   if (!plan) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
@@ -68,13 +67,11 @@ export async function POST(request: Request) {
       plan_id: razorpayPlanId,
       total_count: totalCount,
       customer_notify: 1,
-      notes: { userId: ownerId, planName },
-    });
+      notes: { userId: ownerId, planName }});
 
     return NextResponse.json({
       subscriptionId: subscription.id,
-      shortUrl: subscription.short_url,
-    });
+      shortUrl: subscription.short_url});
   } catch (e) {
     console.error("Razorpay create subscription error:", e);
     return NextResponse.json(

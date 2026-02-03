@@ -27,19 +27,15 @@ export async function GET(
   const cursor = searchParams.get("cursor") || undefined;
 
   // List chats with projection: only last message per chat for preview; cursor-based pagination
-  const chats = await prisma.chat.findMany({
+  const chats = await prisma.Chat.findMany({
     where: {
       botId,
       ...(search
         ? {
             chatmessage: {
               some: {
-                content: { contains: search },
-              },
-            },
-          }
-        : {}),
-    },
+                content: { contains: search }}}}
+        : {})},
     select: {
       id: true,
       visitorId: true,
@@ -52,13 +48,10 @@ export async function GET(
       chatmessage: {
         orderBy: { createdAt: "desc" },
         take: 1,
-        select: { id: true, role: true, content: true, createdAt: true },
-      },
-    },
+        select: { id: true, role: true, content: true, createdAt: true }}},
     orderBy: { createdAt: "desc" },
     take: limit + 1,
-    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-  });
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {})});
 
   const hasMore = chats.length > limit;
   const list = hasMore ? chats.slice(0, limit) : chats;
@@ -66,8 +59,7 @@ export async function GET(
 
   const res = NextResponse.json({
     chats: list,
-    nextCursor,
-  });
+    nextCursor});
   res.headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=10`);
   return res;
 }

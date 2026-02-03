@@ -39,9 +39,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid interval. Use monthly or yearly." }, { status: 400 });
   }
 
-  const plan = await prisma.plan.findFirst({
-    where: { name: planName, isActive: true },
-  });
+  const plan = await prisma.Plan.findFirst({
+    where: { name: planName, isActive: true }});
   if (!plan) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
@@ -69,18 +68,14 @@ export async function POST(request: Request) {
     application_context: {
       brand_name: "SiteBotGPT",
       return_url: appUrl + "/dashboard/pricing?success=true",
-      cancel_url: appUrl + "/dashboard/pricing?canceled=true",
-    },
-  };
+      cancel_url: appUrl + "/dashboard/pricing?canceled=true"}};
 
   const res = await fetch(PAYPAL_API_BASE + "/v1/billing/subscriptions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify(payload),
-  });
+      Authorization: "Bearer " + token},
+    body: JSON.stringify(payload)});
 
   if (!res.ok) {
     const err = await res.text();
@@ -99,6 +94,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     subscriptionId: data.id,
-    approvalUrl: approveLink?.href ?? null,
-  });
+    approvalUrl: approveLink?.href ?? null});
 }

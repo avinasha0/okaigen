@@ -37,8 +37,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       markdown,
-      filename: file.name.replace(/\.pdf$/i, "") + ".md",
-    });
+      filename: file.name.replace(/\.pdf$/i, "") + ".md"});
   } catch (err) {
     console.error("[convert-pdf-to-markdown]", err);
     return NextResponse.json(

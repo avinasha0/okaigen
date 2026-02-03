@@ -10,8 +10,7 @@ export function createMetadata({
   path = "",
   keywords = [],
   noIndex = false,
-  image,
-}: {
+  image}: {
   title: string;
   description: string;
   path?: string;
@@ -36,18 +35,15 @@ export function createMetadata({
       siteName: SITE_NAME,
       title: displayTitle,
       description,
-      images: image ? [{ url: image, alt: title }] : undefined,
-    },
+      images: image ? [{ url: image, alt: title }] : undefined},
     twitter: {
       card: "summary_large_image",
       title: displayTitle,
-      description,
-    },
+      description},
     robots: noIndex
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true } },
-    alternates: path ? { canonical: url } : undefined,
-  };
+    alternates: path ? { canonical: url } : undefined};
 }
 
 /** High-value, lower-competition keywords for this niche */
@@ -55,5 +51,4 @@ export const SEO_KEYWORDS = {
   main: ["AI chatbot", "website chatbot", "chatbot builder", "customer support chatbot", "AI support agent"],
   tools: ["PDF to markdown", "convert PDF markdown", "free AI tools", "sitemap generator", "XML sitemap"],
   convert: ["docx to markdown", "HTML to markdown", "free converter", "document converter"],
-  chatTools: ["chat with PDF", "AI document chat", "chat with website", "chat with text"],
-};
+  chatTools: ["chat with PDF", "AI document chat", "chat with website", "chat with text"]};

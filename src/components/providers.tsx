@@ -18,8 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         async: false,
         defer: false,
         appendTo: "head",
-        nonce: undefined,
-      }}
+        nonce: undefined}}
     >
       {content}
     </GoogleReCaptchaProvider>

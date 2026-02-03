@@ -52,21 +52,17 @@ export async function retrieveContext(
   // Optimization: Use JOIN to fetch chunks with embeddings in a single query (more efficient)
   // Also increase limit for better recall, but we'll still filter by similarity
   const CHUNK_LIMIT = 1000; // Increased for better recall, but filtered by similarity
-  const chunksPromise = prisma.chunk.findMany({
+  const chunksPromise = prisma.Chunk.findMany({
     where: {
       botId,
-      embedding: { isNot: null },
-    },
+      embedding: { isNot: null }},
     select: {
       id: true,
       content: true,
       metadata: true,
       embedding: {
         select: {
-          vector: true,
-        },
-      },
-    },
+          vector: true}}},
     take: CHUNK_LIMIT,
     orderBy: { createdAt: "desc" }, // Prefer recent chunks when over limit
   });
@@ -93,8 +89,7 @@ export async function retrieveContext(
         content: c.content,
         metadata: (c.metadata as Record<string, unknown>) || {},
         vector,
-        similarity,
-      });
+        similarity});
     }
   }
 
@@ -132,8 +127,7 @@ export async function retrieveContext(
 
   return {
     chunks: results,
-    confidence,
-  };
+    confidence};
 }
 
 async function summarizeContext(
@@ -147,16 +141,13 @@ async function summarizeContext(
       {
         role: "system",
         content:
-          "You summarize content into 4-6 short bullet points. Each bullet is under 10 words. Use your own words. Do not copy phrases. Output only the bullets, nothing else.",
-      },
+          "You summarize content into 4-6 short bullet points. Each bullet is under 10 words. Use your own words. Do not copy phrases. Output only the bullets, nothing else."},
       {
         role: "user",
-        content: `Topic: ${userMessage}\n\nContent to summarize:\n${contextText.slice(0, 6000)}`,
-      },
+        content: `Topic: ${userMessage}\n\nContent to summarize:\n${contextText.slice(0, 6000)}`},
     ],
     temperature: 0.2,
-    max_tokens: 200,
-  });
+    max_tokens: 200});
   return completion.choices[0]?.message?.content?.trim() || contextText.slice(0, 500);
 }
 
@@ -245,16 +236,14 @@ async function generateResponseInternal(
   let bot = botCache.get(botId);
   const botPromise = bot
     ? Promise.resolve(bot)
-    : prisma.bot.findUnique({
+    : prisma.Bot.findUnique({
         where: { id: botId },
         select: {
           id: true,
           greetingMessage: true,
           tone: true,
           humanFallbackMessage: true,
-          confidenceThreshold: true,
-        },
-      }).then((b) => {
+          confidenceThreshold: true}}).then((b) => {
         if (b) {
           botCache.set(botId, b);
         }
@@ -287,7 +276,7 @@ async function generateResponseInternal(
       // Check if bot has any chunks at all (cached)
       let totalChunks = chunkCountCache.get(botId);
       if (totalChunks === null) {
-        totalChunks = await prisma.chunk.count({ where: { botId } });
+        totalChunks = await prisma.Chunk.count({ where: { botId } });
         chunkCountCache.set(botId, totalChunks);
       }
       
@@ -296,8 +285,7 @@ async function generateResponseInternal(
           response:
             "This bot doesn't have any content yet. Add sources and train it from the dashboard, then try again.",
           sources: [],
-          confidence: 0,
-        };
+          confidence: 0};
       }
     }
     
@@ -305,8 +293,7 @@ async function generateResponseInternal(
     return {
       response: bot.humanFallbackMessage || "I couldn't find this information in your content. Would you like to leave your contact and we'll get back to you?",
       sources: [],
-      confidence,
-    };
+      confidence};
   }
 
   // Optimization: Build context text efficiently
@@ -361,8 +348,7 @@ async function generateResponseInternal(
   const result = {
     response,
     sources,
-    confidence,
-  };
+    confidence};
 
   // Optimization: Cache response for quick prompts
   if (isQuickPrompt && messageHistory.length === 0) {
@@ -387,16 +373,14 @@ export async function* generateResponseStream(
   // Get bot config (cached)
   let bot = botCache.get(botId);
   if (!bot) {
-    bot = await prisma.bot.findUnique({
+    bot = await prisma.Bot.findUnique({
       where: { id: botId },
       select: {
         id: true,
         greetingMessage: true,
         tone: true,
         humanFallbackMessage: true,
-        confidenceThreshold: true,
-      },
-    });
+        confidenceThreshold: true}});
     if (bot) {
       botCache.set(botId, bot);
     }
@@ -416,7 +400,7 @@ export async function* generateResponseStream(
   if (confidence < CONFIDENCE_FLOOR || chunks.length === 0) {
     let totalChunks = chunkCountCache.get(botId);
     if (totalChunks === null) {
-      totalChunks = await prisma.chunk.count({ where: { botId } });
+      totalChunks = await prisma.Chunk.count({ where: { botId } });
       chunkCountCache.set(botId, totalChunks);
     }
     
@@ -464,8 +448,7 @@ export async function* generateResponseStream(
     max_tokens: isQuickPrompt ? 120 : 250,
     stream: true, // Enable streaming
   }, {
-    timeout: 30000,
-  });
+    timeout: 30000});
 
   let fullResponse = "";
   for await (const chunk of stream) {

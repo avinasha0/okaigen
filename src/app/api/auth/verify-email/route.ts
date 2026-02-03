@@ -11,13 +11,11 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/login?error=missing-token", req.url));
   }
 
-  const record = await prisma.verificationtoken.findFirst({
+  const record = await prisma.VerificationToken.findFirst({
     where: {
       identifier: { startsWith: "email-verification:" },
       token,
-      expires: { gt: new Date() },
-    },
-  });
+      expires: { gt: new Date() }}});
 
   if (!record) {
     return NextResponse.redirect(new URL("/login?error=invalid-or-expired", req.url));
@@ -25,13 +23,11 @@ export async function GET(req: Request) {
 
   const userId = record.identifier.replace(/^email-verification:/, "");
   await prisma.$transaction([
-    prisma.user.update({
+    prisma.User.update({
       where: { id: userId },
-      data: { emailVerified: new Date() },
-    }),
-    prisma.verificationtoken.deleteMany({
-      where: { identifier: record.identifier },
-    }),
+      data: { emailVerified: new Date() }}),
+    prisma.VerificationToken.deleteMany({
+      where: { identifier: record.identifier }}),
   ]);
 
   return NextResponse.redirect(new URL("/login?verified=1", req.url));

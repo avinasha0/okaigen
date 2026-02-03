@@ -11,8 +11,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 
 export default function NewBotPage() {
   const router = useRouter();
@@ -45,9 +44,7 @@ export default function NewBotPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim() || "My Bot",
-          websiteUrl: websiteUrl.trim() || undefined,
-        }),
-      });
+          websiteUrl: websiteUrl.trim() || undefined})});
       const data = await res.json();
       if (res.status === 402 && data.quotaExceeded) {
         setError(`${data.error} Upgrade at /pricing`);

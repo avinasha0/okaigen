@@ -41,34 +41,27 @@ export async function GET(
     topQuestions,
     sourceStats,
   ] = await Promise.all([
-    prisma.chat.count({
-      where: { botId, createdAt: { gte: since } },
-    }),
-    prisma.lead.count({
-      where: { botId, createdAt: { gte: since } },
-    }),
-    prisma.usagelog.findMany({
+    prisma.Chat.count({
+      where: { botId, createdAt: { gte: since } }}),
+    prisma.Lead.count({
+      where: { botId, createdAt: { gte: since } }}),
+    prisma.UsageLog.findMany({
       where: {
         botId,
         type: "message",
-        createdAt: { gte: since },
-      },
-      select: { createdAt: true, count: true },
-    }),
-    prisma.chatmessage.findMany({
+        createdAt: { gte: since }},
+      select: { createdAt: true, count: true }}),
+    prisma.ChatMessage.findMany({
       where: {
         chat: { botId },
         role: "user",
-        createdAt: { gte: since },
-      },
+        createdAt: { gte: since }},
       select: { content: true },
-      take: 200,
-    }),
-    prisma.chunk.groupBy({
+      take: 200}),
+    prisma.Chunk.groupBy({
       by: ["sourceId"],
       where: { botId },
-      _count: true,
-    }),
+      _count: true}),
   ]);
 
   const dailyMap: Record<string, number> = {};
@@ -93,16 +86,14 @@ export async function GET(
     .map(([question, count]) => ({ question, count }));
 
   const sourceIds = sourceStats.map((s) => s.sourceId);
-  const sources = await prisma.source.findMany({
+  const sources = await prisma.Source.findMany({
     where: { id: { in: sourceIds } },
-    select: { id: true, title: true, url: true },
-  });
+    select: { id: true, title: true, url: true }});
   const sourceMap = Object.fromEntries(sources.map((s) => [s.id, s]));
 
   const sourcesUsed = sourceStats.map((s) => ({
     ...sourceMap[s.sourceId],
-    chunkCount: s._count,
-  }));
+    chunkCount: s._count}));
 
   const res = NextResponse.json({
     totalChats,
@@ -111,8 +102,7 @@ export async function GET(
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([date, count]) => ({ date, count })),
     topQuestions: topQ,
-    sourcesUsed,
-  });
+    sourcesUsed});
   res.headers.set("Cache-Control", "private, max-age=60, stale-while-revalidate=30");
   return res;
 }

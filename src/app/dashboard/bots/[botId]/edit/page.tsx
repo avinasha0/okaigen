@@ -11,8 +11,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  CardTitle} from "@/components/ui/card";
 import * as Select from "@radix-ui/react-select";
 
 export default function BotEditPage() {
@@ -55,9 +54,7 @@ export default function BotEditPage() {
           confidenceThreshold: bot.confidenceThreshold,
           leadCaptureTrigger: bot.leadCaptureTrigger,
           humanFallbackMessage: bot.humanFallbackMessage,
-          quickPrompts: bot.quickPrompts,
-        }),
-      });
+          quickPrompts: bot.quickPrompts})});
       if (!res.ok) throw new Error("Failed to update");
       router.push(`/dashboard/bots/${botId}`);
       router.refresh();
@@ -141,8 +138,7 @@ export default function BotEditPage() {
                 onChange={(e) =>
                   setBot({
                     ...bot,
-                    confidenceThreshold: parseFloat(e.target.value),
-                  })
+                    confidenceThreshold: parseFloat(e.target.value)})
                 }
                 className="w-full"
               />
@@ -176,8 +172,7 @@ export default function BotEditPage() {
                       if (data.prompts?.length) {
                         setBot({
                           ...bot,
-                          quickPrompts: JSON.stringify(data.prompts),
-                        });
+                          quickPrompts: JSON.stringify(data.prompts)});
                       }
                     } catch {
                       /* ignore */
@@ -211,8 +206,7 @@ export default function BotEditPage() {
                             .map((s) => s.trim())
                             .filter(Boolean)
                         )
-                      : null,
-                  })
+                      : null})
                 }
                 placeholder={"What do you offer?\nHow can I contact you?\nTell me about your services"}
                 className="flex w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"

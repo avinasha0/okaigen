@@ -23,8 +23,7 @@ export class SimpleQueue<T> {
         id: Math.random().toString(36).slice(2),
         data,
         resolve,
-        reject,
-      });
+        reject});
       this.process();
     });
   }
