@@ -10,13 +10,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, X-Bot-Key, X-Atlas-Key, X-Visitor-Id, X-Page-Url",
 };
 
-// Content Security Policy for reCAPTCHA
+// Content Security Policy
 const cspHeader = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
-  "frame-src 'self' https://www.google.com https://www.recaptcha.net",
-  "style-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com",
-  "connect-src 'self' https://www.google.com https://www.recaptcha.net",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data:",
 ].join("; ");
@@ -30,7 +28,7 @@ export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const response = NextResponse.next();
 
-  // Add CSP header for reCAPTCHA support
+  // Add CSP header
   response.headers.set("Content-Security-Policy", cspHeader);
 
   // Handle OPTIONS for CORS routes

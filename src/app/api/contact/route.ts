@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
-import { verifyRecaptchaToken } from "@/lib/recaptcha";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -10,7 +9,6 @@ const contactSchema = z.object({
   email: z.string().email("Invalid email address"),
   subject: z.string().min(1, "Subject is required").max(500),
   message: z.string().min(10, "Message must be at least 10 characters").max(10000),
-  recaptchaToken: z.string().optional(),
 });
 
 /** Where contact form submissions are emailed (CONTACT_EMAIL or EMAIL_FROM). */
@@ -50,15 +48,8 @@ export async function POST(req: Request) {
       const msg = Object.values(first)[0]?.[0] ?? "Invalid input";
       return NextResponse.json({ error: msg }, { status: 400 });
     }
-    const { name, email, subject, message, recaptchaToken } = parsed.data;
+    const { name, email, subject, message } = parsed.data;
 
-    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
-    if (!recaptchaResult.success) {
-      return NextResponse.json(
-        { error: "Verification failed. Please try again." },
-        { status: 400 }
-      );
-    }
     await prisma.contactSubmission.create({
       data: { name, email, subject, message },
     });

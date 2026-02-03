@@ -4,7 +4,6 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
 import bcrypt from "bcryptjs";
-import { verifyRecaptchaToken, isRecaptchaEnabled } from "./recaptcha";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -25,26 +24,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        recaptchaToken: { label: "reCAPTCHA", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
-        // Verify reCAPTCHA - only block if token is completely missing
-        // Allow login if token exists but is expired (prevents user lockout)
-        const token = credentials.recaptchaToken as string | undefined;
-        if (token && token.trim()) {
-          const recaptchaResult = await verifyRecaptchaToken(token);
-          if (!recaptchaResult.success) {
-            // Token provided but invalid/expired - log but don't block
-            console.warn("reCAPTCHA token invalid/expired, allowing login:", recaptchaResult.error);
-          }
-          // Continue with login regardless of reCAPTCHA result if token was provided
-        } else if (isRecaptchaEnabled()) {
-          // No token at all - block login
-          console.error("reCAPTCHA token missing");
-          return null;
-        }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },

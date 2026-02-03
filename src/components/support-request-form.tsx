@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ReCaptcha } from "@/components/recaptcha";
 import {
   Card,
   CardContent,
@@ -28,7 +27,6 @@ export function SupportRequestForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +56,6 @@ export function SupportRequestForm() {
           email: email.trim(),
           subject: `${subject} [${ticketNumber}]`,
           message: `Ticket: ${ticketNumber}\n\n${(message.trim() || "No additional message.").slice(0, 10000)}`,
-          recaptchaToken: recaptchaToken || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -168,9 +165,6 @@ export function SupportRequestForm() {
                 {error && (
                   <p className="text-sm text-red-600">{error}</p>
                 )}
-                <div className="flex justify-center">
-                  <ReCaptcha onChange={setRecaptchaToken} />
-                </div>
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" disabled={submitting}>
                     {submitting ? "Submitting..." : "Submit"}

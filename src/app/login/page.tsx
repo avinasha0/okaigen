@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { ReCaptcha, isRecaptchaEnabled } from "@/components/recaptcha";
 
 function LoginForm() {
   const router = useRouter();
@@ -18,7 +17,6 @@ function LoginForm() {
   const errorParam = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [recaptchaGetToken, setRecaptchaGetToken] = useState<(() => string | null) | null>(null);
   const [error, setError] = useState(errorParam === "invalid-or-expired" ? "Verification link expired or invalid. You can request a new one after signing up again or contact support." : errorParam === "missing-token" ? "Missing verification token." : "");
   const [loading, setLoading] = useState(false);
 
@@ -54,15 +52,11 @@ function LoginForm() {
       setError("Please enter your password");
       return;
     }
-    // Get token from widget right before submission
-    const finalToken = isRecaptchaEnabled && recaptchaGetToken ? recaptchaGetToken() : null;
-    
     setLoading(true);
     try {
       const res = await signIn("credentials", {
         email: trimmedEmail,
         password,
-        recaptchaToken: finalToken || undefined,
         redirect: false,
       });
       
@@ -202,9 +196,6 @@ function LoginForm() {
                   required
                   className="h-12 rounded-xl border-slate-200 bg-white focus:border-[#1a6aff] focus:ring-[#1a6aff]/20"
                 />
-              </div>
-              <div className="flex justify-center">
-                <ReCaptcha onGetToken={setRecaptchaGetToken} />
               </div>
               <Button
                 type="submit"
