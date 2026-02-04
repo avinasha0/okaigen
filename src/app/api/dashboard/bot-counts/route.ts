@@ -47,5 +47,5 @@ export async function GET() {
   for (const g of chatGroups) counts[g.botId].chats = g._count._all;
   for (const g of leadGroups) counts[g.botId].leads = g._count._all;
 
-  return NextResponse.json({ counts });
+  return NextResponse.json({ counts }, { headers: { "Cache-Control": "private, max-age=15" } });
 }
