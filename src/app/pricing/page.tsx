@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { ResponsiveNav } from "@/components/responsive-nav";
 import { PLANS } from "@/lib/plans";
+import { useRouter } from "next/navigation";
 
 const CelebrationConfetti = dynamic(
   () => import("@/components/celebration-confetti").then((m) => ({ default: m.CelebrationConfetti })),
@@ -52,6 +53,21 @@ const FAQ = [
 
 export default function PricingPage() {
   const [yearly, setYearly] = useState(false);
+  const router = useRouter();
+  async function handleGetAddonClick() {
+    try {
+      const res = await fetch("/api/auth/session");
+      const data = await res.json().catch(() => ({}));
+      const loggedIn = !!data?.user?.id;
+      if (!loggedIn) {
+        router.push("/login?callbackUrl=/pricing");
+        return;
+      }
+      router.push("/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding");
+    } catch {
+      router.push("/login?callbackUrl=/pricing");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -215,15 +231,16 @@ export default function PricingPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold text-slate-900">+$29/mo</span>
-                  <Link
-                    href="/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding"
+                  <button
+                    type="button"
+                    onClick={handleGetAddonClick}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
                   >
                     Get add-on
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
