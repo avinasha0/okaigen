@@ -71,8 +71,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      const userId = token.id as string | undefined;
+      if (!userId) {
+        return session;
+      }
+      const userExists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+      if (!userExists) {
+        return { ...session, user: undefined };
+      }
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = userId;
         session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
         session.user.hasPassword = token.hasPassword as boolean;
       }

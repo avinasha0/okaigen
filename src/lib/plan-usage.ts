@@ -38,6 +38,16 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
     }
 
     if (!userPlan) {
+      // Ensure the user exists in the DB (session may have stale id after DB reset or migration)
+      const userExists = await prisma.user.findUnique({
+        where: { id: ownerId },
+        select: { id: true },
+      });
+      if (!userExists) {
+        console.error(`getPlanUsage: No User record for ownerId ${ownerId}; session may be stale.`);
+        return null;
+      }
+
       // Ensure Starter plan exists - create if missing
       let starterPlan = await prisma.plan.findFirst({
         where: { name: "Starter", isActive: true }});
@@ -67,8 +77,9 @@ async function getPlanUsageUncached(userId: string): Promise<PlanUsage | null> {
           include: { plan: true }});
         console.log(`Assigned Starter plan to user ${ownerId}`);
       } catch (createError: unknown) {
-        // If create fails (e.g., race condition), try to fetch again
-        if (createError instanceof Error && createError.message.includes("Unique constraint")) {
+        const isUniqueViolation = createError instanceof Error && createError.message.includes("Unique constraint");
+        const isFkViolation = createError && typeof createError === "object" && "code" in createError && (createError as { code: string }).code === "P2003";
+        if (isUniqueViolation || isFkViolation) {
           userPlan = await prisma.userPlan.findUnique({
             where: { userId: ownerId },
             include: { plan: true }});
