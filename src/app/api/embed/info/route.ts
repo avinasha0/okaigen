@@ -24,11 +24,26 @@ export async function GET(req: Request) {
     where: botId.startsWith("atlas_")
       ? { publicKey: botId }
       : { id: botId },
-    select: { greetingMessage: true, quickPrompts: true, removeBranding: true }});
+    select: {
+      greetingMessage: true,
+      quickPrompts: true,
+      removeBranding: true,
+      userId: true,
+    },
+  });
 
   if (!bot) {
     return jsonWithCors({ error: "Bot not found" }, { status: 404 });
   }
+
+  const owner = await prisma.user.findUnique({
+    where: { id: bot.userId },
+    select: { customBrandingName: true },
+  });
+  const brandingName = (owner?.customBrandingName?.trim() || "SiteBotGPT") as string;
+  const headerTitle = owner?.customBrandingName?.trim()
+    ? `${owner.customBrandingName.trim()} Helper`
+    : "SiteBotGPT Helper";
 
   let prompts: string[] = [
     "What do you offer?",
@@ -50,5 +65,8 @@ export async function GET(req: Request) {
   return jsonWithCors({
     greeting: bot.greetingMessage,
     quickPrompts: prompts,
-    hideBranding: bot.removeBranding === true});
+    hideBranding: bot.removeBranding === true,
+    brandingName,
+    headerTitle,
+  });
 }

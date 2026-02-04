@@ -133,6 +133,16 @@ export function hasWebhooks(planName: string): boolean {
   return getCapabilities(planName)?.webhooks ?? false;
 }
 
+/** True if plan includes remove/custom branding (Scale, Enterprise). Growth can add via add-on. */
+export function hasRemoveBrandingIncluded(planName: string): boolean {
+  return planName === "Scale" || planName === "Enterprise";
+}
+
+/** True if user can enable branding options: Scale/Enterprise (included) or Growth with add-on. */
+export function canUseBranding(planName: string, removeBrandingAddOn: boolean): boolean {
+  return hasRemoveBrandingIncluded(planName) || (planName === "Growth" && removeBrandingAddOn);
+}
+
 /** True if plan has priority/dedicated support */
 export function hasPrioritySupport(planName: string): boolean {
   return getCapabilities(planName)?.prioritySupport ?? false;

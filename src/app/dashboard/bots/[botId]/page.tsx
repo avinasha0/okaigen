@@ -6,6 +6,8 @@ import { DeleteBotButton } from "@/components/delete-bot-button";
 import { EmbedInstructions } from "@/components/embed-instructions";
 import { prisma } from "@/lib/db";
 import { getEffectiveOwnerId } from "@/lib/team";
+import { canUseBranding } from "@/lib/plans-config";
+import { getPlanUsage } from "@/lib/plan-usage";
 import { generateBotPublicKey } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,9 +44,12 @@ export default async function BotDetailPage({
   const owner = session?.user?.id
     ? await prisma.user.findUnique({
         where: { id: ownerId },
-        select: { removeBrandingAddOn: true }})
+        select: { removeBrandingAddOn: true },
+      })
     : null;
-  const hasRemoveBrandingAddOn = owner?.removeBrandingAddOn ?? false;
+  const planUsage = session?.user?.id ? await getPlanUsage(session.user.id) : null;
+  const planName = planUsage?.planName ?? "Starter";
+  const hasBrandingAccess = canUseBranding(planName, owner?.removeBrandingAddOn ?? false);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const embedCode = `<script src="${baseUrl}/widget.js" data-bot="${publicKey}" data-base="${baseUrl}"></script>`;
@@ -95,7 +100,7 @@ export default async function BotDetailPage({
           </CardHeader>
           <CardContent className="space-y-4">
             <EmbedInstructions embedCode={embedCode} />
-            <BrandingToggle botId={bot.id} initialRemoveBranding={bot.removeBranding ?? false} hasAddOn={hasRemoveBrandingAddOn} />
+            <BrandingToggle botId={bot.id} initialRemoveBranding={bot.removeBranding ?? false} hasBrandingAccess={hasBrandingAccess} />
           </CardContent>
         </Card>
 

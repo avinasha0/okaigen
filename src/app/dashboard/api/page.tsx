@@ -89,7 +89,10 @@ export default function ApiKeysPage() {
     setCreatedKeyId(null);
   }
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const [baseUrl, setBaseUrl] = useState("");
+  useEffect(() => {
+    setBaseUrl(typeof window !== "undefined" ? window.location.origin : "");
+  }, []);
 
   if (!hasApiAccess) {
     return (
@@ -233,7 +236,7 @@ export default function ApiKeysPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-zinc-600">
-            <strong>Endpoint:</strong> <code className="rounded bg-zinc-100 px-1 py-0.5">{baseUrl}/api/chat</code>
+            <strong>Endpoint:</strong> <code className="rounded bg-zinc-100 px-1 py-0.5">{baseUrl || "[origin]"}/api/chat</code>
           </p>
           <p className="text-sm text-zinc-600">
             <strong>Headers:</strong> <code className="rounded bg-zinc-100 px-1 py-0.5">Authorization: Bearer YOUR_API_KEY</code> or <code className="rounded bg-zinc-100 px-1 py-0.5">x-api-key: YOUR_API_KEY</code>
@@ -242,7 +245,7 @@ export default function ApiKeysPage() {
             <strong>Body (JSON):</strong> <code className="rounded bg-zinc-100 px-1 py-0.5">&#123; &quot;botId&quot;: &quot;your_bot_id&quot;, &quot;message&quot;: &quot;Hello&quot; &#125;</code>
           </p>
           <pre className="overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-900 p-4 text-sm text-zinc-100">
-{`curl -X POST ${baseUrl}/api/chat \\
+{`curl -X POST ${baseUrl || "[origin]"}/api/chat \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"botId": "YOUR_BOT_ID", "message": "Hello"}'`}

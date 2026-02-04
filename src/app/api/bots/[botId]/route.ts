@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getBotForUser, getEffectiveOwnerId } from "@/lib/team";
+import { canUseBranding } from "@/lib/plans-config";
+import { getPlanUsage } from "@/lib/plan-usage";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -62,10 +64,14 @@ export async function PATCH(
       const ownerId = await getEffectiveOwnerId(session.user.id);
       const owner = await prisma.user.findUnique({
         where: { id: ownerId },
-        select: { removeBrandingAddOn: true }});
-      if (!owner?.removeBrandingAddOn) {
+        select: { removeBrandingAddOn: true },
+      });
+      const planUsage = await getPlanUsage(session.user.id);
+      const planName = planUsage?.planName ?? "Starter";
+      const allowed = canUseBranding(planName, owner?.removeBrandingAddOn ?? false);
+      if (!allowed) {
         return NextResponse.json(
-          { error: "Remove SiteBotGPT branding add-on is required. Get this add-on from Pricing or Contact us." },
+          { error: "Remove branding is included on Scale and Enterprise plans, or available as an add-on for Growth. Upgrade or get the add-on from Pricing or Contact us." },
           { status: 403 }
         );
       }

@@ -22,7 +22,7 @@ function generateTicketNumber(): string {
 
 export function SupportRequestForm() {
   const [open, setOpen] = useState(false);
-  const [ticketNumber] = useState(() => generateTicketNumber());
+  const [ticketNumber, setTicketNumber] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -34,6 +34,7 @@ export function SupportRequestForm() {
 
   const handleOpen = useCallback(() => {
     setOpen(true);
+    setTicketNumber(generateTicketNumber());
     setSubmitted(false);
     setError("");
   }, []);

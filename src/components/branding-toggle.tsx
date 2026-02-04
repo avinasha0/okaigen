@@ -6,10 +6,11 @@ import { useState } from "react";
 export function BrandingToggle({
   botId,
   initialRemoveBranding,
-  hasAddOn}: {
+  hasBrandingAccess,
+}: {
   botId: string;
   initialRemoveBranding: boolean;
-  hasAddOn: boolean;
+  hasBrandingAccess: boolean;
 }) {
   const [removeBranding, setRemoveBranding] = useState(initialRemoveBranding);
   const [saving, setSaving] = useState(false);
@@ -20,7 +21,8 @@ export function BrandingToggle({
       const res = await fetch(`/api/bots/${botId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ removeBranding: checked })});
+        body: JSON.stringify({ removeBranding: checked }),
+      });
       if (res.ok) {
         setRemoveBranding(checked);
       } else {
@@ -39,12 +41,16 @@ export function BrandingToggle({
       <div>
         <p className="font-medium text-slate-900">Remove SiteBotGPT branding</p>
         <p className="text-sm text-slate-500">
-          Hide &quot;Powered by SiteBotGPT&quot; in the chat widget (white-label).
-          {!hasAddOn && " Purchase the add-on to enable."}
+          Hide &quot;Powered by&quot; in the chat widget (white-label). Custom branding name is set in{" "}
+          <Link href="/dashboard/settings" className="font-medium text-[#1a6aff] hover:underline">
+            Settings → Branding
+          </Link>
+          .
+          {!hasBrandingAccess && " Scale and Enterprise include this; Growth can add it as an add-on."}
         </p>
       </div>
       <div className="flex items-center gap-3">
-        {hasAddOn ? (
+        {hasBrandingAccess ? (
           <label className="relative inline-flex cursor-pointer items-center">
             <input
               type="checkbox"
@@ -60,10 +66,10 @@ export function BrandingToggle({
           </label>
         ) : (
           <Link
-            href="/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding"
+            href="/dashboard/settings"
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
           >
-            Get add-on
+            Get access in Settings
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

@@ -24,9 +24,7 @@ declare global {
 }
 
 /** Only true when NEXT_PUBLIC_RECAPTCHA_ENABLED is "true" (set only in production). Disabled on localhost. */
-const recaptchaEnabled =
-  typeof window !== "undefined" &&
-  process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === "true";
+const recaptchaEnabled = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === "true";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 const SCRIPT_URL = "https://www.google.com/recaptcha/api.js";

@@ -4,7 +4,9 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const schema = z.object({
-  name: z.string().max(255).nullable()});
+  name: z.string().max(255).nullable().optional(),
+  customBrandingName: z.string().max(100).nullable().optional(),
+});
 
 export async function PATCH(req: Request) {
   try {
@@ -14,11 +16,15 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { name } = schema.parse(body);
+    const { name, customBrandingName } = schema.parse(body);
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { name: name ?? null }});
+      data: {
+        ...(name !== undefined && { name: name ?? null }),
+        ...(customBrandingName !== undefined && { customBrandingName: customBrandingName?.trim() || null }),
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

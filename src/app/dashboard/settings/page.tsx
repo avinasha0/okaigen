@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { getPlanUsage } from "@/lib/plan-usage";
 import { prisma } from "@/lib/db";
+import { canUseBranding } from "@/lib/plans-config";
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import {
   CardTitle} from "@/components/ui/card";
 import { SettingsProfileForm } from "@/components/settings-profile-form";
 import { SettingsPasswordForm } from "@/components/settings-password-form";
+import { SettingsBrandingForm } from "@/components/settings-branding-form";
 import { BillingPortalButton } from "@/components/billing-portal-button";
 
 export default async function SettingsPage() {
@@ -18,9 +20,13 @@ export default async function SettingsPage() {
   const userRecord = session?.user?.id
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { password: true }})
+        select: { password: true, removeBrandingAddOn: true, customBrandingName: true },
+      })
     : null;
   const hasPassword = !!userRecord?.password;
+  const planName = planUsage?.planName ?? "Starter";
+  const hasBrandingAddOn = userRecord?.removeBrandingAddOn ?? false;
+  const canUseBrandingOptions = canUseBranding(planName, hasBrandingAddOn);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6 md:px-8">
@@ -52,6 +58,20 @@ export default async function SettingsPage() {
           <SettingsPasswordForm hasPassword={hasPassword} />
         </CardContent>
       </Card>
+      {canUseBrandingOptions && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Branding</CardTitle>
+            <CardDescription>
+              Customize or remove SiteBotGPT branding in the chat widget. Set a custom name below; use the per-bot toggle on each bot&apos;s page to hide the &quot;Powered by&quot; line.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SettingsBrandingForm initialCustomBrandingName={userRecord?.customBrandingName ?? null} />
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>Add-ons</CardTitle>
@@ -61,17 +81,36 @@ export default async function SettingsPage() {
           <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-slate-900">Remove SiteBotGPT branding</p>
-              <p className="text-sm text-slate-500">White-label the chat widget (+$29/mo)</p>
+              <p className="text-sm text-slate-500">
+                {canUseBrandingOptions
+                  ? "Included in your plan. Customize in the Branding card above and use the toggle on each bot&apos;s page."
+                  : planName === "Growth"
+                    ? "White-label the chat widget (+$29/mo)"
+                    : "Available on Growth as an add-on, or included on Scale and Enterprise."}
+              </p>
             </div>
-            <Link
-              href="/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding"
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
-            >
-              Get this add-on
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+            {!canUseBrandingOptions && planName === "Growth" && (
+              <Link
+                href="/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding"
+                className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#1a6aff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
+              >
+                Get this add-on
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            )}
+            {!canUseBrandingOptions && planName === "Starter" && (
+              <Link
+                href="/dashboard/pricing"
+                className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
+              >
+                View plans
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            )}
           </div>
         </CardContent>
       </Card>

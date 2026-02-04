@@ -257,6 +257,7 @@ model User {
   createdAt                                        DateTime         @default(now())
   updatedAt                                        DateTime         @updatedAt
   removeBrandingAddOn                              Boolean          @default(false)
+  customBrandingName                               String?          @db.VarChar(100)
   termsAcceptedAt                                  DateTime?
   stripeCustomerId                                 String?          @unique(map: "User_stripeCustomerId_key")
   account                                          Account[]

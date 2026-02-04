@@ -213,8 +213,13 @@
         addMessage(data.greeting || "Hi! How can I help you today?", "assistant");
         quickPromptsList = data.quickPrompts && Array.isArray(data.quickPrompts) ? data.quickPrompts : defaultPrompts;
         addQuickPrompts(quickPromptsList);
+        var headerTop = panel.querySelector(".atlas-header-top");
+        if (headerTop) headerTop.textContent = data.headerTitle || "SiteBotGPT Helper";
         var brandingEl = panel.querySelector(".atlas-branding");
-        if (brandingEl) brandingEl.style.display = data.hideBranding ? "none" : "block";
+        if (brandingEl) {
+          brandingEl.style.display = data.hideBranding ? "none" : "block";
+          brandingEl.textContent = "Powered by " + (data.brandingName || "SiteBotGPT");
+        }
       })
       .catch(function () {
         if (loadingDiv.parentNode) loadingDiv.remove();
