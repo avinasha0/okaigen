@@ -84,3 +84,6 @@ export const requestDeduplicator = new RequestDeduplicator();
 export function normalizeCacheKey(text: string): string {
   return text.toLowerCase().trim().replace(/\s+/g, " ");
 }
+
+// Context cache: Cache RAG context retrieval per query (5 minutes)
+export const contextCache = new SimpleCache<{ chunks: { chunkId: string; content: string; metadata: Record<string, unknown>; similarity: number }[]; confidence: number }>(300000);

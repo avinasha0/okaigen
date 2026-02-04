@@ -13,7 +13,7 @@ import { openai, CHAT_MODEL } from "./openai";
 import { generateEmbedding } from "./embeddings";
 import { prisma } from "./db";
 import { searchVectors, type VectorResult, cosineSimilarity } from "./vector-search";
-import { responseCache, normalizeCacheKey, botCache, chunkCountCache, requestDeduplicator } from "./cache";
+import { responseCache, normalizeCacheKey, botCache, chunkCountCache, requestDeduplicator, contextCache } from "./cache";
 
 export interface RAGContext {
   chunks: VectorResult[];
@@ -46,6 +46,11 @@ export async function retrieveContext(
   maxChunks: number = 10,
   minSimilarity: number = 0.3 // Hard floor: minimum similarity to consider
 ): Promise<RAGContext> {
+  const ctxKey = `ctx:${botId}:${normalizeCacheKey(query)}:${maxChunks}:${minSimilarity}`;
+  const cachedCtx = contextCache.get(ctxKey);
+  if (cachedCtx) {
+    return { chunks: cachedCtx.chunks, confidence: cachedCtx.confidence };
+  }
   // Optimization: Generate embedding in parallel with initial bot validation
   const queryEmbeddingPromise = generateEmbedding(query);
 
@@ -65,26 +70,37 @@ export async function retrieveContext(
 
   console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", embeddings=${embeddings.length}`);
 
-  // Optimization: Pre-filter and convert vectors in one pass with early termination
-  // Use a more efficient approach: compute similarity as we go and keep top candidates
-  const scoredIds: Array<{ id: string; similarity: number }> = [];
-  
+  const topK = maxChunks * 2;
+  const queryVec = new Float32Array(queryEmbedding);
+  const candidates: Array<{ id: string; similarity: number }> = [];
   for (const e of embeddings) {
-    const vector = toNumberVector(e.vector);
-    if (vector.length !== queryEmbedding.length) continue;
-    
-    // Compute similarity immediately and keep only promising candidates
-    const similarity = cosineSimilarity(queryEmbedding, vector);
-    if (similarity >= minSimilarity) {
-      scoredIds.push({ id: e.chunkId, similarity });
+    const arr = toNumberVector(e.vector);
+    if (arr.length !== queryVec.length) continue;
+    const vec = new Float32Array(arr);
+    let dot = 0;
+    let na = 0;
+    let nb = 0;
+    for (let i = 0; i < vec.length; i++) {
+      const a = queryVec[i];
+      const b = vec[i];
+      dot += a * b;
+      na += a * a;
+      nb += b * b;
+    }
+    const mag = Math.sqrt(na) * Math.sqrt(nb);
+    const sim = mag === 0 ? 0 : dot / mag;
+    if (sim < minSimilarity) continue;
+    if (candidates.length < topK) {
+      candidates.push({ id: e.chunkId, similarity: sim });
+      if (candidates.length === topK) candidates.sort((a, b) => b.similarity - a.similarity);
+    } else if (sim > candidates[candidates.length - 1].similarity) {
+      candidates[candidates.length - 1] = { id: e.chunkId, similarity: sim };
+      candidates.sort((a, b) => b.similarity - a.similarity);
     }
   }
+  const topIds = candidates;
 
-  // Sort by similarity (descending) and take top results
-  scoredIds.sort((a, b) => b.similarity - a.similarity);
-  const topIds = scoredIds.slice(0, maxChunks * 2); // Get 2x for windowing
-
-  console.log(`[rag] scored embeddings: ${scoredIds.length} candidates >= ${minSimilarity}`);
+  console.log(`[rag] scored embeddings: ${candidates.length} candidates >= ${minSimilarity}`);
 
   // Apply adaptive windowing to top candidates
   let results: VectorResult[] = [];
@@ -98,7 +114,7 @@ export async function retrieveContext(
       select: { id: true, content: true, metadata: true },
     });
     // Map by id for quick lookup of similarity
-    const simMap = new Map(scoredIds.map((s) => [s.id, s.similarity]));
+    const simMap = new Map(topIds.map((s) => [s.id, s.similarity]));
     results = topChunks.map((c) => {
       let metadata: Record<string, unknown> = {};
       if (c.metadata) {
@@ -128,9 +144,9 @@ export async function retrieveContext(
     console.log(`[rag] Top chunk preview: ${results[0].content.substring(0, 200)}`);
   }
 
-  return {
-    chunks: results,
-    confidence};
+  const out = { chunks: results, confidence };
+  contextCache.set(ctxKey, out, 300000);
+  return out;
 }
 
 async function summarizeContext(
