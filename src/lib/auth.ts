@@ -50,14 +50,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.id) {
-        try {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { emailVerified: new Date() },
-          });
-        } catch {
-          // User may not exist yet (adapter creates after this). Don't block sign-in.
-        }
+        await prisma.user.updateMany({
+          where: { id: user.id, emailVerified: null },
+          data: { emailVerified: new Date() }});
       }
       return true;
     },

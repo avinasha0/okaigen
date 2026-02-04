@@ -255,7 +255,7 @@ model User {
   image                                            String?
   password                                         String?
   createdAt                                        DateTime         @default(now())
-  updatedAt                                        DateTime
+  updatedAt                                        DateTime         @updatedAt
   removeBrandingAddOn                              Boolean          @default(false)
   termsAcceptedAt                                  DateTime?
   stripeCustomerId                                 String?          @unique(map: "User_stripeCustomerId_key")
