@@ -9,6 +9,7 @@
     "postinstall": "node scripts/postinstall.js",
     "start": "node scripts/start-with-migrate.js",
     "lint": "eslint",
+    "dev:clean": "node scripts/dev-clean-start.js && next dev",
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts"
   },
