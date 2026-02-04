@@ -49,42 +49,57 @@ export async function retrieveContext(
   // Optimization: Generate embedding in parallel with initial bot validation
   const queryEmbeddingPromise = generateEmbedding(query);
 
-  // Optimization: Use JOIN to fetch chunks with embeddings in a single query (more efficient)
-  // Also increase limit for better recall, but we'll still filter by similarity
-  const CHUNK_LIMIT = 1000; // Increased for better recall, but filtered by similarity
-  const chunksPromise = prisma.chunk.findMany({
-    where: {
-      botId,
-      embedding: { isNot: null }},
-    select: {
-      id: true,
-      content: true,
-      metadata: true,
-      embedding: {
-        select: {
-          vector: true}}},
-    take: CHUNK_LIMIT,
-    orderBy: { createdAt: "desc" }, // Prefer recent chunks when over limit
+  // Optimization: Two-stage retrieval to reduce payload:
+  // 1) Fetch only embeddings (vector + chunkId) with a smaller limit
+  // 2) After scoring, fetch content+metadata for top IDs only
+  const EMBEDDING_LIMIT = 300;
+  const embeddingsPromise = prisma.embedding.findMany({
+    where: { botId },
+    select: { chunkId: true, vector: true },
+    take: EMBEDDING_LIMIT,
+    orderBy: { createdAt: "desc" },
   });
 
   // Wait for both operations in parallel
-  const [queryEmbedding, chunks] = await Promise.all([queryEmbeddingPromise, chunksPromise]);
+  const [queryEmbedding, embeddings] = await Promise.all([queryEmbeddingPromise, embeddingsPromise]);
 
-  console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", totalChunks=${chunks.length}`);
+  console.log(`[rag] retrieveContext: botId=${botId}, query="${query}", embeddings=${embeddings.length}`);
 
   // Optimization: Pre-filter and convert vectors in one pass with early termination
   // Use a more efficient approach: compute similarity as we go and keep top candidates
-  const chunksWithVectors: Array<{ id: string; content: string; metadata: Record<string, unknown>; vector: number[]; similarity: number }> = [];
+  const scoredIds: Array<{ id: string; similarity: number }> = [];
   
-  for (const c of chunks) {
-    if (!c.embedding) continue;
-    const vector = toNumberVector(c.embedding.vector);
+  for (const e of embeddings) {
+    const vector = toNumberVector(e.vector);
     if (vector.length !== queryEmbedding.length) continue;
     
     // Compute similarity immediately and keep only promising candidates
     const similarity = cosineSimilarity(queryEmbedding, vector);
     if (similarity >= minSimilarity) {
-      // Parse metadata JSON string or use empty object
+      scoredIds.push({ id: e.chunkId, similarity });
+    }
+  }
+
+  // Sort by similarity (descending) and take top results
+  scoredIds.sort((a, b) => b.similarity - a.similarity);
+  const topIds = scoredIds.slice(0, maxChunks * 2); // Get 2x for windowing
+
+  console.log(`[rag] scored embeddings: ${scoredIds.length} candidates >= ${minSimilarity}`);
+
+  // Apply adaptive windowing to top candidates
+  let results: VectorResult[] = [];
+  if (topIds.length > 0) {
+    const topScore = topIds[0].similarity;
+    const scoreWindow = Math.max(minSimilarity, topScore - 0.1);
+    const finalIds = topIds.filter((r) => r.similarity >= scoreWindow).slice(0, maxChunks).map((r) => r.id);
+    // Fetch content + metadata only for selected IDs
+    const topChunks = await prisma.chunk.findMany({
+      where: { id: { in: finalIds } },
+      select: { id: true, content: true, metadata: true },
+    });
+    // Map by id for quick lookup of similarity
+    const simMap = new Map(scoredIds.map((s) => [s.id, s.similarity]));
+    results = topChunks.map((c) => {
       let metadata: Record<string, unknown> = {};
       if (c.metadata) {
         try {
@@ -93,37 +108,16 @@ export async function retrieveContext(
           metadata = {};
         }
       }
-      chunksWithVectors.push({
-        id: c.id,
+      return {
+        chunkId: c.id,
         content: c.content,
         metadata,
-        vector,
-        similarity});
-    }
+        similarity: simMap.get(c.id) || minSimilarity,
+      };
+    });
+    // Sort results by similarity desc
+    results.sort((a, b) => b.similarity - a.similarity);
   }
-
-  // Sort by similarity (descending) and take top results
-  chunksWithVectors.sort((a, b) => b.similarity - a.similarity);
-  const topChunks = chunksWithVectors.slice(0, maxChunks * 2); // Get 2x for windowing
-
-  console.log(`[rag] chunksWithVectors: ${chunksWithVectors.length} chunks with valid embeddings >= ${minSimilarity}`);
-
-  // Apply adaptive windowing to top candidates
-  const results: VectorResult[] = topChunks.length > 0
-    ? (() => {
-        const topScore = topChunks[0].similarity;
-        const scoreWindow = Math.max(minSimilarity, topScore - 0.1);
-        return topChunks
-          .filter((r) => r.similarity >= scoreWindow)
-          .slice(0, maxChunks)
-          .map(({ id, content, metadata, similarity }) => ({ 
-            chunkId: id, 
-            content, 
-            metadata, 
-            similarity 
-          }));
-      })()
-    : [];
 
   const confidence = results.length > 0 ? results[0].similarity : 0;
 
