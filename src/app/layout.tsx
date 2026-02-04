@@ -28,8 +28,12 @@ export const metadata: Metadata = {
   keywords: ["AI chatbot", "website chatbot", "chatbot builder", "customer support chatbot", "AI support agent"],
   authors: [{ name: "SiteBotGPT", url: BASE_URL }],
   icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png"},
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/favicon.png", type: "image/png" }
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: ["/favicon.png"]},
   openGraph: {
     type: "website",
     locale: "en_US",
