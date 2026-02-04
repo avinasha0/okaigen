@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  trustHost: true, // Allow sign-in when request host is www vs non-www (e.g. www.sitebotgpt.com)
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -49,9 +50,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.id) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { emailVerified: new Date() }});
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: new Date() },
+          });
+        } catch {
+          // User may not exist yet (adapter creates after this). Don't block sign-in.
+        }
       }
       return true;
     },
