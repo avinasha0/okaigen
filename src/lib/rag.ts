@@ -373,6 +373,19 @@ export async function* generateResponseStream(
   userMessage: string,
   messageHistory: { role: "user" | "assistant"; content: string }[] = []
 ): AsyncGenerator<string, { sources: string[]; confidence: number }> {
+  // Fast path: Serve cached quick prompts immediately (no history)
+  const isQuickPromptEarly = userMessage.length < 60 && (userMessage.includes("?") || userMessage.split(" ").length < 10);
+  if (isQuickPromptEarly && messageHistory.length === 0) {
+    const cacheKey = `${botId}:${normalizeCacheKey(userMessage)}`;
+    const cached = responseCache.get(cacheKey);
+    if (cached) {
+      for (const ch of cached.response) {
+        yield ch;
+      }
+      return { sources: cached.sources, confidence: cached.confidence };
+    }
+  }
+
   // Get bot config (cached)
   let bot = botCache.get(botId);
   if (!bot) {
@@ -463,5 +476,10 @@ export async function* generateResponseStream(
   }
 
   const sources = [...new Set(chunks.map((c) => c.metadata?.sourceUrl as string).filter(Boolean))];
+  // Cache quick prompt responses for faster repeats
+  if (isQuickPrompt && messageHistory.length === 0) {
+    const cacheKey = `${botId}:${normalizeCacheKey(userMessage)}`;
+    responseCache.set(cacheKey, { response: fullResponse, sources, confidence }, 300000);
+  }
   return { sources, confidence };
 }
