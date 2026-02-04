@@ -12,6 +12,7 @@ import {
   CardTitle} from "@/components/ui/card";
 import { NewBotButton } from "@/components/new-bot-button";
 import { SupportRequestForm } from "@/components/support-request-form";
+import { BotCounts } from "@/components/bot-counts";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -19,16 +20,18 @@ export default async function DashboardPage() {
 
   const ownerId = await getEffectiveOwnerId(session.user.id);
 
-  const [bots, planUsage] = await Promise.all([
+  const [bots, planUsage, totalChunks, totalChats, totalLeads] = await Promise.all([
     prisma.bot.findMany({
       where: { userId: ownerId },
       select: {
         id: true,
         name: true,
-        createdAt: true,
-        _count: { select: { chunk: true, chat: true, lead: true } }},
+        createdAt: true },
       orderBy: { createdAt: "desc" }}),
     getPlanUsage(session.user.id),
+    prisma.chunk.count({ where: { bot: { userId: ownerId } } }),
+    prisma.chat.count({ where: { bot: { userId: ownerId } } }),
+    prisma.lead.count({ where: { bot: { userId: ownerId } } }),
   ]);
 
   const canCreateBot = planUsage ? planUsage.usedBots < planUsage.totalBots : true;
@@ -38,14 +41,12 @@ export default async function DashboardPage() {
         canViewAnalytics: m.canViewAnalytics(planUsage.planName)}))
     : { canViewLeads: false, canViewAnalytics: false };
 
-  const totals = bots.reduce(
-    (acc, b) => ({
-      bots: acc.bots + 1,
-      chunks: acc.chunks + b._count.chunk,
-      chats: acc.chats + b._count.chat,
-      leads: acc.leads + b._count.lead}),
-    { bots: 0, chunks: 0, chats: 0, leads: 0 }
-  );
+  const totals = {
+    bots: bots.length,
+    chunks: totalChunks,
+    chats: totalChats,
+    leads: totalLeads,
+  };
 
   return (
     <div className="min-h-screen">
@@ -202,8 +203,7 @@ export default async function DashboardPage() {
                         {bot.name}
                       </Link>
                       <p className="mt-1 text-sm text-zinc-500">
-                        {bot._count.chunk} chunks · {bot._count.chat} chats ·{" "}
-                        {bot._count.lead} leads
+                        <BotCounts botId={bot.id} />
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -282,4 +282,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-
