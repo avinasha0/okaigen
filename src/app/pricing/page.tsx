@@ -56,16 +56,18 @@ export default function PricingPage() {
   const router = useRouter();
   async function handleGetAddonClick() {
     try {
-      const res = await fetch("/api/auth/session");
+      const res = await fetch("/api/auth/session", { credentials: "include" });
       const data = await res.json().catch(() => ({}));
       const loggedIn = !!data?.user?.id;
       if (!loggedIn) {
-        router.push("/login?callbackUrl=/pricing");
+        const callbackUrl = encodeURIComponent("/dashboard/pricing");
+        router.push(`/login?callbackUrl=${callbackUrl}`);
         return;
       }
       router.push("/contact?subject=Add-on%3A%20Remove%20SiteBotGPT%20branding");
     } catch {
-      router.push("/login?callbackUrl=/pricing");
+      const callbackUrl = encodeURIComponent("/dashboard/pricing");
+      router.push(`/login?callbackUrl=${callbackUrl}`);
     }
   }
 
