@@ -177,7 +177,7 @@ export default async function DashboardPage() {
 
         <div id="bots">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-base font-semibold text-zinc-900 sm:text-lg">Your assistants</h2>
+            <h2 className="text-base font-semibold text-zinc-900 sm:text-lg">Your bots</h2>
             <NewBotButton canCreate={canCreateBot} planUsage={planUsage} variant="outline" size="sm" />
           </div>
           <Suspense
