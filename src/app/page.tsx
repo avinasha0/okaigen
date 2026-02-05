@@ -1,19 +1,73 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
-import { Footer } from "@/components/footer";
 import { ChatWidgetLazy } from "@/components/chat-widget-lazy";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const LAST_UPDATED = "2026-02-04";
+
+const FAQ_ITEMS = [
+  { q: "What is SiteBotGPT?", a: "SiteBotGPT is an AI chatbot platform that lets you train a chatbot on your website, documents, and PDFs. Visitors get instant, accurate answers 24/7. It is designed for businesses that want to automate customer support and capture leads without coding." },
+  { q: "What can I train the bot on?", a: "You can add your website URL (we crawl and index pages), upload PDFs, DOCX, TXT, or MD files, or paste raw text. The bot uses only your content—no generic knowledge—so answers stay on-brand and accurate." },
+  { q: "How long does training take?", a: "Usually a few minutes. Most sites are indexed in under 5 minutes. Training time depends on the amount of content you add." },
+  { q: "How do I add the chatbot to my site?", a: "Copy a single script tag from your dashboard and add it before the closing </body> tag of your HTML. The chat bubble appears in the corner. No iframes or complex setup—one line of code. Works on any website, WordPress, React, and help centers." },
+  { q: "Is there a free plan?", a: "Yes. SiteBotGPT offers a forever-free Starter plan with one bot, daily message limits, and core features. No credit card required. You can upgrade to Growth, Scale, or Enterprise when you need more bots, messages, or advanced features like API access and webhooks." },
+  { q: "Can the bot capture leads?", a: "Yes. When the bot is unsure or a visitor wants human help, you can capture their email, name, and phone. Leads appear in your dashboard for follow-up. This works for sales handoffs and support escalation." },
+  { q: "How is SiteBotGPT different from ChatGPT?", a: "ChatGPT is a general-purpose AI. SiteBotGPT is trained only on your content—your website, docs, and files. It answers visitor questions using your information only, so responses are accurate, on-brand, and do not hallucinate about your product. It also embeds on your site and can capture leads." },
+  { q: "Does SiteBotGPT work with my tech stack?", a: "Yes. You embed the chatbot with one script tag. It works on any website (HTML, WordPress, Shopify, React, etc.), help centers, and product dashboards. Paid plans include an API for custom integrations." },
+];
+
+export const metadata = {
+  title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
+  description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan available. No code. Embed in minutes. Used by SaaS, agencies, EdTech, and e-commerce for support and lead capture.",
+  openGraph: {
+    title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
+    description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan. No code. Embed in minutes.",
+    url: BASE_URL,
+  },
+};
 
 export default function LandingPage() {
   const demoBotKey = process.env.NEXT_PUBLIC_DEMO_BOT_ID || "";
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "SiteBotGPT",
+    url: BASE_URL,
+    description: "AI chatbot platform for website and customer support. Train on your content, embed on your site, capture leads.",
+    sameAs: [],
+  };
+
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "SiteBotGPT",
+    url: BASE_URL,
+    description: "AI chatbot for website and customer support. Train on your website, docs & PDFs. Answer visitor questions 24/7. Free plan available.",
+    potentialAction: { "@type": "SearchAction", target: `${BASE_URL}/demo`, "query-input": "required name=search_term_string" },
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }} />
       <ResponsiveNav />
       <ChatWidgetLazy botKey={demoBotKey} />
 
       <main id="main-content">
-        {/* Hero - Two column layout inspired by SiteGPT */}
-        <section className="relative overflow-hidden">
+        {/* Hero: One H1 + direct answer + TL;DR */}
+        <section className="relative overflow-hidden" aria-label="What is SiteBotGPT">
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom_right,#f8fafc_0%,#f1f5f9_50%,white_100%)]" />
           <div className="absolute -right-40 -top-40 h-80 w-80 rounded-full bg-[#1a6aff]/5 blur-3xl" />
           <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
@@ -28,12 +82,11 @@ export default function LandingPage() {
                   AI-powered customer support
                 </div>
                 <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-[2.75rem] lg:leading-tight xl:text-5xl">
-                  Make{" "}
-                  <span className="text-[#1a6aff]">AI</span> your expert customer{" "}
+                  Make <span className="text-[#1a6aff]">AI</span> your expert customer{" "}
                   <span className="text-[#1a6aff]">support agent</span>
                 </h1>
-                <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0">
-                  It&apos;s like having ChatGPT specifically for your product. Instantly answer your visitors&apos; questions with a personalized chatbot trained on your website content.
+                <p className="mx-auto max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
+                  <strong>SiteBotGPT</strong> is an AI chatbot platform. It trains a chatbot on your website, documents, and PDFs so visitors get answers 24/7 from your content only. No coding required: add your content, embed one script on your site, and the bot handles support and lead capture. Free plan available at sitebotgpt.com.
                 </p>
                 <ul className="mx-auto mt-8 grid max-w-md gap-3 text-left sm:grid-cols-2 lg:mx-0 lg:max-w-lg">
                   {[
@@ -124,12 +177,12 @@ export default function LandingPage() {
 
         {/* Trust / Used by */}
         <section className="border-y border-slate-200 bg-slate-50/80 px-4 py-10 sm:py-14" aria-label="Used by">
-          <p className="mb-2 text-center text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Used by teams who care about support
-          </p>
-          <h2 className="mb-10 text-center text-xl font-bold text-slate-900 sm:text-2xl">
-            Trusted across industries
+          <h2 className="mb-2 text-center text-xl font-bold text-slate-900 sm:text-2xl">
+            Who is SiteBotGPT for?
           </h2>
+          <p className="mb-10 text-center text-sm text-slate-600">
+            SiteBotGPT is used by product and support teams in SaaS, agencies, EdTech, e-commerce, and consulting for customer support, lead capture, and FAQ automation.
+          </p>
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {[
               { name: "SaaS", desc: "Product & support teams", icon: "chart" },
@@ -176,15 +229,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Imagine - Before / After */}
-        <section className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="before-after">
+        {/* Problem vs Solution (Before / After) */}
+        <section className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="before-after" aria-labelledby="before-after-heading">
           <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/80" aria-hidden />
-          <h2 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl lg:leading-tight">
-            Imagine what you could do with an expert chatbot answering questions{" "}
-            <span className="bg-gradient-to-r from-[#1a6aff] to-indigo-600 bg-clip-text text-transparent">24/7</span>
+          <h2 id="before-after-heading" className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl lg:leading-tight">
+            Why use an AI chatbot trained on your content?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
-            Stop losing leads and time. See the difference a trained AI support agent makes.
+            Generic chatbots do not know your product. SiteBotGPT is trained only on your website and docs, so answers are accurate and on-brand. Compare the old way vs. with SiteBotGPT.
           </p>
 
           <div className="mt-12 grid gap-6 md:mt-16 md:grid-cols-2 md:gap-8 lg:gap-10">
@@ -239,10 +291,10 @@ export default function LandingPage() {
               </div>
               <ul className="mt-6 space-y-4">
                 {[
-                  "24/7 quality support with instant responses",
-                  "Most questions handled automatically",
-                  "Your team twice as productive",
-                  "Time freed for higher-level tasks",
+                  "24/7 answers from your content only",
+                  "Many common questions answered automatically",
+                  "Support team can focus on complex or high-value conversations",
+                  "Lead capture when the bot is unsure or visitor wants human follow-up",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-700">
                     <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white" aria-hidden>
@@ -273,10 +325,10 @@ export default function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section id="how-it-works" className="border-t border-slate-200 bg-gradient-to-b from-slate-50/50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <section id="how-it-works" className="border-t border-slate-200 bg-gradient-to-b from-slate-50/50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="how-it-works-heading">
           <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-              You&apos;re three steps away from your own personalized AI support chatbot
+            <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-900 sm:text-3xl">
+              How does SiteBotGPT work? Three steps to your AI support chatbot
             </h2>
             <div className="mt-12 grid gap-10 sm:mt-16 sm:gap-12 md:grid-cols-3">
               {[
@@ -297,12 +349,12 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
-            Everything you need for AI-powered support
+        <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="features-heading">
+          <h2 id="features-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            What features does SiteBotGPT offer?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
-            Train once, deploy everywhere, and keep improving
+            Personalized chatbot, quick prompts, lead capture, analytics, and one-snippet embed. Train once, deploy everywhere.
           </p>
 
           <div className="mt-12 space-y-16 sm:mt-16 sm:space-y-20 md:space-y-24">
@@ -315,7 +367,7 @@ export default function LandingPage() {
                   Your brand, your voice
                 </h3>
                 <p className="mt-4 text-slate-600">
-                  Train the bot on your content so it speaks like your team. Set the tone—formal, friendly, or casual—and control how it handles uncertainty. Who knew a chatbot could be your digital doppelgänger?
+                  SiteBotGPT trains only on your content so answers match your brand. You set the tone (formal, friendly, or casual) and how the bot handles uncertainty. Responses use your information only—no generic AI knowledge—so answers stay accurate and on-brand.
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-8">
@@ -431,12 +483,12 @@ export default function LandingPage() {
         </section>
 
         {/* Live demo */}
-        <section id="demo" className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
-            See for yourself
+        <section id="demo" className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="demo-heading">
+          <h2 id="demo-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            Try the SiteBotGPT demo
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-slate-600">
-            Try the Atlas chatbot. Ask it anything about this product.
+            Use the live demo chatbot (powered by SiteBotGPT) to ask questions about this product. No signup required.
           </p>
           <div className="mt-10 text-center">
             <Link
@@ -449,13 +501,13 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials */}
-        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-label="Testimonials">
+        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-label="Customer stories">
           <div className="mx-auto max-w-5xl">
             <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
-              What our users say
+              Customer stories
             </h2>
-            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-500">
-              Example testimonials—replace with real customer quotes when available.
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-600">
+              How teams use SiteBotGPT for support and lead capture.
             </p>
             <div className="mt-10 grid gap-6 sm:mt-12 md:grid-cols-3">
               {[
@@ -534,75 +586,52 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Key Takeaways */}
+        <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8" aria-labelledby="key-takeaways-heading">
+          <h2 id="key-takeaways-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            Key takeaways
+          </h2>
+          <ul className="mx-auto mt-8 max-w-2xl list-inside list-disc space-y-3 text-slate-700">
+            <li><strong>Definition:</strong> SiteBotGPT is an AI chatbot platform that trains only on your website, docs, and PDFs. Answers are based on your content only—not generic AI knowledge—so they stay accurate and on-brand.</li>
+            <li><strong>Setup:</strong> One script embed; works on any website (HTML, WordPress, React, etc.). No coding required. Free Starter plan available; no credit card required.</li>
+            <li><strong>Use cases:</strong> Customer support, lead capture, FAQs, product help. Used by SaaS, agencies, EdTech, e-commerce, and consulting teams.</li>
+            <li><strong>Data and privacy:</strong> You own your content and data. The bot does not use external or generic knowledge; it answers only from the content you provide.</li>
+          </ul>
+          <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-slate-500">
+            Source: SiteBotGPT. Last updated {LAST_UPDATED}. For current pricing and limits see <Link href="/pricing" className="text-[#1a6aff] hover:underline">sitebotgpt.com/pricing</Link>.
+          </p>
+        </section>
+
         {/* FAQs */}
-        <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
-            Frequently asked questions
+        <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="faq" aria-labelledby="faq-heading">
+          <h2 id="faq-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            Frequently asked questions about SiteBotGPT
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-slate-600">
-            Can&apos;t find what you need? Reach out—we&apos;re happy to help.
+            Direct answers to common questions. For more, see <Link href="/docs" className="font-medium text-[#1a6aff] hover:underline">documentation</Link> or <Link href="/contact" className="font-medium text-[#1a6aff] hover:underline">contact us</Link>.
           </p>
 
-          <div className="mt-12 space-y-10 sm:mt-16 sm:space-y-12">
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                Training & setup
-              </h3>
-              <dl className="mt-6 space-y-6">
-                {[
-                  { q: "What can I train the bot on?", a: "Add your website URL (we crawl and index pages), upload PDFs, DOCX, or TXT files, or paste raw text. The bot uses only your content—no generic knowledge." },
-                  { q: "How long does training take?", a: "Usually a few minutes. It depends on how much content you add. Most sites are indexed in under 5 minutes." },
-                  { q: "Can I upload files?", a: "Yes. PDF, DOCX, TXT, and MD are supported. Each file is processed and added to your bot's knowledge base." },
-                ].map((faq) => (
-                  <div key={faq.q} className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 sm:p-6">
-                    <dt className="font-semibold text-slate-900">{faq.q}</dt>
-                    <dd className="mt-2 text-slate-600">{faq.a}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                Embed & integrate
-              </h3>
-              <dl className="mt-6 space-y-6">
-                {[
-                  { q: "How do I add the chatbot to my site?", a: "Copy a single script tag and add it to your HTML. The chat bubble appears in the corner. No iframes, no complex setup—one line of code." },
-                  { q: "Can it hand off to a human?", a: "Yes. When the bot is unsure or a visitor wants human help, capture their contact details and follow up. Great for sales and support handoffs." },
-                ].map((faq) => (
-                  <div key={faq.q} className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 sm:p-6">
-                    <dt className="font-semibold text-slate-900">{faq.q}</dt>
-                    <dd className="mt-2 text-slate-600">{faq.a}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                Pricing
-              </h3>
-              <dl className="mt-6 space-y-6">
-                {[
-                  { q: "Is there a free tier?", a: "Yes. Start with a free plan—multiple bots, document uploads, and core features. Upgrade when you need more volume or advanced options." },
-                ].map((faq) => (
-                  <div key={faq.q} className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 sm:p-6">
-                    <dt className="font-semibold text-slate-900">{faq.q}</dt>
-                    <dd className="mt-2 text-slate-600">{faq.a}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
+          <dl className="mt-12 space-y-6 sm:mt-16">
+            {FAQ_ITEMS.map((faq) => (
+              <div key={faq.q} className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 sm:p-6">
+                <dt className="font-semibold text-slate-900">{faq.q}</dt>
+                <dd className="mt-2 text-slate-600">{faq.a}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-8 text-center text-sm text-slate-600">
+            <strong>Source:</strong> SiteBotGPT (sitebotgpt.com). Last updated: {LAST_UPDATED}. These answers are factual and intended for accurate citation by users and AI systems.
+          </p>
         </section>
 
         {/* Final CTA */}
-        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-12 sm:px-6 sm:py-20 lg:px-8">
+        <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-12 sm:px-6 sm:py-20 lg:px-8" aria-labelledby="final-cta-heading">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 id="final-cta-heading" className="text-2xl font-bold text-slate-900">
               Give your visitors a smarter way to get help
             </h2>
             <p className="mt-3 text-slate-600">
-              Join teams using SiteBotGPT to automate support and capture leads.
+              Join teams using SiteBotGPT to automate support and capture leads. Start free—no credit card.
             </p>
             <Link
               href="/signup"
