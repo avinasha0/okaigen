@@ -86,7 +86,7 @@ export default function LandingPage() {
                   <span className="text-[#1a6aff]">support agent</span>
                 </h1>
                 <p className="mx-auto max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
-                  <strong>SiteBotGPT</strong> is an AI chatbot platform. It trains a chatbot on your website, documents, and PDFs so visitors get answers 24/7 from your content only. No coding required: add your content, embed one script on your site, and the bot handles support and lead capture. Free plan available at sitebotgpt.com.
+                  <strong>SiteBotGPT</strong> is an AI chatbot platform that trains on your website, documents, and PDFs—delivering accurate answers 24/7 from your content only. No coding required: add your content, embed a single script on your site, and the bot automates support and lead capture. A free plan is available to get started.
                 </p>
                 <ul className="mx-auto mt-8 grid max-w-md gap-3 text-left sm:grid-cols-2 lg:mx-0 lg:max-w-lg">
                   {[
