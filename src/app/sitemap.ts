@@ -1,6 +1,25 @@
 import { MetadataRoute } from "next";
+import fs from "fs";
+import path from "path";
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+
+function getLearnUrls(): MetadataRoute.Sitemap {
+  const learnDir = path.join(process.cwd(), "docs", "learn");
+  if (!fs.existsSync(learnDir)) return [];
+  const files = fs.readdirSync(learnDir);
+  return files
+    .filter((f) => f.endsWith(".md") && /^[a-z0-9-]+\.md$/.test(f))
+    .map((f) => {
+      const slug = f.replace(/\.md$/, "");
+      const filePath = path.join(learnDir, f);
+      const stat = fs.statSync(filePath);
+      return {
+        url: `${BASE.replace(/\/$/, "")}/learn/${slug}`,
+        lastModified: stat.mtime,
+      };
+    });
+}
 
 const STATIC = [
   "",
@@ -62,9 +81,12 @@ function getPriority(path: string): number {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return STATIC.map((path) => ({
-    url: `${BASE}${path}`,
+  const staticEntries = STATIC.map((p) => ({
+    url: `${BASE}${p}`,
     lastModified: new Date(),
-    changeFrequency: (path.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
-    priority: getPriority(path)}));
+    changeFrequency: (p.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
+    priority: getPriority(p),
+  }));
+  const learnEntries = getLearnUrls();
+  return [...staticEntries, ...learnEntries];
 }

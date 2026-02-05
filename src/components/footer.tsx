@@ -65,6 +65,7 @@ export function Footer() {
     { name: "Terms & Conditions", href: "/terms" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Refund Policy", href: "/refund" },
+    { name: "Sitemap", href: "/sitemap.xml" },
     { name: "Contact Us", href: "/contact" },
   ];
 
