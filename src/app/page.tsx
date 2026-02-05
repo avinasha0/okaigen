@@ -3,7 +3,6 @@ import { ResponsiveNav } from "@/components/responsive-nav";
 import { ChatWidgetLazy } from "@/components/chat-widget-lazy";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
-const LAST_UPDATED = "2026-02-04";
 
 const FAQ_ITEMS = [
   { q: "What is SiteBotGPT?", a: "SiteBotGPT is an AI chatbot platform that lets you train a chatbot on your website, documents, and PDFs. Visitors get instant, accurate answers 24/7. It is designed for businesses that want to automate customer support and capture leads without coding." },
@@ -85,7 +84,7 @@ export default function LandingPage() {
                   Make <span className="text-[#1a6aff]">AI</span> your expert customer{" "}
                   <span className="text-[#1a6aff]">support agent</span>
                 </h1>
-                <p className="mx-auto max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
+                <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
                   <strong>SiteBotGPT</strong> is an AI chatbot platform that trains on your website, documents, and PDFs—delivering accurate answers 24/7 from your content only. No coding required: add your content, embed a single script on your site, and the bot automates support and lead capture. A free plan is available to get started.
                 </p>
                 <ul className="mx-auto mt-8 grid max-w-md gap-3 text-left sm:grid-cols-2 lg:mx-0 lg:max-w-lg">
@@ -597,9 +596,6 @@ export default function LandingPage() {
             <li><strong>Use cases:</strong> Customer support, lead capture, FAQs, product help. Used by SaaS, agencies, EdTech, e-commerce, and consulting teams.</li>
             <li><strong>Data and privacy:</strong> You own your content and data. The bot does not use external or generic knowledge; it answers only from the content you provide.</li>
           </ul>
-          <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-slate-500">
-            Source: SiteBotGPT. Last updated {LAST_UPDATED}. For current pricing and limits see <Link href="/pricing" className="text-[#1a6aff] hover:underline">sitebotgpt.com/pricing</Link>.
-          </p>
         </section>
 
         {/* FAQs */}
@@ -619,9 +615,6 @@ export default function LandingPage() {
               </div>
             ))}
           </dl>
-          <p className="mt-8 text-center text-sm text-slate-600">
-            <strong>Source:</strong> SiteBotGPT (sitebotgpt.com). Last updated: {LAST_UPDATED}. These answers are factual and intended for accurate citation by users and AI systems.
-          </p>
         </section>
 
         {/* Final CTA */}
