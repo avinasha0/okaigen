@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getBotForUser } from "@/lib/team";
 
-const CACHE_MAX_AGE = 30; // 30s for list data
+const CACHE_MAX_AGE = 0;
 
 export async function GET(
   req: Request,
@@ -60,6 +60,6 @@ export async function GET(
   const res = NextResponse.json({
     chats: list,
     nextCursor});
-  res.headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=10`);
+  res.headers.set("Cache-Control", `private, no-store`);
   return res;
 }

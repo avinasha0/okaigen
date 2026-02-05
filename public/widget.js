@@ -22,6 +22,10 @@
 
   let isOpen = false;
   let chatId = null;
+  try {
+    var saved = localStorage.getItem("sitebotgpt_chat_" + botId);
+    if (saved) chatId = saved;
+  } catch (e) {}
   let quickPromptsList = [];
   let answeredPrompts = []; // Track which prompts have been answered
   const visitorId = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -308,6 +312,7 @@
               if (chunk.done) {
                 if (metadata) {
                   chatId = metadata.chatId || chatId;
+                  try { localStorage.setItem("sitebotgpt_chat_" + botId, chatId || ""); } catch (e) {}
                   if (metadata.shouldCaptureLead) {
                     showLeadForm();
                   }
@@ -371,6 +376,7 @@
             addMessage(errMsg, "assistant");
           } else if (result.data.response != null) {
             chatId = result.data.chatId;
+            try { localStorage.setItem("sitebotgpt_chat_" + botId, chatId || ""); } catch (e) {}
             const msgEl = addMessage("", "assistant");
             // Type out the response character by character
             typeText(msgEl, result.data.response, 15);

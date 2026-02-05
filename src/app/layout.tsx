@@ -29,11 +29,12 @@ export const metadata: Metadata = {
   authors: [{ name: "SiteBotGPT", url: BASE_URL }],
   icons: {
     icon: [
-      { url: "/favicon.ico", type: "image/x-icon" },
-      { url: "/favicon.png", type: "image/png" }
+      { url: `${BASE_URL}/favicon.ico`, type: "image/x-icon", sizes: "any" },
+      { url: `${BASE_URL}/favicon.png`, type: "image/png", sizes: "32x32" },
     ],
-    shortcut: ["/favicon.ico"],
-    apple: ["/favicon.png"]},
+    shortcut: [{ url: `${BASE_URL}/favicon.ico`, type: "image/x-icon" }],
+    apple: [{ url: `${BASE_URL}/favicon.png`, type: "image/png", sizes: "180x180" }],
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

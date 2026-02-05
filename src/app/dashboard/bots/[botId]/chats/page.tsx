@@ -17,7 +17,8 @@ interface Chat {
   visitorEmail: string | null;
   pageUrl: string | null;
   createdAt: string;
-  messages: { id: string; role: string; content: string; createdAt: string }[];
+  messages?: { id: string; role: string; content: string; createdAt: string }[];
+  chatmessage?: { id: string; role: string; content: string; createdAt: string }[];
 }
 
 export default function ChatsPage() {
@@ -27,15 +28,44 @@ export default function ChatsPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Chat | null>(null);
   const [selectedFull, setSelectedFull] = useState<Chat | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams();
     if (search) q.set("search", search);
     q.set("limit", "50");
+    q.set("ts", String(Date.now()));
     fetch(`/api/bots/${botId}/chats?${q}`)
       .then((r) => r.json())
-      .then((data: { chats: Chat[] }) => setChats(data.chats ?? []))
+      .then((data: { chats: Chat[]; nextCursor?: string | null }) => {
+        setChats(data.chats ?? []);
+        setNextCursor(data.nextCursor ?? null);
+      })
       .catch(console.error);
+  }, [botId, search]);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const q = new URLSearchParams();
+      if (search) q.set("search", search);
+      q.set("limit", "50");
+      q.set("ts", String(Date.now()));
+      fetch(`/api/bots/${botId}/chats?${q}`)
+        .then((r) => r.json())
+        .then((data: { chats: Chat[]; nextCursor?: string | null }) => {
+          setChats((prev) => {
+            const merged = [...data.chats, ...prev];
+            const dedup = merged.filter(
+              (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i
+            );
+            return dedup;
+          });
+          setNextCursor(data.nextCursor ?? null);
+        })
+        .catch(() => {});
+    }, 8000);
+    return () => clearInterval(id);
   }, [botId, search]);
 
   useEffect(() => {
@@ -43,10 +73,36 @@ export default function ChatsPage() {
       setSelectedFull(null);
       return;
     }
-    fetch(`/api/bots/${botId}/chats/${selected.id}`)
+    const q = new URLSearchParams();
+    q.set("ts", String(Date.now()));
+    fetch(`/api/bots/${botId}/chats/${selected.id}?${q}`)
       .then((r) => r.json())
-      .then((data: Chat) => setSelectedFull(data))
-      .catch(() => setSelectedFull(selected));
+      .then((data: Chat) => {
+        setSelectedFull({ ...data, messages: data.chatmessage ?? data.messages ?? [] });
+        if (data.visitorName || data.visitorEmail) {
+          setChats((prev) =>
+            prev.map((c) =>
+              c.id === selected.id
+                ? {
+                    ...c,
+                    visitorName: data.visitorName ?? c.visitorName,
+                    visitorEmail: data.visitorEmail ?? c.visitorEmail,
+                  }
+                : c
+            )
+          );
+        }
+      })
+      .catch(() =>
+        setSelectedFull(
+          selected
+            ? {
+                ...selected,
+                messages: selected.chatmessage ?? selected.messages ?? []
+              }
+            : null
+        )
+      );
   }, [botId, selected?.id]);
 
   return (
@@ -69,32 +125,51 @@ export default function ChatsPage() {
           variant="outline"
           size="sm"
           onClick={async () => {
-            const params = new URLSearchParams();
-            if (search) params.set("search", search);
-            params.set("limit", "500");
-            const r = await fetch(`/api/bots/${botId}/chats?${params}`);
-            const data: { chats: Chat[] } = await r.json();
-            const chatsList = data.chats ?? [];
-            const rows: string[] = [
-              "Date,Visitor Email,Page URL,Role,Message",
-              ...chatsList.flatMap((c) =>
-                c.messages.map((m) =>
-                  [
-                    new Date(c.createdAt).toISOString(),
-                    c.visitorEmail || "",
-                    c.pageUrl || "",
-                    m.role,
-                    '"' + (m.content || "").replace(/"/g, '""') + '"',
-                  ].join(",")
-                )
-              ),
-            ];
-            const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `chats-${botId}-${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(a.href);
+            try {
+              const params = new URLSearchParams();
+              if (search) params.set("search", search);
+              params.set("limit", "500");
+              const r = await fetch(`/api/bots/${botId}/chats?${params}`);
+              const data: { chats: Chat[] } = await r.json();
+              const chatsList = data.chats ?? [];
+              const fullChats = await Promise.all(
+                chatsList.map(async (c) => {
+                  try {
+                    const rr = await fetch(`/api/bots/${botId}/chats/${c.id}`);
+                    const cd: Chat = await rr.json();
+                    return {
+                      ...c,
+                      messages: cd?.chatmessage ?? cd?.messages ?? c.chatmessage ?? c.messages ?? [],
+                    };
+                  } catch {
+                    return { ...c, messages: c.chatmessage ?? c.messages ?? [] };
+                  }
+                })
+              );
+              const rows: string[] = [
+                "Date,Visitor Email,Page URL,Role,Message",
+                ...fullChats.flatMap((c) =>
+                  (c.messages ?? []).map((m) =>
+                    [
+                      new Date(c.createdAt).toISOString(),
+                      c.visitorEmail || "",
+                      c.pageUrl || "",
+                      m.role,
+                      '"' + (m.content || "").replace(/"/g, '""') + '"',
+                    ].join(",")
+                  )
+                ),
+              ];
+              const blob = new Blob([rows.join("\r\n")], { type: "text/csv" });
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `chats-${botId}-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            } catch (err) {
+              alert("Failed to export chats. Please try again.");
+              console.error(err);
+            }
           }}
         >
           Export CSV
@@ -111,26 +186,63 @@ export default function ChatsPage() {
               {chats.length === 0 ? (
                 <p className="text-sm text-gray-500">No chats yet</p>
               ) : (
-                <ul className="space-y-1">
-                  {chats.map((chat) => (
-                    <li
-                      key={chat.id}
-                      onClick={() => setSelected(chat)}
-                      className={`cursor-pointer rounded-lg px-3 py-2 text-sm transition-colors ${
-                        selected?.id === chat.id
-                          ? "bg-slate-100"
-                          : "hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="truncate">
-                        {chat.visitorName || chat.visitorEmail || "Unknown"}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(chat.createdAt).toLocaleDateString()}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="space-y-1">
+                    {chats.map((chat, i) => (
+                      <li
+                        key={chat.id}
+                        onClick={() => setSelected(chat)}
+                        className={`cursor-pointer rounded-lg px-3 py-2 text-sm transition-colors ${
+                          selected?.id === chat.id
+                            ? "bg-slate-100"
+                            : "hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="truncate">
+                          {chat.visitorName || chat.visitorEmail || `Visitor ${i + 1}`}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(chat.createdAt).toLocaleDateString()}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {nextCursor && (
+                    <div className="mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={loadingMore}
+                        onClick={async () => {
+                          try {
+                            setLoadingMore(true);
+                            const params = new URLSearchParams();
+                            if (search) params.set("search", search);
+                            params.set("limit", "50");
+                            params.set("cursor", nextCursor || "");
+                            params.set("ts", String(Date.now()));
+                            const r = await fetch(`/api/bots/${botId}/chats?${params}`);
+                            const data: { chats: Chat[]; nextCursor?: string | null } = await r.json();
+                            setChats((prev) => {
+                              const merged = [...prev, ...(data.chats ?? [])];
+                              const dedup = merged.filter(
+                                (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i
+                              );
+                              return dedup;
+                            });
+                            setNextCursor(data.nextCursor ?? null);
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setLoadingMore(false);
+                          }
+                        }}
+                      >
+                        {loadingMore ? "Loading..." : "Load more"}
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -140,7 +252,12 @@ export default function ChatsPage() {
             <CardHeader>
               <CardTitle>
                 {selected
-                  ? selected.visitorName || selected.visitorEmail || "Unknown"
+                  ? selected.visitorName ||
+                    selected.visitorEmail ||
+                    (() => {
+                      const idx = chats.findIndex((c) => c.id === selected.id);
+                      return idx >= 0 ? `Visitor ${idx + 1}` : "Visitor";
+                    })()
                   : "Select a chat"}
               </CardTitle>
               {selected?.pageUrl && (
@@ -161,7 +278,7 @@ export default function ChatsPage() {
                 <p className="text-sm text-gray-500">Loading…</p>
               ) : (
                 <div className="space-y-4">
-                  {selectedFull.messages.map((msg, i) => (
+                  {(selectedFull.messages ?? []).map((msg, i) => (
                     <div
                       key={i}
                       className={`rounded-lg p-3 ${

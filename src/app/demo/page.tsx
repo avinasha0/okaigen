@@ -7,9 +7,9 @@ const DEMO_BOT_ID = process.env.NEXT_PUBLIC_DEMO_BOT_ID;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "";
 
 const SUGGESTED_QUESTIONS = [
-  "What is SiteBotGPT Assistant?",
+  "What do you offer?",
+  "How can I contact you?",
   "How does the chatbot work?",
-  "What can I train the bot on?",
   "How do I embed it on my site?",
   "Is there a free tier?",
 ];
