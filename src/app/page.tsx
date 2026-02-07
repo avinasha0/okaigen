@@ -82,12 +82,19 @@ export default function LandingPage() {
                   AI-powered customer support
                 </div>
                 <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-[2.75rem] lg:leading-tight xl:text-5xl">
-                  Make <span className="text-[#1a6aff]">AI</span> your expert customer{" "}
-                  <span className="text-[#1a6aff]">support agent</span>
+                  <span className="text-[#1a6aff]">AI chatbot for website</span> &amp; customer support
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
                   <strong>SiteBotGPT</strong> is an AI chatbot platform that trains on your website, documents, and PDFs—delivering accurate answers 24/7 from your content only. No coding required: add your content, embed a single script on your site, and the bot automates support and lead capture. A free plan is available to get started.
                 </p>
+                <div className="mx-auto mt-6 max-w-xl text-slate-600 leading-relaxed space-y-4 lg:mx-0" aria-label="Value proposition">
+                  <p>
+                    An <strong>AI chatbot for your website</strong> should answer from your content, not generic knowledge. SiteBotGPT indexes your site, help docs, and uploaded files so every response stays on-brand and accurate. Whether you run a SaaS, e‑commerce store, agency, or EdTech product, you get one expert support agent that works around the clock. Set your preferred tone, add quick prompts for common questions, and when the bot is unsure or a visitor wants human help, you can capture leads directly in the chat.
+                  </p>
+                  <p>
+                    See <Link href="/#features" className="font-medium text-[#1a6aff] hover:underline">features</Link>, try the <Link href="/demo" className="font-medium text-[#1a6aff] hover:underline">live demo</Link>, or check <Link href="/pricing" className="font-medium text-[#1a6aff] hover:underline">pricing</Link> and <Link href="/learn/what-is-a-website-chatbot" className="font-medium text-[#1a6aff] hover:underline">how website chatbots work</Link>. No credit card required to start.
+                  </p>
+                </div>
                 <ul className="mx-auto mt-8 grid max-w-md gap-3 text-left sm:grid-cols-2 lg:mx-0 lg:max-w-lg">
                   {[
                     "Personalized onboarding help",
@@ -121,7 +128,9 @@ export default function LandingPage() {
                   </Link>
                 </div>
                 <p className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-slate-500 lg:justify-start">
-                  <Link href="/#features" className="text-[#1a6aff] hover:underline">Features</Link>
+                  <Link href="/features" className="text-[#1a6aff] hover:underline">Features</Link>
+                  <span aria-hidden>·</span>
+                  <Link href="/use-cases" className="text-[#1a6aff] hover:underline">Use cases</Link>
                   <span aria-hidden>·</span>
                   <Link href="/pricing" className="text-[#1a6aff] hover:underline">Pricing</Link>
                   <span aria-hidden>·</span>

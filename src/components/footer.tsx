@@ -51,7 +51,9 @@ export function Footer() {
   ];
 
   const product = [
-    { name: "Features", href: "/#features" },
+    { name: "Features", href: "/features" },
+    { name: "Use cases", href: "/use-cases" },
+    { name: "Compare", href: "/compare" },
     { name: "How it works", href: "/#how-it-works" },
     { name: "Pricing", href: "/pricing" },
     { name: "Integration", href: "/integration" },

@@ -51,6 +51,18 @@ const FAQ = [
     a: "We aim for 99.9% uptime. Scale and Enterprise plans include a formal SLA. Check our status page for current availability."},
 ];
 
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    { "@type": "Question", name: "Can I try before I buy?", acceptedAnswer: { "@type": "Answer", text: "Yes. Start with the free Starter plan—no credit card required. You can upgrade anytime when you need more capacity." } },
+    { "@type": "Question", name: "What content can I train the bot on?", acceptedAnswer: { "@type": "Answer", text: "You can train your bot on website URLs, sitemaps, and uploaded files (PDF, DOCX, TXT, MD). The more content you provide, the better the answers." } },
+    { "@type": "Question", name: "How do I add the chatbot to my site?", acceptedAnswer: { "@type": "Answer", text: "Copy one embed script from your dashboard and paste it before the closing </body> tag. The chat bubble appears automatically. We also provide platform-specific guides for WordPress, Shopify, and more." } },
+    { "@type": "Question", name: "Can I change plans later?", acceptedAnswer: { "@type": "Answer", text: "Yes. You can upgrade or downgrade at any time. Billing is prorated so you only pay for what you use." } },
+    { "@type": "Question", name: "Is there API access?", acceptedAnswer: { "@type": "Answer", text: "API access is included on Growth, Scale, and Enterprise plans. Use it to send messages from your app, sync data, or build custom integrations." } },
+  ],
+};
+
 export default function PricingPage() {
   const [yearly, setYearly] = useState(false);
   const router = useRouter();
@@ -73,6 +85,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }} />
       <CelebrationConfetti />
       <ResponsiveNav />
 

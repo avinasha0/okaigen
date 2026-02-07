@@ -25,6 +25,9 @@ const STATIC = [
   "",
   "/demo",
   "/pricing",
+  "/features",
+  "/use-cases",
+  "/compare",
   "/signup",
   "/contact",
   "/docs",
@@ -73,7 +76,7 @@ const STATIC = [
 
 function getPriority(path: string): number {
   if (path === "") return 1;
-  if (path === "/pricing" || path === "/docs" || path === "/tools") return 0.9;
+  if (path === "/pricing" || path === "/docs" || path === "/tools" || path === "/features" || path === "/use-cases" || path === "/compare") return 0.9;
   if (path === "/contact" || path === "/demo" || path === "/signup" || path === "/integration") return 0.85;
   if (path.startsWith("/docs")) return 0.85;
   if (path === "/privacy" || path === "/terms" || path === "/refund") return 0.7;
