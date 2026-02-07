@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/pricing", "/demo", "/contact", "/integration", "/terms", "/privacy", "/refund", "/widget.js", "/atlas-training-content", "/sitemap.xml", "/robots.txt", "/favicon.ico"];
+const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/pricing", "/demo", "/contact", "/integration", "/terms", "/privacy", "/refund", "/widget.js", "/atlas-training-content", "/sitemap.xml", "/robots.txt", "/favicon.ico", "/favicon.png", "/apple-touch-icon.png"];
 const publicPrefixes = ["/api/auth", "/api/chat", "/api/contact", "/api/embed", "/api/leads", "/api/stripe/webhook", "/api/razorpay/webhook", "/api/paypal/webhook", "/api/tools", "/embed", "/uploads", "/tools", "/docs"];
 
 const corsHeaders = {
@@ -86,4 +86,4 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"]};
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|apple-touch-icon\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"]};

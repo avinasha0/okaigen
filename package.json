@@ -61,6 +61,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.9",
