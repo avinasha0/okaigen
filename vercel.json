@@ -1,4 +1,18 @@
 {
   "buildCommand": "node scripts/postinstall.js && next build",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "sitebotgpt.com" }],
+      "destination": "https://www.sitebotgpt.com/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.sitebotgpt.com" }, { "type": "header", "key": "x-forwarded-proto", "value": "http" }],
+      "destination": "https://www.sitebotgpt.com/:path*",
+      "statusCode": 301
+    }
+  ]
 }

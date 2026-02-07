@@ -25,8 +25,23 @@ function hasSession(req: NextRequest): boolean {
   return !!cookie?.value;
 }
 
+const CANONICAL_HOST = "www.sitebotgpt.com";
+
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  const host = req.nextUrl.hostname.toLowerCase();
+  const proto = req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol?.replace(":", "") ?? "https";
+
+  // Permanent (301) redirect to canonical domain for SEO — only for production domain
+  const isProductionDomain = host === "sitebotgpt.com" || host === "www.sitebotgpt.com";
+  const isCanonical = host === CANONICAL_HOST && proto === "https";
+  if (isProductionDomain && !isCanonical) {
+    const canonicalUrl = new URL(path + req.nextUrl.search, `https://${CANONICAL_HOST}`);
+    const redirectRes = NextResponse.redirect(canonicalUrl, 301);
+    redirectRes.headers.set("Content-Security-Policy", cspHeader);
+    return redirectRes;
+  }
+
   const response = NextResponse.next();
 
   // Add CSP header

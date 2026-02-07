@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
+  async redirects() {
+    return [
+      { source: "/:path*", has: [{ type: "host", value: "sitebotgpt.com" }], destination: "https://www.sitebotgpt.com/:path*", permanent: true },
+      { source: "/:path*", has: [{ type: "host", value: "www.sitebotgpt.com" }, { type: "header", key: "x-forwarded-proto", value: "http" }], destination: "https://www.sitebotgpt.com/:path*", permanent: true },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
   },
