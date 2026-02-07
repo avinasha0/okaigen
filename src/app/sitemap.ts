@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import fs from "fs";
 import path from "path";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
 function getLearnUrls(): MetadataRoute.Sitemap {
   const learnDir = path.join(process.cwd(), "docs", "learn");
