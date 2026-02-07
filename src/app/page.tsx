@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
 import { ChatWidgetLazy } from "@/components/chat-widget-lazy";
+import { CANONICAL_BASE } from "@/lib/seo";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
@@ -18,7 +19,7 @@ const FAQ_ITEMS = [
 export const metadata = {
   title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
   description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan available. No code. Embed in minutes. Used by SaaS, agencies, EdTech, and e-commerce for support and lead capture.",
-  alternates: { canonical: BASE_URL.replace(/\/$/, "") || BASE_URL },
+  alternates: { canonical: CANONICAL_BASE },
   openGraph: {
     title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
     description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan. No code. Embed in minutes.",
@@ -82,19 +83,11 @@ export default function LandingPage() {
                   AI-powered customer support
                 </div>
                 <h1 className="font-heading text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-[2.75rem] lg:leading-tight xl:text-5xl">
-                  <span className="text-[#1a6aff]">AI chatbot for website</span> &amp; customer support
+                  AI chatbot for website customer support
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-600 lg:mx-0" id="what-is-sitebotgpt">
-                  <strong>SiteBotGPT</strong> is an AI chatbot platform that trains on your website, documents, and PDFs—delivering accurate answers 24/7 from your content only. No coding required: add your content, embed a single script on your site, and the bot automates support and lead capture. A free plan is available to get started.
+                  <strong>SiteBotGPT</strong> is an AI chatbot for websites that trains on your site, documents, and PDFs and delivers accurate answers 24/7 from your content only. Add your content, embed one script on your site, and the bot handles support and lead capture—no coding required. A free plan is available to get started.
                 </p>
-                <div className="mx-auto mt-6 max-w-xl text-slate-600 leading-relaxed space-y-4 lg:mx-0" aria-label="Value proposition">
-                  <p>
-                    An <strong>AI chatbot for your website</strong> should answer from your content, not generic knowledge. SiteBotGPT indexes your site, help docs, and uploaded files so every response stays on-brand and accurate. Whether you run a SaaS, e‑commerce store, agency, or EdTech product, you get one expert support agent that works around the clock. Set your preferred tone, add quick prompts for common questions, and when the bot is unsure or a visitor wants human help, you can capture leads directly in the chat.
-                  </p>
-                  <p>
-                    See <Link href="/#features" className="font-medium text-[#1a6aff] hover:underline">features</Link>, try the <Link href="/demo" className="font-medium text-[#1a6aff] hover:underline">live demo</Link>, or check <Link href="/pricing" className="font-medium text-[#1a6aff] hover:underline">pricing</Link> and <Link href="/learn/what-is-a-website-chatbot" className="font-medium text-[#1a6aff] hover:underline">how website chatbots work</Link>. No credit card required to start.
-                  </p>
-                </div>
                 <ul className="mx-auto mt-8 grid max-w-md gap-3 text-left sm:grid-cols-2 lg:mx-0 lg:max-w-lg">
                   {[
                     "Personalized onboarding help",
@@ -103,7 +96,7 @@ export default function LandingPage() {
                     "Forever free plan available",
                     "Cancel anytime",
                   ].map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-slate-700">
+                    <li key={item} className="flex items-center gap-2.5 text-base text-slate-700">
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1a6aff]/10 text-[#1a6aff]">
                         <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -130,11 +123,15 @@ export default function LandingPage() {
                 <p className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-slate-500 lg:justify-start">
                   <Link href="/features" className="text-[#1a6aff] hover:underline">Features</Link>
                   <span aria-hidden>·</span>
-                  <Link href="/use-cases" className="text-[#1a6aff] hover:underline">Use cases</Link>
-                  <span aria-hidden>·</span>
                   <Link href="/pricing" className="text-[#1a6aff] hover:underline">Pricing</Link>
                   <span aria-hidden>·</span>
+                  <Link href="/demo" className="text-[#1a6aff] hover:underline">Demo</Link>
+                  <span aria-hidden>·</span>
+                  <Link href="/learn/ai-chatbot-for-website-guide" className="text-[#1a6aff] hover:underline">Learn</Link>
+                  <span aria-hidden>·</span>
                   <Link href="/docs" className="text-[#1a6aff] hover:underline">Documentation</Link>
+                  <span aria-hidden>·</span>
+                  <Link href="/contact" className="text-[#1a6aff] hover:underline">Contact</Link>
                 </p>
               </div>
               {/* Right: SiteBotGPT Helper */}
@@ -148,7 +145,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-lg font-semibold text-slate-900">SiteBotGPT Helper</p>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
+                      <p className="mt-0.5 flex items-center gap-1.5 text-base text-slate-600">
                         <span className="relative flex h-2 w-2">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -157,7 +154,7 @@ export default function LandingPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+                  <div className="mt-4 rounded-xl bg-slate-50 p-4 text-base text-slate-700">
                     <p className="font-medium text-slate-900">Ask me about:</p>
                     <ul className="mt-2 space-y-1 text-slate-600">
                       <li>• Your product features</li>
@@ -178,7 +175,7 @@ export default function LandingPage() {
                   </div>
                   <Link
                     href="/demo"
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a6aff] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#1a6aff] py-3 text-base font-semibold text-white transition-colors hover:bg-[#0d5aeb]"
                   >
                     Open live demo
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,11 +190,14 @@ export default function LandingPage() {
 
         {/* Trust / Used by */}
         <section className="border-y border-slate-200 bg-slate-50/80 px-4 py-10 sm:py-14" aria-label="Used by">
-          <h2 className="mb-2 text-center text-xl font-bold text-slate-900 sm:text-2xl">
+          <h2 className="mb-2 text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Who is SiteBotGPT for?
           </h2>
-          <p className="mb-10 text-center text-sm text-slate-600">
-            SiteBotGPT is used by product and support teams in SaaS, agencies, EdTech, e-commerce, and consulting for customer support, lead capture, and FAQ automation.
+          <p className="mb-4 text-center text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            <strong>What it does:</strong> SiteBotGPT indexes your website, help docs, and uploaded files so the bot answers only from your content—not generic AI knowledge. You set the tone, add quick prompts for common questions, and when the bot is unsure or a visitor wants human help, you can capture leads in the chat. The primary benefit is 24/7, on-brand answers and fewer support tickets without hiring more staff.
+          </p>
+          <p className="mb-10 text-center text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            <strong>Who it is for:</strong> Product and support teams in SaaS, agencies, EdTech, e‑commerce, and consulting. If you want one expert support agent that works around the clock and stays accurate to your product, SiteBotGPT is built for you. See <Link href="/features" className="font-medium text-[#1a6aff] hover:underline">features</Link>, try the <Link href="/demo" className="font-medium text-[#1a6aff] hover:underline">live demo</Link>, check <Link href="/pricing" className="font-medium text-[#1a6aff] hover:underline">pricing</Link>, read <Link href="/learn/what-is-a-website-chatbot" className="font-medium text-[#1a6aff] hover:underline">how website chatbots work</Link>, or browse <Link href="/learn/ai-chatbot-for-website-guide" className="font-medium text-[#1a6aff] hover:underline">our AI chatbot guide</Link>. No credit card required to start.
           </p>
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {[
@@ -248,10 +248,10 @@ export default function LandingPage() {
         {/* Problem vs Solution (Before / After) */}
         <section className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="before-after" aria-labelledby="before-after-heading">
           <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/80" aria-hidden />
-          <h2 id="before-after-heading" className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl lg:leading-tight">
+          <h2 id="before-after-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Why use an AI chatbot trained on your content?
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
+          <p className="mx-auto mt-4 max-w-2xl text-center text-base text-slate-600">
             Generic chatbots do not know your product. SiteBotGPT is trained only on your website and docs, so answers are accurate and on-brand. Compare the old way vs. with SiteBotGPT.
           </p>
 
@@ -268,8 +268,8 @@ export default function LandingPage() {
                   </svg>
                 </span>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Before</h3>
-                  <p className="mt-0.5 text-sm font-medium text-rose-800/90">Fickle, one-size-fits-all chatbots that do more harm than good</p>
+                  <h3 className="text-xl font-semibold text-slate-900">Before</h3>
+                  <p className="mt-0.5 text-base font-medium text-rose-800/90">Fickle, one-size-fits-all chatbots that do more harm than good</p>
                 </div>
               </div>
               <ul className="mt-6 space-y-4">
@@ -279,7 +279,7 @@ export default function LandingPage() {
                   "Support staff taking months to train",
                   "Bogged down with support tickets",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-slate-700">
+                  <li key={i} className="flex items-start gap-3 text-base text-slate-700">
                     <span className="mt-1.5 h-5 w-5 shrink-0 rounded-full bg-rose-300/70 flex items-center justify-center" aria-hidden>
                       <svg className="h-3 w-3 text-rose-800" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
                     </span>
@@ -301,8 +301,8 @@ export default function LandingPage() {
                   </svg>
                 </span>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">After</h3>
-                  <p className="mt-0.5 text-sm font-medium text-emerald-800">An automated resource that supercharges your support team</p>
+                  <h3 className="text-xl font-semibold text-slate-900">After</h3>
+                  <p className="mt-0.5 text-base font-medium text-emerald-800">An automated resource that supercharges your support team</p>
                 </div>
               </div>
               <ul className="mt-6 space-y-4">
@@ -312,7 +312,7 @@ export default function LandingPage() {
                   "Support team can focus on complex or high-value conversations",
                   "Lead capture when the bot is unsure or visitor wants human follow-up",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-slate-700">
+                  <li key={i} className="flex items-start gap-3 text-base text-slate-700">
                     <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white" aria-hidden>
                       <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                     </span>
@@ -343,7 +343,7 @@ export default function LandingPage() {
         {/* How it works */}
         <section id="how-it-works" className="border-t border-slate-200 bg-gradient-to-b from-slate-50/50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="how-it-works-heading">
           <div className="mx-auto max-w-4xl text-center">
-            <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            <h2 id="how-it-works-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               How does SiteBotGPT work? Three steps to your AI support chatbot
             </h2>
             <div className="mt-12 grid gap-10 sm:mt-16 sm:gap-12 md:grid-cols-3">
@@ -356,8 +356,8 @@ export default function LandingPage() {
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1a6aff] text-lg font-bold text-white shadow-lg shadow-[#1a6aff]/25">
                     {step.num}
                   </span>
-                  <h3 className="mt-4 font-semibold text-slate-900">{step.title}</h3>
-                  <p className="mt-2 text-slate-600">{step.desc}</p>
+                  <h3 className="mt-4 text-xl font-semibold text-slate-900">{step.title}</h3>
+                  <p className="mt-2 text-base text-slate-600">{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -366,10 +366,10 @@ export default function LandingPage() {
 
         {/* Features */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="features-heading">
-          <h2 id="features-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 id="features-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             What features does SiteBotGPT offer?
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
+          <p className="mx-auto mt-4 max-w-2xl text-center text-base text-slate-600">
             Personalized chatbot, quick prompts, lead capture, analytics, and one-snippet embed. Train once, deploy everywhere.
           </p>
 
@@ -379,10 +379,10 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-[#1a6aff]/10 px-3 py-1 text-sm font-medium text-[#1a6aff]">
                   Personalized chatbot
                 </div>
-                <h3 className="text-2xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Your brand, your voice
                 </h3>
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-base text-slate-600">
                   SiteBotGPT trains only on your content so answers match your brand. You set the tone (formal, friendly, or casual) and how the bot handles uncertainty. Responses use your information only—no generic AI knowledge—so answers stay accurate and on-brand.
                 </p>
               </div>
@@ -409,10 +409,10 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-violet-100 px-3 py-1 text-sm font-medium text-violet-700">
                   Quick prompts
                 </div>
-                <h3 className="text-2xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Help users start conversations
                 </h3>
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-base text-slate-600">
                   Give visitors a digital icebreaker. Add frequently asked questions or prompts you wish more users would ask—and turn cold traffic into engaged conversations from the first click.
                 </p>
               </div>
@@ -423,10 +423,10 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
                   Collect leads
                 </div>
-                <h3 className="text-2xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Generate leads to follow up with later
                 </h3>
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-base text-slate-600">
                   Don&apos;t just answer questions—seize opportunities. When the bot isn&apos;t sure or a visitor wants human help, capture their details and build a list of potential leads.
                 </p>
               </div>
@@ -451,10 +451,10 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700">
                   Analytics
                 </div>
-                <h3 className="text-2xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Learn from every conversation
                 </h3>
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-base text-slate-600">
                   View chat history, see which questions come up most, and identify where to add training data. Make your bot smarter with real usage insights.
                 </p>
               </div>
@@ -465,10 +465,10 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
                   One snippet
                 </div>
-                <h3 className="text-2xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Deploy anywhere with one snippet
                 </h3>
-                <p className="mt-4 text-slate-600">
+                <p className="mt-4 text-base text-slate-600">
                   Add the widget to your marketing site, product dashboard, or help center. Same bot, consistent answers, no extra setup per page.
                 </p>
               </div>
@@ -482,10 +482,10 @@ export default function LandingPage() {
         {/* Integrations */}
         <section className="border-t border-slate-200 bg-slate-50/50 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Works with your stack
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-slate-600">
+            <p className="mx-auto mt-4 max-w-xl text-base text-slate-600">
               Embed on any site. API-ready for custom integrations. Connect with your existing tools.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:mt-12 sm:gap-6 md:gap-8 text-slate-400">
@@ -500,10 +500,10 @@ export default function LandingPage() {
 
         {/* Live demo */}
         <section id="demo" className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-labelledby="demo-heading">
-          <h2 id="demo-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 id="demo-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Try the SiteBotGPT demo
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-600">
             Use the live demo chatbot (powered by SiteBotGPT) to ask questions about this product. No signup required.
           </p>
           <div className="mt-10 text-center">
@@ -519,10 +519,10 @@ export default function LandingPage() {
         {/* Testimonials */}
         <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8" aria-label="Customer stories">
           <div className="mx-auto max-w-5xl">
-            <h2 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Customer stories
             </h2>
-            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-600">
+            <p className="mx-auto mt-2 max-w-xl text-center text-base text-slate-600">
               How teams use SiteBotGPT for support and lead capture.
             </p>
             <div className="mt-10 grid gap-6 sm:mt-12 md:grid-cols-3">
@@ -547,12 +547,12 @@ export default function LandingPage() {
                   key={t.name}
                   className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
                 >
-                  <p className="flex-1 text-slate-700 italic leading-relaxed">
+                  <p className="flex-1 text-base text-slate-700 italic leading-relaxed">
                     &ldquo;{t.quote}&rdquo;
                   </p>
                   <footer className="mt-6 border-t border-slate-100 pt-4">
-                    <cite className="not-italic font-semibold text-slate-900">{t.name}</cite>
-                    <p className="text-sm text-slate-500">
+                    <cite className="not-italic text-base font-semibold text-slate-900">{t.name}</cite>
+                    <p className="text-base text-slate-500">
                       {t.role}, {t.company}
                     </p>
                   </footer>
@@ -567,10 +567,10 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a6aff] via-[#0d5aeb] to-slate-900" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent" />
           <div className="relative mx-auto max-w-3xl px-2 text-center sm:px-0">
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-white sm:text-3xl">
               Ready to take SiteBotGPT for a spin?
             </h2>
-            <p className="mt-4 text-blue-100">
+            <p className="mt-4 text-base text-blue-100">
               Find out if a personalized AI support chatbot is right for you. Create your first bot in minutes.
             </p>
             <ul className="mx-auto mt-6 flex max-w-md flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-blue-200">
@@ -604,10 +604,10 @@ export default function LandingPage() {
 
         {/* Key Takeaways */}
         <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8" aria-labelledby="key-takeaways-heading">
-          <h2 id="key-takeaways-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 id="key-takeaways-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Key takeaways
           </h2>
-          <ul className="mx-auto mt-8 max-w-2xl list-inside list-disc space-y-3 text-slate-700">
+          <ul className="mx-auto mt-8 max-w-2xl list-inside list-disc space-y-3 text-base text-slate-700">
             <li><strong>Definition:</strong> SiteBotGPT is an AI chatbot platform that trains only on your website, docs, and PDFs. Answers are based on your content only—not generic AI knowledge—so they stay accurate and on-brand.</li>
             <li><strong>Setup:</strong> One script embed; works on any website (HTML, WordPress, React, etc.). No coding required. Free Starter plan available; no credit card required.</li>
             <li><strong>Use cases:</strong> Customer support, lead capture, FAQs, product help. Used by SaaS, agencies, EdTech, e-commerce, and consulting teams.</li>
@@ -617,18 +617,18 @@ export default function LandingPage() {
 
         {/* FAQs */}
         <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8" id="faq" aria-labelledby="faq-heading">
-          <h2 id="faq-heading" className="text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 id="faq-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Frequently asked questions about SiteBotGPT
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-slate-600">
+          <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-600">
             Direct answers to common questions. For more, see <Link href="/docs" className="font-medium text-[#1a6aff] hover:underline">documentation</Link> or <Link href="/contact" className="font-medium text-[#1a6aff] hover:underline">contact us</Link>.
           </p>
 
           <dl className="mt-12 space-y-6 sm:mt-16">
             {FAQ_ITEMS.map((faq) => (
               <div key={faq.q} className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 sm:p-6">
-                <dt className="font-semibold text-slate-900">{faq.q}</dt>
-                <dd className="mt-2 text-slate-600">{faq.a}</dd>
+                <dt className="text-base font-semibold text-slate-900">{faq.q}</dt>
+                <dd className="mt-2 text-base text-slate-600">{faq.a}</dd>
               </div>
             ))}
           </dl>
@@ -637,10 +637,10 @@ export default function LandingPage() {
         {/* Final CTA */}
         <section className="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-12 sm:px-6 sm:py-20 lg:px-8" aria-labelledby="final-cta-heading">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 id="final-cta-heading" className="text-2xl font-bold text-slate-900">
+            <h2 id="final-cta-heading" className="text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Give your visitors a smarter way to get help
             </h2>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 text-base text-slate-600">
               Join teams using SiteBotGPT to automate support and capture leads. Start free—no credit card.
             </p>
             <Link

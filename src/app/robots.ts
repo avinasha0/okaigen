@@ -1,14 +1,11 @@
 import { MetadataRoute } from "next";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
-
 /**
- * robots.txt rules:
- * - /dashboard, /api, /login: disallowed (private app, API, auth).
- * - /signup: allowed so crawlers and users can discover the signup landing page
- *   (e.g. "SiteBotGPT sign up"); we keep it indexable for acquisition.
+ * robots.txt: allow public pages; disallow dashboard, login, API.
+ * Sitemap URL must use https://www.sitebotgpt.com for consistency.
  */
 const DISALLOW = ["/dashboard", "/api", "/login"];
+const SITEMAP_URL = "https://www.sitebotgpt.com/sitemap.xml";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -16,5 +13,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "*", allow: "/", disallow: DISALLOW },
       { userAgent: "Googlebot", allow: "/", disallow: DISALLOW },
     ],
-    sitemap: `${BASE}/sitemap.xml`};
+    sitemap: SITEMAP_URL,
+  };
 }

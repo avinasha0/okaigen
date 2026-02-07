@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { marked } from "marked";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
+import { CANONICAL_BASE } from "@/lib/seo";
 
 function getMetadataFromContent(content: string, slug: string) {
   const lines = content.split("\n");
@@ -55,7 +55,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `${BASE_URL.replace(/\/$/, "")}/learn/${slug}`,
+      canonical: `${CANONICAL_BASE}/learn/${slug}`,
     },
     robots: {
       index: true,

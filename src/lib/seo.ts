@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
+/** Canonical base for all public pages (indexing consistency). Exported for homepage/learn. */
+export const CANONICAL_BASE = "https://www.sitebotgpt.com";
 const SITE_NAME = "SiteBotGPT";
 
-/** SEO best practices: title 50-60 chars, description 155-160 chars */
+/** SEO best practices: title 50-60 chars, description 155-160 chars. Canonicals use CANONICAL_BASE. */
 export function createMetadata({
   title,
   description,
@@ -18,6 +20,8 @@ export function createMetadata({
   noIndex?: boolean;
   image?: string;
 }): Metadata {
+  const pathNorm = (path || "").replace(/^\//, "");
+  const canonicalUrl = pathNorm ? `${CANONICAL_BASE}/${pathNorm}` : CANONICAL_BASE;
   const url = `${BASE_URL}${path || ""}`;
   const displayTitle = title.includes("|") ? title : path ? `${title} | ${SITE_NAME}` : title;
 
@@ -43,7 +47,7 @@ export function createMetadata({
     robots: noIndex
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true } },
-    alternates: path ? { canonical: url } : undefined};
+    alternates: path ? { canonical: canonicalUrl } : undefined};
 }
 
 /** High-value, lower-competition keywords for this niche */

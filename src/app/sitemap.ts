@@ -4,6 +4,32 @@ import path from "path";
 
 const BASE = (process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com").replace(/\/$/, "");
 
+/** Paths that must never appear in the sitemap (private, auth, API). */
+const EXCLUDED_PREFIXES = ["/dashboard", "/login", "/api", "/forgot-password", "/reset-password", "/verify-email"];
+
+function isExcluded(urlPath: string): boolean {
+  return EXCLUDED_PREFIXES.some((prefix) => urlPath === prefix || urlPath.startsWith(prefix + "/"));
+}
+
+/** Get last modified date for a static app route; uses file mtime when available. */
+function getLastModForStaticRoute(segmentPath: string): Date {
+  const appDir = path.join(process.cwd(), "src", "app");
+  const segments = (segmentPath || "").replace(/^\//, "").split("/").filter(Boolean);
+  const routePath = segments.length ? path.join(appDir, ...segments) : appDir;
+  const candidates = ["page.tsx", "layout.tsx"];
+  for (const name of candidates) {
+    const filePath = path.join(routePath, name);
+    if (fs.existsSync(filePath)) {
+      try {
+        return fs.statSync(filePath).mtime;
+      } catch {
+        break;
+      }
+    }
+  }
+  return new Date();
+}
+
 function getLearnUrls(): MetadataRoute.Sitemap {
   const learnDir = path.join(process.cwd(), "docs", "learn");
   if (!fs.existsSync(learnDir)) return [];
@@ -21,6 +47,7 @@ function getLearnUrls(): MetadataRoute.Sitemap {
     });
 }
 
+/** Only public, indexable pages. Excludes /dashboard, /login, /api, auth routes. */
 const STATIC = [
   "",
   "/demo",
@@ -84,13 +111,13 @@ function getPriority(path: string): number {
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-  const staticEntries = STATIC.map((p) => ({
-    url: p ? `${BASE}${p}` : BASE,
-    lastModified: now,
-    changeFrequency: (p.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
-    priority: getPriority(p),
-  }));
+  const staticEntries = STATIC.filter((p) => !isExcluded(p))
+    .map((p) => ({
+      url: p ? `${BASE}${p}` : BASE,
+      lastModified: getLastModForStaticRoute(p),
+      changeFrequency: (p.startsWith("/tools") ? "weekly" : "monthly") as "weekly" | "monthly",
+      priority: getPriority(p),
+    }));
   const learnEntries = getLearnUrls();
   return [...staticEntries, ...learnEntries];
 }
