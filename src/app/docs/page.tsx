@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
 export default function DocumentationPage() {
   return (

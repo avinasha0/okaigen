@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ResponsiveNav } from "@/components/responsive-nav";
 import { ChatWidgetLazy } from "@/components/chat-widget-lazy";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
 const FAQ_ITEMS = [
   { q: "What is SiteBotGPT?", a: "SiteBotGPT is an AI chatbot platform that lets you train a chatbot on your website, documents, and PDFs. Visitors get instant, accurate answers 24/7. It is designed for businesses that want to automate customer support and capture leads without coding." },
@@ -18,6 +18,7 @@ const FAQ_ITEMS = [
 export const metadata = {
   title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
   description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan available. No code. Embed in minutes. Used by SaaS, agencies, EdTech, and e-commerce for support and lead capture.",
+  alternates: { canonical: BASE_URL.replace(/\/$/, "") || BASE_URL },
   openGraph: {
     title: "What is SiteBotGPT? | AI Chatbot for Website & Customer Support",
     description: "SiteBotGPT is an AI chatbot platform that trains on your website, docs & PDFs to answer visitor questions 24/7. Free plan. No code. Embed in minutes.",
@@ -119,6 +120,13 @@ export default function LandingPage() {
                     Try demo
                   </Link>
                 </div>
+                <p className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-slate-500 lg:justify-start">
+                  <Link href="/#features" className="text-[#1a6aff] hover:underline">Features</Link>
+                  <span aria-hidden>·</span>
+                  <Link href="/pricing" className="text-[#1a6aff] hover:underline">Pricing</Link>
+                  <span aria-hidden>·</span>
+                  <Link href="/docs" className="text-[#1a6aff] hover:underline">Documentation</Link>
+                </p>
               </div>
               {/* Right: SiteBotGPT Helper */}
               <div className="flex justify-center lg:justify-center">

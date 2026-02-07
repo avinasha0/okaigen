@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { marked } from "marked";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
 function getMetadataFromContent(content: string, slug: string) {
   const lines = content.split("\n");

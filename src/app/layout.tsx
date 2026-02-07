@@ -17,7 +17,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: "swap",
   variable: "--font-jakarta"});
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sitebotgpt.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
