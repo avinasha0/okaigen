@@ -108,6 +108,8 @@ export async function verifyCaptcha(
       return true;
     }
 
+    // Verification succeeded and was sent to Google (confirms "token verification" is working)
+    console.info("[reCAPTCHA] Token verified with Google, score:", result.score);
     return true;
   } catch (error) {
     // If anything goes wrong, always allow (graceful fallback)

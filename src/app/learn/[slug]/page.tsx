@@ -6,6 +6,24 @@ import { marked } from "marked";
 
 import { CANONICAL_BASE } from "@/lib/seo";
 
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+
+function parseFrontmatter(raw: string): { title?: string; description?: string; body: string } {
+  const match = raw.match(FRONTMATTER_RE);
+  if (!match) return { body: raw };
+  const body = raw.slice(match[0].length);
+  const block = match[1];
+  let title: string | undefined;
+  let description: string | undefined;
+  for (const line of block.split("\n")) {
+    const t = line.match(/^title:\s*(?:"([^"]*)"|'([^']*)'|(.+))$/);
+    if (t) title = (t[1] ?? t[2] ?? t[3] ?? "").trim();
+    const d = line.match(/^description:\s*(?:"([^"]*)"|'([^']*)'|(.+))$/);
+    if (d) description = (d[1] ?? d[2] ?? d[3] ?? "").trim();
+  }
+  return { title, description, body };
+}
+
 function getMetadataFromContent(content: string, slug: string) {
   const lines = content.split("\n");
   // Title: first H1 (# ...) or fallback to slug
@@ -46,10 +64,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const content = readLearnFile(slug);
-  if (!content) return { title: "Not Found" };
+  const raw = readLearnFile(slug);
+  if (!raw) return { title: "Not Found" };
 
-  const { title, description } = getMetadataFromContent(content, slug);
+  const { title: fmTitle, description: fmDesc, body } = parseFrontmatter(raw);
+  const fromContent = getMetadataFromContent(body || raw, slug);
+  const title = fmTitle ?? fromContent.title;
+  const description = fmDesc ?? fromContent.description;
 
   return {
     title,
@@ -70,9 +91,11 @@ export default async function LearnPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const content = readLearnFile(slug);
-  if (!content) notFound();
+  const raw = readLearnFile(slug);
+  if (!raw) notFound();
 
+  const { body } = parseFrontmatter(raw);
+  const content = body !== undefined ? body : raw;
   const html = await marked.parse(content);
   return <div dangerouslySetInnerHTML={{ __html: String(html) }} />;
 }
