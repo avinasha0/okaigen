@@ -119,22 +119,27 @@ export default async function BotDetailPage({
                 {bot.source.map((s) => (
                   <li
                     key={s.id}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   >
-                    <span className="truncate">
-                      {s.title || s.url || s.documentUrl || "Untitled"}
-                    </span>
-                    <span
-                      className={
-                        s.status === "completed"
-                          ? "text-emerald-600"
-                          : s.status === "failed"
-                            ? "text-rose-600"
-                            : "text-slate-500"
-                      }
-                    >
-                      {s.status}
-                    </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate">
+                        {s.title || s.url || s.documentUrl || "Untitled"}
+                      </span>
+                      <span
+                        className={
+                          s.status === "completed"
+                            ? "shrink-0 text-emerald-600"
+                            : s.status === "failed"
+                              ? "shrink-0 text-rose-600"
+                              : "shrink-0 text-slate-500"
+                        }
+                      >
+                        {s.status}
+                      </span>
+                    </div>
+                    {s.status === "failed" && s.error && (
+                      <p className="mt-1 text-xs leading-snug text-rose-600">{s.error}</p>
+                    )}
                   </li>
                 ))}
               </ul>

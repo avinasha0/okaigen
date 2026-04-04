@@ -352,11 +352,23 @@ export async function POST(
   }
 }
 
+/** Many hosts block non-browser User-Agents; product suffix remains identifiable for allowlists. */
+const CRAWL_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 SiteBotGPT/1.0 (+https://sitebotgpt.com)";
+
+const CRAWL_FETCH_HEADERS: Record<string, string> = {
+  "User-Agent": CRAWL_USER_AGENT,
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+};
+
 async function isAllowedByRobotsTxt(url: string): Promise<boolean> {
   try {
     const base = new URL(url);
     const robotsUrl = `${base.origin}/robots.txt`;
-    const res = await fetch(robotsUrl, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(robotsUrl, {
+      signal: AbortSignal.timeout(8000),
+      headers: CRAWL_FETCH_HEADERS});
     if (!res.ok) return true;
     const text = await res.text();
     const lines = text.split("\n");
@@ -383,7 +395,9 @@ async function isAllowedByRobotsTxt(url: string): Promise<boolean> {
 async function discoverUrlsFromSitemap(origin: string): Promise<string[]> {
   const urls: string[] = [];
   try {
-    const res = await fetch(`${origin}/sitemap.xml`, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(`${origin}/sitemap.xml`, {
+      signal: AbortSignal.timeout(8000),
+      headers: CRAWL_FETCH_HEADERS});
     if (!res.ok) return urls;
     const xml = await res.text();
     const locMatches = xml.matchAll(/<loc>([^<]+)<\/loc>/gi);
@@ -395,6 +409,29 @@ async function discoverUrlsFromSitemap(origin: string): Promise<string[]> {
     // No sitemap or parse error
   }
   return urls;
+}
+
+async function fetchHtmlForCrawl(url: string): Promise<Response | null> {
+  const attempt = async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      return await fetch(url, { signal: controller.signal, headers: CRAWL_FETCH_HEADERS });
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+  let last: Response | null = null;
+  for (let i = 0; i < 2; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 1500));
+    try {
+      last = await attempt();
+      if (last.ok) return last;
+    } catch {
+      last = null;
+    }
+  }
+  return last && last.ok ? last : null;
 }
 
 async function crawlWebsite(
@@ -423,16 +460,8 @@ async function crawlWebsite(
     if (!(await isAllowedByRobotsTxt(url))) continue;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "SiteBotGPT/1.0 (Website Indexer; +https://sitebotgpt.com)"}});
-      clearTimeout(timeout);
-
-      if (!response.ok || !response.headers.get("content-type")?.includes("text/html")) {
+      const response = await fetchHtmlForCrawl(url);
+      if (!response || !response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
         continue;
       }
 
