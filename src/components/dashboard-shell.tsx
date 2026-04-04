@@ -141,6 +141,17 @@ function DashboardShellInner({
             Overview
           </Link>
           <Link
+            href="/dashboard/ai-ugc-generator"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <svg className="h-5 w-5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h2m14 0h2" />
+            </svg>
+            AI UGC Generator
+          </Link>
+          <Link
             href="/dashboard#bots"
             onClick={handleBotsClick}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"

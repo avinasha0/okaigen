@@ -24,6 +24,62 @@ const JUNK_SELECTORS = [
   "#cookie-banner",
 ];
 
+/** Embedded / SSR chat UIs (SiteBotGPT uses atlas-*). Strip before text extraction so widget copy is not trained. */
+const CHAT_WIDGET_SELECTORS = [
+  "[class*='atlas-']",
+  "[class*='intercom-']",
+  "[id*='intercom']",
+  "[class*='crisp-']",
+  "[id*='crisp']",
+  "[class*='drift-']",
+  "[class*='tawk-']",
+  "[class*='tidio-']",
+  "[class*='zendesk']",
+  "[class*='hubspot-messages']",
+  "[class*='hs-messages']",
+  "[class*='livechat']",
+  "[class*='chat-widget']",
+  "[class*='chat-button']",
+  "[data-atlas-widget]",
+];
+
+/** Exact lines left over after DOM stripping (common widget chrome). */
+const CHAT_UI_LINE_BLOCKLIST = new Set([
+  "Ask a question...",
+  "SiteBotGPT Helper",
+  "Powered by SiteBotGPT",
+  "Loading...",
+]);
+
+/**
+ * Phrases removed anywhere in text — crawler often collapses the page to one line, so newline-only filtering is not enough.
+ * Keep phrases long / distinctive to avoid stripping real marketing copy.
+ */
+const CHAT_UI_SUBSTRING_PHRASES: string[] = [
+  "Ask a question...",
+  "Hi! How can I help you today?",
+  "SiteBotGPT Helper",
+  "Powered by SiteBotGPT",
+  "Typically replies instantly",
+  "Open the chat bubble in the bottom-right corner to start",
+  "Click the bubble →",
+];
+
+function stripChatUiNoise(content: string): string {
+  let out = content
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !CHAT_UI_LINE_BLOCKLIST.has(l))
+    .join("\n\n");
+
+  for (const phrase of CHAT_UI_SUBSTRING_PHRASES) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(escaped, "gi"), " ");
+  }
+
+  return out.replace(/\s{2,}/g, " ").trim();
+}
+
 export interface ScrapedPage {
   url: string;
   title: string;
@@ -50,8 +106,8 @@ export function extractTextFromHtml(html: string, baseUrl: string): ScrapedPage 
     }
   });
 
-  // Remove junk elements for content extraction
-  JUNK_SELECTORS.forEach((selector) => {
+  // Remove junk + embedded chat widgets so UI strings are not indexed as knowledge
+  [...JUNK_SELECTORS, ...CHAT_WIDGET_SELECTORS].forEach((selector) => {
     $(selector).remove();
   });
 
@@ -62,17 +118,21 @@ export function extractTextFromHtml(html: string, baseUrl: string): ScrapedPage 
   if (!contentEl.length) contentEl = $("main").first();
   if (!contentEl.length) contentEl = $("body");
 
-  const content = contentEl
+  const rawContent = contentEl
     .find("p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote")
     .map((_, el) => $(el).text().trim())
     .get()
     .filter((t) => t.length > 0)
     .join("\n\n");
 
+  const fallbackBody = $("body").text().replace(/\s+/g, " ").trim();
+  const merged = rawContent || fallbackBody;
+  const content = stripChatUiNoise(merged);
+
   return {
     url: baseUrl,
     title,
-    content: content || $("body").text().replace(/\s+/g, " ").trim(),
+    content,
     links: [...new Set(links)]};
 }
 

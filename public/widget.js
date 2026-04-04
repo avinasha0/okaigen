@@ -203,6 +203,7 @@
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
+  /** Resolves when greeting + quick prompts are in the DOM (embed/info finished). */
   function addGreeting() {
     var loadingDiv = document.createElement("div");
     loadingDiv.className = "atlas-msg assistant loading";
@@ -210,7 +211,7 @@
     messagesEl.appendChild(loadingDiv);
     var defaultPrompts = ["What do you offer?", "How can I contact you?", "Tell me about your services", "What are your hours?"];
     var embedUrl = (baseUrl || window.location.origin).replace(/\/$/, "") + "/api/embed/info?botId=" + encodeURIComponent(botId);
-    fetch(embedUrl)
+    return fetch(embedUrl)
       .then((r) => r.json())
       .then((data) => {
         if (loadingDiv.parentNode) loadingDiv.remove();
@@ -281,7 +282,7 @@
 
         // Check if response is streaming (text/event-stream)
         const contentType = r.headers.get("content-type") || "";
-        if (contentType.includes("text/event-stream")) {
+        if (contentType.includes("text/event-stream") && r.body) {
           return { status: r.status, stream: true, reader: r.body.getReader() };
         }
 
@@ -310,6 +311,10 @@
           function processStream() {
             result.reader.read().then(function (chunk) {
               if (chunk.done) {
+                if (streamingMsgEl.parentNode && !String(streamingMsgEl.textContent || "").trim()) {
+                  streamingMsgEl.textContent =
+                    "Sorry, no reply was received. Please try again or check that the bot is trained and within its message limit.";
+                }
                 if (metadata) {
                   chatId = metadata.chatId || chatId;
                   try { localStorage.setItem("sitebotgpt_chat_" + botId, chatId || ""); } catch (e) {}
@@ -329,6 +334,7 @@
               }
 
               buffer += decoder.decode(chunk.value, { stream: true });
+              buffer = buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
               const lines = buffer.split("\n\n");
               buffer = lines.pop() || "";
 
@@ -339,10 +345,11 @@
                     var data = JSON.parse(line.slice(6));
                     if (data.done) {
                       metadata = data;
+                    } else if (data.error) {
+                      streamingMsgEl.textContent =
+                        typeof data.error === "string" ? data.error : "Sorry, something went wrong. Please try again.";
                     } else if (data.chunk && typeof data.chunk === "string") {
                       fullResponse += data.chunk;
-                      // Append chunk directly for real-time streaming effect (like ChatGPT)
-                      // This creates a natural letter-by-letter appearance as chunks arrive
                       streamingMsgEl.textContent += data.chunk;
                       messagesEl.scrollTop = messagesEl.scrollHeight;
                     }
@@ -430,11 +437,10 @@
       bubble.innerHTML = closeIcon;
       bubble.setAttribute("aria-label", "Close chat");
       if (messagesEl.children.length === 0) {
-        addGreeting();
-        // Wait for greeting to load (or 500ms) so panel is ready and we don't race with addGreeting
-        setTimeout(function () {
+        answeredPrompts = [];
+        addGreeting().then(function () {
           sendMessage(textToSend);
-        }, 500);
+        });
       } else {
         setTimeout(function () {
           sendMessage(textToSend);
