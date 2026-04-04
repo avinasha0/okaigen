@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatOpenAIUserMessage } from "@/lib/openai-errors";
 import { chunkText } from "@/lib/chunking";
 import { generateEmbeddings } from "@/lib/embeddings";
 import { extractTextFromHtml } from "@/lib/scraper";
@@ -241,7 +242,7 @@ export async function POST(
           type: "embed",
           count: totalChunks}});
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      const errorMsg = formatOpenAIUserMessage(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
       console.error("[train] Training error for source:", source.id, "type:", source.type, "url:", source.url || source.documentUrl);
       console.error("[train] Error message:", errorMsg);
@@ -337,7 +338,7 @@ export async function POST(
       chunksCreated: result.totalChunks,
       pagesIndexed: result.totalPages});
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    const errorMsg = formatOpenAIUserMessage(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
     console.error("[train] Top-level route error. This should not happen if module loaded correctly.");
     console.error("[train] Error message:", errorMsg);

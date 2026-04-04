@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatOpenAIUserMessage } from "@/lib/openai-errors";
 import { prisma } from "@/lib/db";
 import { generateResponse } from "@/lib/rag";
 import { rateLimit } from "@/lib/rate-limit";
@@ -209,7 +210,8 @@ export async function POST(req: Request) {
             controller.close();
           } catch (error) {
             console.error("Streaming error:", error);
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Streaming failed" })}\n\n`));
+            const msg = formatOpenAIUserMessage(error);
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: msg })}\n\n`));
             controller.close();
           }
         }});
@@ -262,10 +264,7 @@ export async function POST(req: Request) {
       shouldCaptureLead});
   } catch (error: unknown) {
     console.error("Chat API error:", error);
-    let message = "Failed to process message";
-    if (error instanceof Error) message = error.message;
-    else if (typeof (error as { error?: { message?: string } })?.error?.message === "string")
-      message = (error as { error: { message: string } }).error.message;
+    const message = formatOpenAIUserMessage(error);
     return jsonWithCors(
       { error: message },
       { status: 500 }
