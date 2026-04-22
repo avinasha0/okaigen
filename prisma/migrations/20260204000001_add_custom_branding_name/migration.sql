@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `user` ADD COLUMN `customBrandingName` VARCHAR(100) NULL;
+ALTER TABLE `User` ADD COLUMN `customBrandingName` VARCHAR(100) NULL;
