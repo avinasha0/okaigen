@@ -7,6 +7,10 @@ import { Footer } from "@/components/footer";
 export function FooterWrapper() {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard") ?? false;
+  const hideFooter =
+    pathname === "/dashboard/settings" || pathname?.startsWith("/dashboard/settings/") || false;
+
+  if (hideFooter) return null;
 
   if (isDashboard) {
     return (
