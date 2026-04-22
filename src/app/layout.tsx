@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { FooterWrapper } from "@/components/footer-wrapper";
@@ -53,6 +54,7 @@ export default function RootLayout({
           {children}
           <FooterWrapper />
           <CookieConsentBanner />
+          <Analytics />
         </Providers>
       </body>
     </html>
