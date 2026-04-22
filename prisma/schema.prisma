@@ -323,3 +323,18 @@ model Waitlist {
   @@index([email], map: "Waitlist_email_idx")
   @@index([planName], map: "Waitlist_planName_idx")
 }
+
+model SmtpConfig {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique(map: "SmtpConfig_name_key") @db.VarChar(50)
+  host        String   @db.VarChar(255)
+  port        Int
+  secure      Boolean  @default(false)
+  username    String?  @db.VarChar(255)
+  passwordEnc String?  @db.LongText
+  fromEmail   String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name], map: "SmtpConfig_name_idx")
+}
