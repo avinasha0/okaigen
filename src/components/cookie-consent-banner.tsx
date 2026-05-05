@@ -26,6 +26,7 @@ export function CookieConsentBanner() {
     try {
       localStorage.setItem(STORAGE_KEY, value);
       setConsent(value);
+      window.dispatchEvent(new Event("cookie-consent"));
     } catch {
       /* ignore */
     }

@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers";
 import { FooterWrapper } from "@/components/footer-wrapper";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { SkipToMainContent } from "@/components/skip-to-main-content";
+import { GoogleAnalytics } from "@/components/google-analytics";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ export default function RootLayout({
           <FooterWrapper />
           <CookieConsentBanner />
           <Analytics />
+          <GoogleAnalytics />
         </Providers>
       </body>
     </html>
