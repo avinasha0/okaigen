@@ -7,7 +7,7 @@ import { Providers } from "@/components/providers";
 import { FooterWrapper } from "@/components/footer-wrapper";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { SkipToMainContent } from "@/components/skip-to-main-content";
-import { GoogleAnalytics } from "@/components/google-analytics";
+import { GoogleAnalyticsClient, GoogleAnalyticsScripts } from "@/components/google-analytics";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,9 +48,12 @@ export default function RootLayout({
   children}: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
       <body className="font-sans antialiased overflow-x-hidden">
+        <GoogleAnalyticsScripts measurementId={gaMeasurementId} />
         <Providers>
           <SkipToMainContent />
           {children}
@@ -58,7 +61,7 @@ export default function RootLayout({
           <CookieConsentBanner />
           <Analytics />
           <Suspense fallback={null}>
-            <GoogleAnalytics />
+            <GoogleAnalyticsClient measurementId={gaMeasurementId} />
           </Suspense>
         </Providers>
       </body>
