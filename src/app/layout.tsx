@@ -8,6 +8,7 @@ import { FooterWrapper } from "@/components/footer-wrapper";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { SkipToMainContent } from "@/components/skip-to-main-content";
 import { GoogleAnalyticsClient, GoogleAnalyticsScripts } from "@/components/google-analytics";
+import { APP_CONFIG_KEYS, getAppConfig } from "@/lib/app-config";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,6 +22,8 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta"});
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.sitebotgpt.com";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -44,11 +47,12 @@ export const metadata: Metadata = {
     siteName: "SiteBotGPT"},
   robots: { index: true, follow: true }};
 
-export default function RootLayout({
+export default async function RootLayout({
   children}: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaMeasurementId =
+    (await getAppConfig(APP_CONFIG_KEYS.gaMeasurementId).catch(() => null)) ?? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>

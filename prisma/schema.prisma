@@ -339,3 +339,9 @@ model SmtpConfig {
 
   @@index([name], map: "SmtpConfig_name_idx")
 }
+
+model AppConfig {
+  key       String   @id @db.VarChar(100)
+  value     String?  @db.LongText
+  updatedAt DateTime @updatedAt
+}

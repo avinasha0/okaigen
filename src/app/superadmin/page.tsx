@@ -60,6 +60,18 @@ export default async function SuperadminEntryPage() {
             </Link>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics</CardTitle>
+            <CardDescription>Configure Google Analytics Measurement ID.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link className="text-sm font-medium text-[#1a6aff] hover:underline" href="/superadmin/analytics">
+              Open analytics settings
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/postinstall.js && next build",
     "build:migrate": "node scripts/build-with-migrate.js",
     "postinstall": "node scripts/postinstall.js",
     "start": "node scripts/start-with-migrate.js",
