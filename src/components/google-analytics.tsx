@@ -1,8 +1,8 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const STORAGE_KEY = "sitebotgpt-cookie-consent";
 
@@ -25,12 +25,6 @@ function readConsent(): "all" | "essential" | null {
 export function GoogleAnalytics() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const pagePath = useMemo(() => {
-    const qs = searchParams?.toString();
-    return qs ? `${pathname}?${qs}` : pathname;
-  }, [pathname, searchParams]);
 
   const [enabled, setEnabled] = useState(false);
 
@@ -45,8 +39,10 @@ export function GoogleAnalytics() {
     if (!enabled) return;
     if (!measurementId) return;
     if (typeof window.gtag !== "function") return;
+    const qs = typeof window !== "undefined" ? window.location.search : "";
+    const pagePath = `${pathname}${qs || ""}`;
     window.gtag("config", measurementId, { page_path: pagePath });
-  }, [enabled, measurementId, pagePath]);
+  }, [enabled, measurementId, pathname]);
 
   if (!measurementId || !enabled) return null;
 
