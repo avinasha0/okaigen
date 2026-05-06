@@ -18,20 +18,8 @@ export async function GET() {
   const gate = await requireSuperadmin();
   if (!gate.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  try {
-    const measurementId = await getAppConfig(APP_CONFIG_KEYS.gaMeasurementId);
-    return NextResponse.json({ measurementId });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json(
-      {
-        error: "Failed to load analytics config",
-        hint: "Have you deployed the latest Prisma migrations (AppConfig table)?",
-        details: message,
-      },
-      { status: 500 }
-    );
-  }
+  const measurementId = await getAppConfig(APP_CONFIG_KEYS.gaMeasurementId);
+  return NextResponse.json({ measurementId });
 }
 
 export async function PUT(req: Request) {
@@ -50,19 +38,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid input", issues: parsed.error.issues }, { status: 400 });
   }
 
-  try {
-    await setAppConfig(APP_CONFIG_KEYS.gaMeasurementId, parsed.data.measurementId);
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json(
-      {
-        error: "Failed to save analytics config",
-        hint: "Have you deployed the latest Prisma migrations (AppConfig table)?",
-        details: message,
-      },
-      { status: 500 }
-    );
-  }
+  await setAppConfig(APP_CONFIG_KEYS.gaMeasurementId, parsed.data.measurementId);
+  return NextResponse.json({ ok: true });
 }
 

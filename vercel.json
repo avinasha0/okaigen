@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/build-with-migrate.js",
+  "buildCommand": "node scripts/postinstall.js && next build",
   "framework": "nextjs",
   "redirects": [
     {
