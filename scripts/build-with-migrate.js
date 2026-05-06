@@ -63,9 +63,6 @@ if (isPlaceholder) {
     console.warn("[3/4] Continuing build (plans might already exist)");
     // Don't exit - seed failure is non-critical
   }
-} else {
-  console.warn("[2/4] ⚠ Migrations skipped (no DATABASE_URL)");
-  console.warn("[3/4] ⚠ Seed skipped (no DATABASE_URL)");
 }
 
 // Step 4: Build Next.js
