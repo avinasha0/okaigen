@@ -4,6 +4,22 @@ export const APP_CONFIG_KEYS = {
   gaMeasurementId: "ga_measurement_id",
 } as const;
 
+async function appConfigTableExists() {
+  try {
+    const rows = (await prisma.$queryRaw`
+      SELECT 1 AS ok
+      FROM information_schema.tables
+      WHERE table_schema = DATABASE()
+        AND table_name = 'AppConfig'
+      LIMIT 1
+    `) as Array<{ ok: 1 }>;
+    return rows.length > 0;
+  } catch {
+    // If we can't check, don't block normal operations.
+    return true;
+  }
+}
+
 function isMissingTableError(e: unknown) {
   // Prisma KnownRequestError uses code "P2021" for missing table.
   // We avoid importing Prisma runtime types here to keep this module simple.
@@ -26,6 +42,11 @@ export async function getAppConfig(key: string) {
 }
 
 export async function setAppConfig(key: string, value: string | null) {
+  // Avoid noisy Prisma error logs by checking existence first.
+  if (!(await appConfigTableExists())) {
+    throw new Error("AppConfig table is missing. Run Prisma migrations to enable superadmin configuration.");
+  }
+
   try {
     if (value === null) {
       await prisma.appConfig.delete({ where: { key } }).catch(() => null);
