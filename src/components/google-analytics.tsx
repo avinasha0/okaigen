@@ -13,9 +13,11 @@ declare global {
   }
 }
 
-function readConsent(): "all" | "essential" | null {
+type Consent = "all" | "essential" | null;
+
+function readConsent(): Consent {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) as Consent | null;
     return raw === "all" || raw === "essential" ? raw : null;
   } catch {
     return null;
@@ -26,25 +28,49 @@ export function GoogleAnalytics() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const pathname = usePathname();
 
-  const [enabled, setEnabled] = useState(false);
+  const [consent, setConsent] = useState<Consent>(null);
 
   useEffect(() => {
-    const sync = () => setEnabled(readConsent() === "all");
+    const sync = () => setConsent(readConsent());
     sync();
-    window.addEventListener("cookie-consent", sync);
-    return () => window.removeEventListener("cookie-consent", sync);
+
+    const onConsent = (e: Event) => {
+      const value = (e as CustomEvent<Consent>).detail;
+      if (value === "all" || value === "essential") setConsent(value);
+      else sync();
+    };
+
+    window.addEventListener("cookie-consent", onConsent);
+    return () => window.removeEventListener("cookie-consent", onConsent);
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
     if (!measurementId) return;
     if (typeof window.gtag !== "function") return;
+
+    // Default to denied until explicit opt-in ("Accept all").
+    window.gtag("consent", "default", {
+      ad_storage: "denied",
+      analytics_storage: "denied",
+      functionality_storage: "granted",
+      personalization_storage: "denied",
+      security_storage: "granted",
+      wait_for_update: 500,
+    });
+
+    if (consent !== "all") return;
+
+    window.gtag("consent", "update", {
+      ad_storage: "denied",
+      analytics_storage: "granted",
+    });
+
     const qs = typeof window !== "undefined" ? window.location.search : "";
     const pagePath = `${pathname}${qs || ""}`;
     window.gtag("config", measurementId, { page_path: pagePath });
-  }, [enabled, measurementId, pathname]);
+  }, [consent, measurementId, pathname]);
 
-  if (!measurementId || !enabled) return null;
+  if (!measurementId) return null;
 
   return (
     <>
