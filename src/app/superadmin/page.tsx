@@ -1,8 +1,15 @@
 import { redirect } from "next/navigation";
+import { subDays } from "date-fns";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+function startOfTodayUtc() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
 
 export const metadata = {
   title: "Superadmin",
@@ -41,11 +48,50 @@ export default async function SuperadminEntryPage() {
     );
   }
 
+  const startOfToday = startOfTodayUtc();
+  const weekAgo = subDays(new Date(), 7);
+
+  const [usersToday, usersLastWeek, totalUsers] = await Promise.all([
+    prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
+    prisma.user.count({ where: { createdAt: { gte: weekAgo } } }),
+    prisma.user.count(),
+  ]);
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 md:px-8">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Superadmin</h1>
         <p className="mt-0.5 text-sm text-slate-500">Global configuration for this application.</p>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Users today</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-slate-900">{usersToday}</p>
+            <p className="mt-1 text-xs text-slate-500">Sign-ups since midnight UTC</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Users last 7 days</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-slate-900">{usersLastWeek}</p>
+            <p className="mt-1 text-xs text-slate-500">Rolling week</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Total users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-slate-900">{totalUsers}</p>
+            <p className="mt-1 text-xs text-slate-500">All accounts</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -76,4 +122,3 @@ export default async function SuperadminEntryPage() {
     </div>
   );
 }
-
