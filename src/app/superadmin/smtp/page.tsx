@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Mail, Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { SuperadminPageHeader } from "@/components/superadmin/page-header";
+import { SuperadminAlertBanner } from "@/components/superadmin/alert-banner";
 
 type SmtpConfigForm = {
   host: string;
@@ -15,12 +19,27 @@ type SmtpConfigForm = {
   fromEmail: string;
 };
 
+const selectClassName = cn(
+  "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a6aff] focus-visible:ring-offset-2"
+);
+
+function LoadingSkeleton() {
+  return (
+    <div className="animate-pulse space-y-6">
+      <div className="h-8 w-48 rounded-lg bg-zinc-200" />
+      <div className="h-64 rounded-xl bg-zinc-100" />
+      <div className="h-40 rounded-xl bg-zinc-100" />
+    </div>
+  );
+}
+
 export default function SuperadminSmtpPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [hasPassword, setHasPassword] = useState(false);
   const [testTo, setTestTo] = useState("");
 
@@ -88,10 +107,8 @@ export default function SuperadminSmtpPage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || "Save failed");
-      }
-      setSuccess("Saved SMTP settings.");
+      if (!res.ok) throw new Error(json.error || "Save failed");
+      setSuccess("SMTP settings saved successfully.");
       if (form.password.trim()) setHasPassword(true);
       setForm((f) => ({ ...f, password: "" }));
     } catch (e) {
@@ -125,44 +142,74 @@ export default function SuperadminSmtpPage() {
   }
 
   if (loading) {
-    return <div className="mx-auto max-w-2xl px-4 py-8 text-sm text-slate-500">Loading...</div>;
+    return <LoadingSkeleton />;
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6 md:px-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Superadmin — SMTP</h1>
-        <p className="mt-0.5 text-sm text-slate-500">Configure SMTP for all outgoing emails.</p>
-      </div>
+    <>
+      <SuperadminPageHeader
+        title="SMTP & email"
+        description="Configure the mail server used for verification emails, notifications, and system messages."
+        breadcrumbs={[
+          { label: "Superadmin", href: "/superadmin" },
+          { label: "SMTP" },
+        ]}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>SMTP settings</CardTitle>
-          <CardDescription>
-            These settings are stored in the database. Password is encrypted at rest.{" "}
-            {hasPassword ? "Password is set." : "Password is not set."}
-          </CardDescription>
+      {(error || success) && (
+        <div className="mb-6 space-y-3">
+          {error ? <SuperadminAlertBanner variant="error" message={error} /> : null}
+          {success ? <SuperadminAlertBanner variant="success" message={success} /> : null}
+        </div>
+      )}
+
+      <Card className="border-zinc-200/80 shadow-sm">
+        <CardHeader className="border-b border-zinc-100 bg-zinc-50/50">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Server settings</CardTitle>
+              <CardDescription>
+                Stored in the database. Password is encrypted at rest.{" "}
+                <span className={hasPassword ? "font-medium text-emerald-600" : "font-medium text-amber-600"}>
+                  {hasPassword ? "Password configured." : "No password set."}
+                </span>
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 pt-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="host">Host</Label>
-              <Input id="host" value={form.host} onChange={(e) => setForm({ ...form, host: e.target.value })} placeholder="smtp.example.com" />
+              <Input
+                id="host"
+                value={form.host}
+                onChange={(e) => setForm({ ...form, host: e.target.value })}
+                placeholder="smtp.example.com"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="port">Port</Label>
-              <Input id="port" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} placeholder="587" />
+              <Input
+                id="port"
+                value={form.port}
+                onChange={(e) => setForm({ ...form, port: e.target.value })}
+                placeholder="587"
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="secure">Secure (TLS)</Label>
+              <Label htmlFor="secure">Security</Label>
               <select
                 id="secure"
                 value={form.secure ? "true" : "false"}
                 onChange={(e) => setForm({ ...form, secure: e.target.value === "true" })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className={selectClassName}
               >
-                <option value="false">false (STARTTLS on 587)</option>
-                <option value="true">true (SMTPS on 465)</option>
+                <option value="false">STARTTLS (port 587)</option>
+                <option value="true">SMTPS / TLS (port 465)</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -176,51 +223,59 @@ export default function SuperadminSmtpPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="hello@yourdomain.com" />
+              <Input
+                id="username"
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                placeholder="hello@yourdomain.com"
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password (leave blank to keep)</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder={hasPassword ? "•••••••• (unchanged)" : "Enter password"}
+                placeholder={hasPassword ? "Leave blank to keep current" : "Enter password"}
               />
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={save} disabled={saving || !form.host.trim() || !form.port.trim()}>
-              {saving ? "Saving..." : "Save"}
-            </Button>
-          </div>
-
-          {(error || success) && (
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm">
-              {error && <p className="text-red-700">{error}</p>}
-              {success && <p className="text-emerald-700">{success}</p>}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Test SMTP</CardTitle>
-          <CardDescription>Sends a test email using the saved settings.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="testTo">Send test email to</Label>
-            <Input id="testTo" value={testTo} onChange={(e) => setTestTo(e.target.value)} placeholder="you@example.com" />
-          </div>
-          <Button onClick={test} disabled={testing || !testTo.trim()}>
-            {testing ? "Sending..." : "Send test"}
+          <Button onClick={save} disabled={saving || !form.host.trim() || !form.port.trim()}>
+            {saving ? "Saving…" : "Save settings"}
           </Button>
         </CardContent>
       </Card>
-    </div>
+
+      <Card className="mt-6 border-zinc-200/80 shadow-sm">
+        <CardHeader className="border-b border-zinc-100 bg-zinc-50/50">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
+              <Send className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Delivery test</CardTitle>
+              <CardDescription>Send a test message using the saved SMTP configuration.</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-6">
+          <div className="max-w-md space-y-2">
+            <Label htmlFor="testTo">Recipient email</Label>
+            <Input
+              id="testTo"
+              type="email"
+              value={testTo}
+              onChange={(e) => setTestTo(e.target.value)}
+              placeholder="you@example.com"
+            />
+          </div>
+          <Button variant="outline" onClick={test} disabled={testing || !testTo.trim()}>
+            {testing ? "Sending…" : "Send test email"}
+          </Button>
+        </CardContent>
+      </Card>
+    </>
   );
 }
-
